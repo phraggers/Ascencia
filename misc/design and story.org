@@ -1,0 +1,28 @@
+#+TITLE=exolvere (C++ RPG)
+
+** Basic Blurb:
+- Story based, semi free-roam RPG, top-down sprite-base action-adventure, and more multiple-hyphenated-descriptive-words.
+
+** Influences:
+- Diablo II (gameplay, RPG, story)
+- Subnautica (plot, environment, feel, sole-survivor)
+- Mass Effect (save the universe story, RPG elements, sci-fi)
+- Asheron's Call (magic/skills systems)
+- Factorio (top-down, sci-fi, shipwrecked, use scientific ingenuity to survive, sprite type art)
+
+** Style:
+- Factorio-like 2D sprites, world size, etc, but a little less steampunk... more Subnautica style clean-tech-feel.
+
+** Basic Plot:
+- Player finds themselves the sole survivor on a ship crashing down onto an unknown planet. Start: Wake up from stasis, try to save the ship, stasis-based amnesia means no memory of professional skills or anything.[gameplay: figure out how to program the ship's computer and save the ship.]
+
+- Subnautica style, the ship explodes, player is left alone on an alien world, needs to gather materials and resources and slowly try to gather materials and craft items to survive.
+
+- Over time, skills are unlocked as amnesia wears off and more skills gained, slowly the story unravels:
+
+** Plot Twists / Endgame story:
+- Planet is the epicentre of the Big Bang. The energy and power in every atom of matter means that reaching "The Core" of the planet would mean reaching the centre of power over all life in the universe.
+
+- The player slowly discovers superhuman powers (due to proximity to "The Core"), basically becoming equivalent to an MMORPG 'Mage'. By the end, it turns out that the planet's self-defense mechanism brought the player here to save the universe. The planet's core has enough power and energy to have power over all time and space within the material realm (There is more outside the Material Realm).
+
+- Outside the Material Realm (The Void) there exists an entity that wants to dismantle the universe and stop the universe cycle (big bang, collapse) which has existed for trillions of cycles, and every cycle there must be a single champion to keep them at bay. Here the story kind of sounds like Mass Effect but whatever :)

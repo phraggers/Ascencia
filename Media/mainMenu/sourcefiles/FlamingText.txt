@@ -1,0 +1,4 @@
+http://www6.flamingtext.com/logo/Design-Blackbird?_variations=true
+Font: BlackChancery
+Size: 100
+Background: Alpha
