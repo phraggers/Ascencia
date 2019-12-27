@@ -6,6 +6,10 @@
             "label": "make",
             "type": "shell",
             "command": "make",
+            "windows":
+            {
+                "command": "start make"
+            },
             "options":
             {
                 "cwd": "${workspaceFolder}/src"

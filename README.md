@@ -1,13 +1,21 @@
-# Exolvere
+# Ascencia
 
-Exolvere is an RPG written in C and C++ as my first proper project.
+Ascencia is a way-over-ambitious-Sandbox-RPG written in C++17, OpenGL & SDL2, as my first proper project.
 
 VERSION
 -------
-- inDev 0.15 (2018-08-08)
+- inDev 1 (2019-12-27)
 
 UPDATE LOG
 ----------
+2019-12-27: indev1: Recently picked this up again, completely re-written everything like 12 times since I last updated the github repository, so here's the latest version with fully functioning datcompiler and SDL2 and OpenGL systems up and running and ready to rock. 
+Current systems I'm proud of:
+- asset_manager reads .dat files compiled by the archiver
+- error_handler manages all application errors and outputs a fancy log in csv format
+- gamestate holds all current gamedata and auto loads dat files through asset manager.
+- systems holds SDL and OpenGL stuff, up and running nicely.
+- versions are a bit simpler this time too, #state #version where state is indev/alpha/beta/release and version is just a number, I don't need ver 1.2.7.5.3.2 etc :)
+
 2018-08-08: v0.15: Gave up on MacOS/Linux, focussing on Windows only. Reworked compilation and file management systems, working on a single .exe installer
 
 2018-06-22: v0.14: Gave up on openGL, maybe next project! For now, DAT system working perfectly!

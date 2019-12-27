@@ -3,17 +3,18 @@
 
     "configurations":
     [
+
         {
-            "name": "(gdb) Launch",
+            "name": "(GDB) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/build/exolvere_setup/exolvere_setup.exe",
+            "program": "${workspaceRoot}/build/win32/Ascencia/Ascencia.exe",
             "args":
             [
 
             ],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build/exolvere_setup/exolvere_setup.exe",
+            "cwd": "${workspaceRoot}/build/win32/Ascencia",
             "environment":
             [
 
@@ -26,9 +27,10 @@
                 {
                     "description": "Enable pretty-printing for gdb",
                     "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
+                    "ignoreFailures": false
                 }
-            ]
+            ],
+            "avoidWindowsConsoleRedirection": true
         }
     ]
 }

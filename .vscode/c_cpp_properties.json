@@ -1,29 +1,42 @@
 {
-    "configurations": [
+    "configurations":
+    [
         {
             "name": "Win32",
-            "includePath": [
+
+            "includePath":
+            [
                 "C:/MinGW/include",
-                "C:/MinGW/lib/gcc/mingw32/6.3.0/include/c++",
+                "C:/MinGW/lib/gcc/mingw32/8.2.0/include/c++",
                 "${workspaceRoot}/src",
-                "${workspaceRoot}/libs/include"
+                "${workspaceRoot}/include"
             ],
-            "defines": [
+
+            "defines":
+            [
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE"
             ],
-            "intelliSenseMode": "msvc-x64",
-            "browse": {
-                "path": [
-                    "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include/*",
-                    "${workspaceRoot}"
+
+            "browse":
+            {
+                "path":
+                [
+                    "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.10.25017/include",
+                    "C:/MinGW/lib/gcc/mingw32/8.2.0/include",
+                    "${workspaceRoot}/src", "${workspaceRoot}/include"
                 ],
                 "limitSymbolsToIncludedHeaders": true
             },
+
+            "intelliSenseMode": "gcc-x64",
+
+            "compilerPath": "C:/MinGW/bin/g++.exe",
+
             "cStandard": "c11",
-            "cppStandard": "c++17",
-            "compilerPath": "/usr/bin/clang"
+
+            "cppStandard": "c++17"
         }
     ],
     "version": 4

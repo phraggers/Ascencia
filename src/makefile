@@ -1,80 +1,63 @@
-#=============
-# Exolvere
-# makefile
-#=============
+##================================
+##             ASCENCIA
+##             makefile
+##================================
+##        (c) Phragware 2019
+##================================
 
-# All
-CI=-Ilibs/include/ -Llibs/lib/
-CI1=-I../libs/include/ -L../libs/lib/
+# Variables ==========================
+RELEASE=1 # (1)indev, (2)alpha, (3)beta, (4)release, (0)error
+VERSION=001 # 000 error
+DEBUG=1 # bool 1 or 0
+# auto vars ===========================
+ifeq ($(DEBUG),1 )
+COMPILER=g++ -std=c++17 -U__STRICT_ANSI__ -DOS_$(OS) -DGLEW_STATIC -DDEBUG_MODE
+else
+COMPILER=g++ -std=c++17 -U__STRICT_ANSI__ -DOS_$(OS) -DGLEW_STATIC
+endif
+CLIENT_OBJECTS:=*.cpp
+INC=-I../include/ -I../src/ -L../lib/ $(OSINC)
+#======================================
 
-# Clear
-CLEAR_DAT_COMPILER=pushd ..\\data && DEL /Q /F "exolvere_dat_compiler.exe" && popd
-CLEAR_SETUP_DATS=pushd ..\\build\\exolvere_setup && DEL /Q /F "*.dat" && popd
-CLEAR_EXOLVERE_DATS=pushd ..\\build\\exolvere_main\\data && DEL /Q /F "*.dat" && popd
-CLEAR_INSTALLER=pushd ..\\build\\exolvere_installer && DEL /Q /F "exolvere_in.exe" && popd
-CLEAR_SETUP=pushd ..\\build\\exolvere_setup && DEL /Q /F "exolvere_su.exe" && popd
-CLEAR_EXOLVERE=pushd ..\\build\\exolvere_main\\bin && DEL /Q /F "exolvere.exe" && popd
-CLEAR=$(CLEAR_DAT_COMPILER) && $(CLEAR_SETUP_DATS) && $(CLEAR_EXOLVERE_DATS) && $(CLEAR_INSTALLER) && $(CLEAR_SETUP) && $(CLEAR_EXOLVERE)
+CLEAN=@echo. & @echo. & @echo COMPILING: Cleaning... & @echo. & @echo. \
+& rd /s /q ..\build
+PRE_BUILD=@echo. & @echo. & @echo COMPILING: Pre-Build... & @echo. & @echo. \
+& mkdir ..\build\Ascencia \
+& mkdir ..\build\Ascencia\data \
+& pushd .. && robocopy data\build build\Ascencia\data & popd \
+& pushd .. && robocopy data\libs build\Ascencia & popd
+POST_BUILD=@echo. & @echo. & @echo COMPILING: Post-Build... & @echo. & @echo. \
+& ..\misc\rh\ResourceHacker.exe \
+-open ..\build\Ascencia\Ascencia.exe \
+-resource ..\data\icons\Ascencia.ico \
+-mask ICONGROUP,MAINICON, \
+-action addskip \
+-save ..\build\Ascencia\Ascencia.exe
+FINALIZE=pause
+ifeq ($(DEBUG),1)
+CONSOLE=-Wl,-Bdynamic
+else
+CONSOLE=-Wl,-Bdynamic -mwindows
+endif
+LIBS=-lmingw32 -Wl,-Bstatic -lSDL2main -lSDL2 -lglew32 -lopengl32 -lglu32 $(CONSOLE) -lm -ldinput8 -ldxguid -ldxerr8 -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lversion -luuid -static-libgcc
+DLL_LIBS=-Wl,-Bdynamic -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lSDL2_net
+ARGS=-g -s -w
+CLIENT_TARGET=../build/Ascencia/Ascencia.exe
+ECHO_CLIENT=@echo. & @echo. & @echo COMPILING: Building Client... & @echo. & @echo.
 
-# Dat_Compiler
-DAT_COMPILER_CC=g++ -std=gnu++11 -g
-DAT_COMPILER_OBJS=exolvere_dat_compiler.cpp
-DAT_COMPILER_ARGS=-w
-DAT_COMPILER_LIBS=-lmingw32
-DAT_COMPILER_TARGET=../data/exolvere_dat_compiler.exe
-DAT_COMPILER=$(DAT_COMPILER_CC) $(DAT_COMPILER_OBJS) $(CI) $(DAT_COMPILER_ARGS) $(DAT_COMPILER_LIBS) -o $(DAT_COMPILER_TARGET)
-
-# Compile_Dats
-COMPILE_EXOLVERE=pushd ..\\data && exolvere_dat_compiler.exe M && popd
-COMPILE_SETUP=pushd ..\\data && exolvere_dat_compiler.exe S && popd
-COMPILE_INSTALLER=pushd ..\\data && exolvere_dat_compiler.exe I && popd
-COMPILE=$(COMPILE_EXOLVERE) && $(COMPILE_SETUP) && $(COMPILE_INSTALLER)
-
-# Exolvere
-EXOLVERE_CC=g++ -std=c++11 -g
-EXOLVERE_OBJS=main.cpp Moligen.cpp Media.cpp Dat.cpp ErrorHandler.cpp Sprite.cpp
-EXOLVERE_ARGS=-w -Wl,-subsystem,windows
-EXOLVERE_LIBS=-lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lSDL2_net
-EXOLVERE_TARGET=../../build/exolvere_main/bin/exolvere.exe
-EXOLVERE=pushd exolvere_main && $(EXOLVERE_CC) $(EXOLVERE_OBJS) $(CI1) $(EXOLVERE_ARGS) $(EXOLVERE_LIBS) -o $(EXOLVERE_TARGET) && popd
-
-# Setup
-SETUP_CC=g++ -std=c++11 -g
-SETUP_OBJS=main.cpp Moligen.cpp Media.cpp Dat.cpp ErrorHandler.cpp Sprite.cpp
-SETUP_ARGS=-w -Wl,-subsystem,windows
-SETUP_LIBS=-lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lSDL2_net
-SETUP_TARGET=../../build/exolvere_setup/exolvere_su.exe
-SETUP=pushd exolvere_setup && $(SETUP_CC) $(SETUP_OBJS) $(CI1) $(SETUP_ARGS) $(SETUP_LIBS) -o $(SETUP_TARGET) && popd
-
-# Installer
-INSTALLER_CC=g++ -std=gnu++11 -g
-INSTALLER_OBJS=exolvere_installer.cpp
-INSTALLER_ARGS=-w
-INSTALLER_LIBS=-lmingw32
-INSTALLER_TARGET=../../build/exolvere_installer/exolvere_in.exe
-INSTALLER=pushd exolvere_installer && $(INSTALLER_CC) $(INSTALLER_OBJS) $(CI1) $(INSTALLER_ARGS) $(INSTALLER_LIBS) -o $(INSTALLER_TARGET) && popd
-
-#==============
-# COMPILATION
-#==============
-
-# BUILD
-all: clear dat_compiler compile exolvere setup installer
-
-clear:
-	$(CLEAR)
-
-dat_compiler:
-	$(DAT_COMPILER)
-
-compile:
-	$(COMPILE)
-
-exolvere:
-	$(EXOLVERE)
-
-setup:
-	$(SETUP)
-
-installer:
-	$(INSTALLER)
+# recipe =============================
+all:
+# clean
+	-$(CLEAN)
+# prebuild
+	-$(PRE_BUILD)
+# client
+	-$(ECHO_CLIENT)
+	-$(COMPILER) -DG_RELEASE=$(RELEASE) -DG_VERSION=$(VERSION) $(CLIENT_OBJECTS) $(INC) $(LIBS) $(DLL_LIBS) $(ARGS) -o $(CLIENT_TARGET)
+# postbuild
+	-$(POST_BUILD)
+# finalize
+	-$(FINALIZE)
+# launch
+	-$(CLIENT_TARGET)
+#======================================
