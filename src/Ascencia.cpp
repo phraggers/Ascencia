@@ -9,7 +9,8 @@
 #include <glad.c>
 #include <SDL/SDL.h>
 #include "Ascencia.h"
-#include "Events.cpp"
+#include "Memory.h"
+#include "Events.h"
 
 //TODO: https://raw.githubusercontent.com/gabomdq/SDL_GameControllerDB/master/gamecontrollerdb.txt
 // SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt"); (alt: from char*, from RWops)
@@ -20,7 +21,7 @@ main(int argc, char **argv)
 {
     int ExitCode = 0;
     
-    Application = {};
+    SDL_memset(&Application, 0, sizeof(Application));
     Application.Dimension.x = SDL_WINDOWPOS_UNDEFINED;
     Application.Dimension.y = SDL_WINDOWPOS_UNDEFINED;
     Application.Dimension.w = 1280;
@@ -69,21 +70,27 @@ main(int argc, char **argv)
 
             if(gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
             {
+                glViewport(0,0, Application.Dimension.w, Application.Dimension.h);
                 SDL_Log("OpenGL Version Loaded: %d.%d", GLVersion.major, GLVersion.minor);
                 
-                Memory = {};
-                Memory.PersistantSize = Megabytes(64);
-                Memory.TransientSize = Gigabytes(1);
-                Memory.Persistant = SDL_malloc((size_t)(Memory.PersistantSize +
-                                                        Memory.TransientSize));
-                Memory.Transient = ((uint8*)Memory.Persistant + Memory.PersistantSize);
+                SDL_memset(&Memory, 0, sizeof(Memory));
+                Memory.Size = Gigabytes(2);
+                Memory.Memory = SDL_malloc((size_t)Memory.Size);
+                Memory.Pointer = (uint64)Memory.Memory;
 
-                if(Memory.Persistant && Memory.Transient)
+                if(Memory.Memory)
                 {
-                    Memory.Initialized = 1;
+                    Asc_MemoryBlock *MemPermanent = ASC_NewMemoryBlock(Megabytes(64),
+                                                                       ASC_MEM_STATIC);
+                    Asc_MemoryBlock *MemTransient = ASC_NewMemoryBlock(Gigabytes(1),
+                                                                       ASC_MEM_ROLLOVER);
+
+                    Assert(MemPermanent);
+                    Assert(MemTransient);
+
                     Application.Running = 1;
 
-                    SDL_GameController *Controller = 0;                    
+                    SDL_GameController *Controller = 0;
 
                     //NOTE: FrameTiming
                     uint32 Timer_TotalFrameTicks = 0;
@@ -93,6 +100,72 @@ main(int argc, char **argv)
                     uint32 Timer_10SecTotalFrames = 0;
                     uint32 Timer_10SecStartTicks = SDL_GetTicks();
 
+                    // TEST: OPENGL
+                    const char *vertexShaderSource = "#version 330 core\n"
+                        "layout (location = 0) in vec3 aPos;\n"
+                        "void main()\n"
+                        "{\n"
+                        "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+                        "}\0";
+                    const char *fragmentShaderSource = "#version 330 core\n"
+                        "out vec4 FragColor;\n"
+                        "void main()\n"
+                        "{\n"
+                        "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+                        "}\n\0";
+
+                    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+                    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+                    glCompileShader(vertexShader);
+                    int success;
+                    char infoLog[512];
+                    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+                    if (!success)
+                    {
+                        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+                        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Shader Error!", infoLog, 0);
+                    }
+                    // fragment shader
+                    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+                    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+                    glCompileShader(fragmentShader);
+                    // check for shader compile errors
+                    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+                    if (!success)
+                    {
+                        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+                        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Shader Error!", infoLog, 0);
+                    }
+
+                    unsigned int shaderProgram = glCreateProgram();
+                    glAttachShader(shaderProgram, vertexShader);
+                    glAttachShader(shaderProgram, fragmentShader);
+                    glLinkProgram(shaderProgram);
+                    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+                    if (!success) {
+                        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+                        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Shader Error!", infoLog, 0);
+                    }
+                    glDeleteShader(vertexShader);
+                    glDeleteShader(fragmentShader);
+
+                    float vertices[] = {
+                      -0.5f, -0.5f, 0.0f, // left  
+                      0.5f, -0.5f, 0.0f, // right 
+                      0.0f,  0.5f, 0.0f  // top   
+                    }; 
+
+                    unsigned int VBO, VAO;
+                    glGenVertexArrays(1, &VAO);
+                    glGenBuffers(1, &VBO);
+                    glBindVertexArray(VAO);
+                    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+                    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+                    glEnableVertexAttribArray(0);
+                    glBindBuffer(GL_ARRAY_BUFFER, 0); 
+                    glBindVertexArray(0);
+                    
                     while(Application.Running)
                     {
                         Timer_10SecTotalFrames++;
@@ -104,7 +177,7 @@ main(int argc, char **argv)
                         ASC_HandleEvents();
 
                         //NOTE: Reset Controller if disconnected & reconnected
-                        if(!SDL_GameControllerGetAttached(Controller))
+                        if(Controller && !SDL_GameControllerGetAttached(Controller))
                         {
                             SDL_GameControllerClose(Controller);
                             Controller = 0;
@@ -163,11 +236,13 @@ main(int argc, char **argv)
                         }
 
                         // NOTE: Render
+                        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
                         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-                        // push draws to backbuffer ...
                         
-
+                        glUseProgram(shaderProgram);
+                        glBindVertexArray(VAO);
+                        glDrawArrays(GL_TRIANGLES, 0, 3);
+                        
                         SDL_GL_SwapWindow(Application.Window);
 
                         // NOTE: FrameTiming
@@ -201,9 +276,9 @@ main(int argc, char **argv)
                     } // while(running)
                 } // if(memory)
 
-                else //NOTE: !Memory.Persistant || !Memory.Transient
+                else //NOTE: !Memory
                 {
-                    SDL_SetError("Failed to reserve Application Memory! (PersistantSize: %d, TransientSize: %d)", Memory.PersistantSize, Memory.TransientSize);
+                    SDL_SetError("Failed to reserve Application Memory!");
                     SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, SDL_GetError());
                     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error!",
                                              SDL_GetError(), 0);
@@ -242,5 +317,5 @@ main(int argc, char **argv)
     }
 
     SDL_Quit();
-    return 0;
+    return ExitCode;
 }

@@ -7,7 +7,7 @@
    $Notice:  (c)Phragware 2021 $
    ======================================================================== */
 
-#if DEBUG
+#if BUILD_DEBUGSLOW
 #define Assert(Expression) if(!(Expression)) {*(int*)0 = 0;}
 #else
 #define Assert(Expression)
@@ -19,12 +19,6 @@
 #define Terabytes(Value) (Gigabytes(Value)*1024LL)
 
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
-
-#define internal static
-#define persist static
-#define global static
-
-#define PI32 3.14159265359f
 
 #define INT8_MIN -0x80
 #define INT8_MAX 0x7f
@@ -54,35 +48,26 @@ typedef unsigned long long uint64;
 typedef float real32;
 typedef double real64;
 
-global struct
-Asc_Memory
-{
-    bool Initialized;
-    uint64 PersistantSize;
-    uint64 TransientSize;
-    void *Persistant;
-    void *Transient;
-} Memory;
-
+//NOTE: doubt anyone will press 15 keys simultaneously
 #define KEYDOWN_COUNT 0xf
 
-global struct
+static struct
 Asc_Application
 {
     SDL_Window *Window;
     SDL_GLContext GLContext;
     SDL_Rect Dimension;
-    bool Running;
-    bool Exposed;
-    bool Minimized;
-    bool Maximized;
-    bool MouseInWindow;
-    bool KeyboardFocus;
+    uint8 Running;
+    uint8 Exposed;
+    uint8 Minimized;
+    uint8 Maximized;
+    uint8 MouseInWindow;
+    uint8 KeyboardFocus;
     SDL_Keycode Keydowns[KEYDOWN_COUNT];
     int MouseX;
     int MouseY;
-    bool MouseLeft;
-    bool MouseRight;
+    uint8 MouseLeft;
+    uint8 MouseRight;
 } Application;
 
 #define ASCENCIA_H
