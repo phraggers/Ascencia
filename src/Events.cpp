@@ -9,6 +9,77 @@
 #include "Events.h"
 
 internal void
+ASC_SetKeyUp(SDL_Keycode Key)
+{
+    for(int iKeydown = 0; iKeydown < KEYDOWN_COUNT; ++iKeydown)
+    {
+        if(Application.Keydowns[iKeydown] == Key)
+        {
+            Application.Keydowns[iKeydown] = 0;
+            break;
+        }
+    }
+    
+}
+
+internal void
+ASC_SetKeyDown(SDL_Keycode Key)
+{
+    bool KeydownExists = 0;
+
+    for(int iKeydown = 0; iKeydown < KEYDOWN_COUNT; ++iKeydown)
+    {
+        if(Application.Keydowns[iKeydown] == Key)
+        {
+            KeydownExists = 1;
+            break;
+        }
+    }
+
+    if(!KeydownExists)
+    {
+        for(int iKeydown = 0; iKeydown < KEYDOWN_COUNT; ++iKeydown)
+        {
+            if(Application.Keydowns[iKeydown] == 0)
+            {
+                Application.Keydowns[iKeydown] = Key;
+                break;
+            }
+        }
+    }
+
+}
+
+internal bool
+ASC_KeySingle(SDL_Keycode Key)
+{
+    for(int iKeydown = 0; iKeydown < KEYDOWN_COUNT; ++iKeydown)
+    {
+        if(Application.Keydowns[iKeydown] == Key)
+        {
+            ASC_SetKeyUp(Key);
+            return 1;
+        }
+    }
+
+    return 0;    
+}
+
+internal bool
+ASC_Keydown(SDL_Keycode Key)
+{
+    for(int iKeydown = 0; iKeydown < KEYDOWN_COUNT; ++iKeydown)
+    {
+        if(Application.Keydowns[iKeydown] == Key)
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+internal void
 ASC_HandleEvents()
 {
     SDL_Event Event;
@@ -18,7 +89,7 @@ ASC_HandleEvents()
         {
           case SDL_QUIT:
           {
-              Application.Running = false;
+              Application.Running = 0;
           } break;
 
           case SDL_WINDOWEVENT:
@@ -36,108 +107,100 @@ ASC_HandleEvents()
                 {
                     //NOTE: This should never happen, just quit if it does.
                     SDL_Log("Unexpected Event: Window Hidden");
-                    Application.Running = false;
+                    Application.Running = 0;
                 } break;
                 
                 case SDL_WINDOWEVENT_EXPOSED:
                 {
-                    Application.Exposed = true;
-                    Application.Minimized = false;
+                    Application.Exposed = 1;
+                    Application.Minimized = 0;
                 } break;
 
                 case SDL_WINDOWEVENT_MOVED:
                 {
-                    Application.Dimension.x = Event.window.data1;
-                    Application.Dimension.y = Event.window.data2;
+                    SDL_GetWindowPosition(Application.Window, &Application.Dimension.x, &Application.Dimension.y);
                 } break;
 
                 case SDL_WINDOWEVENT_SIZE_CHANGED:
                 {
-                    Application.Dimension.w = Event.window.data1;
-                    Application.Dimension.h = Event.window.data2;
+                    SDL_GetWindowSize(Application.Window, &Application.Dimension.w, &Application.Dimension.h);
                 } break;
 
                 case SDL_WINDOWEVENT_MINIMIZED:
                 {
-                    Application.Exposed = false;
-                    Application.Minimized = true;
+                    Application.Exposed = 0;
+                    Application.Minimized = 1;
                 } break;
 
                 case SDL_WINDOWEVENT_MAXIMIZED:
                 {
-                    Application.Maximized = true;
+                    Application.Maximized = 1;
                 } break;
 
                 case SDL_WINDOWEVENT_RESTORED:
                 {
-                    Application.Minimized = false;
-                    Application.Maximized = false;
+                    Application.Minimized = 0;
+                    Application.Maximized = 0;
+                    SDL_GetWindowPosition(Application.Window, &Application.Dimension.x, &Application.Dimension.y);
+                    SDL_GetWindowSize(Application.Window, &Application.Dimension.w, &Application.Dimension.h);
                 } break;
 
                 case SDL_WINDOWEVENT_ENTER:
                 {
-                    Application.MouseInWindow = true;
+                    Application.MouseInWindow = 1;
                 } break;
 
                 case SDL_WINDOWEVENT_LEAVE:
                 {
-                    Application.MouseInWindow = false;
+                    Application.MouseInWindow = 0;
                 } break;
 
                 case SDL_WINDOWEVENT_FOCUS_GAINED:
                 {
-                    Application.KeyboardFocus = true;
+                    Application.KeyboardFocus = 1;
                 } break;
 
                 case SDL_WINDOWEVENT_FOCUS_LOST:
                 {
-                    Application.KeyboardFocus = false;
+                    Application.KeyboardFocus = 0;
                 } break;
 
                 case SDL_WINDOWEVENT_CLOSE:
                 {
-                    Application.Running = false;
+                    Application.Running = 0;
                 } break;
               }
           } break;
 
           case SDL_KEYDOWN:
           {
-              bool KeydownExists = false;
-
-              for(int iKeydown = 0; iKeydown < 10; ++iKeydown)
-              {
-                  if(Application.Keydowns[iKeydown] == Event.key.keysym.sym)
-                  {
-                      KeydownExists = true;
-                      break;
-                  }
-              }
-
-              if(!KeydownExists)
-              {
-                  for(int iKeydown = 0; iKeydown < 10; ++iKeydown)
-                  {
-                      if(Application.Keydowns[iKeydown] == 0)
-                      {
-                          Application.Keydowns[iKeydown] = Event.key.keysym.sym;
-                          break;
-                      }
-                  }
-              }
+              ASC_SetKeyDown(Event.key.keysym.sym);
           } break;
 
           case SDL_KEYUP:
           {
-              for(int iKeydown = 0; iKeydown < 10; ++iKeydown)
+              ASC_SetKeyUp(Event.key.keysym.sym);
+          } break;
+
+          case SDL_MOUSEMOTION:
+          case SDL_MOUSEWHEEL:
+          {
+              if(Application.MouseInWindow)
               {
-                  if(Application.Keydowns[iKeydown] == Event.key.keysym.sym)
-                  {
-                      Application.Keydowns[iKeydown] = 0;
-                      break;
-                  }
+                  SDL_GetMouseState(&Application.MouseX, &Application.MouseY);
               }
-              
+          } break;
+
+          case SDL_MOUSEBUTTONDOWN:
+          {
+              if(Event.button.button == SDL_BUTTON_LEFT) Application.MouseLeft = 1;
+              if(Event.button.button == SDL_BUTTON_RIGHT) Application.MouseRight = 1;
+          } break;
+
+          case SDL_MOUSEBUTTONUP:
+          {
+              if(Event.button.button == SDL_BUTTON_LEFT) Application.MouseLeft = 0;
+              if(Event.button.button == SDL_BUTTON_RIGHT) Application.MouseRight = 0;
           } break;
 
           default:
@@ -145,5 +208,5 @@ ASC_HandleEvents()
               break;
           }
         }
-    }                       
+    } // while PollEvent
 }

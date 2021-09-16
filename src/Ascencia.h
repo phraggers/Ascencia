@@ -58,29 +58,31 @@ global struct
 Asc_Memory
 {
     bool Initialized;
-
     uint64 PersistantSize;
     uint64 TransientSize;
-    
-    //IMPORTANT: Init to 0 on startup
     void *Persistant;
     void *Transient;
 } Memory;
 
+#define KEYDOWN_COUNT 0xf
+
 global struct
 Asc_Application
 {
-    bool Running;
     SDL_Window *Window;
-    SDL_Renderer *Renderer;
+    SDL_GLContext GLContext;
     SDL_Rect Dimension;
+    bool Running;
     bool Exposed;
     bool Minimized;
     bool Maximized;
     bool MouseInWindow;
     bool KeyboardFocus;
-    SDL_Keycode Keydowns[10]; //TODO: Is 10 enough?
-    
+    SDL_Keycode Keydowns[KEYDOWN_COUNT];
+    int MouseX;
+    int MouseY;
+    bool MouseLeft;
+    bool MouseRight;
 } Application;
 
 #define ASCENCIA_H
