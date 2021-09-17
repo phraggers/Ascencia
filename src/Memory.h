@@ -18,7 +18,7 @@ Asc_MemoryType
 struct
 Asc_MemoryBlock
 {
-    uint8 Initialized;
+    int8 Initialized;
     uint64 Size; //bytes reserved for block
     uint64 Pointer; //pointer within block to assign new variables
     Asc_MemoryType Type;
@@ -60,8 +60,8 @@ ASC_NewMemoryBlock(uint64 Size, Asc_MemoryType Type)
         Application.Running = 0;
         Result = 0;
     }
-    
-    return Result;   
+
+    return Result;
 }
 
 static void*
@@ -97,20 +97,20 @@ ASC_Alloc(Asc_MemoryBlock *Block, size_t Size)
             }
         }
     }
-    
+
     else
     {
         SDL_SetError("Attempted to write to uninitialized memory! 0x%#016X", (size_t)Block);
         SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, SDL_GetError());
     }
 
-    return Result;    
+    return Result;
 }
 
-static uint8
+static int8
 ASC_Free(Asc_MemoryBlock *Block, void *Pointer, size_t Size)
 {
-    uint8 Result = 0;
+    int8 Result = 0;
 
     if((uint64)Pointer >= (uint64)Block->Memory &&
        (uint64)Pointer < (uint64)Block->Memory + Block->Size)
@@ -124,7 +124,7 @@ ASC_Free(Asc_MemoryBlock *Block, void *Pointer, size_t Size)
 
           case ASC_MEM_DYNAMIC:
           {
-              
+
           } break;
 
           case ASC_MEM_ROLLOVER:
@@ -139,7 +139,7 @@ ASC_Free(Asc_MemoryBlock *Block, void *Pointer, size_t Size)
         SDL_SetError("Attempted to free memory from invalid MemBlock! 0x%#016X", (size_t)Pointer);
         SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, SDL_GetError());
     }
-    
+
     return Result;
 }
 

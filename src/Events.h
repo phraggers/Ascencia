@@ -18,13 +18,13 @@ ASC_SetKeyUp(SDL_Keycode Key)
             break;
         }
     }
-    
+
 }
 
 static void
 ASC_SetKeyDown(SDL_Keycode Key)
 {
-    uint8 KeydownExists = 0;
+    int8 KeydownExists = 0;
 
     for(int iKeydown = 0; iKeydown < KEYDOWN_COUNT; ++iKeydown)
     {
@@ -49,7 +49,7 @@ ASC_SetKeyDown(SDL_Keycode Key)
 
 }
 
-static uint8
+static int8
 ASC_KeySingle(SDL_Keycode Key)
 {
     for(int iKeydown = 0; iKeydown < KEYDOWN_COUNT; ++iKeydown)
@@ -61,10 +61,10 @@ ASC_KeySingle(SDL_Keycode Key)
         }
     }
 
-    return 0;    
+    return 0;
 }
 
-static uint8
+static int8
 ASC_Keydown(SDL_Keycode Key)
 {
     for(int iKeydown = 0; iKeydown < KEYDOWN_COUNT; ++iKeydown)
@@ -101,14 +101,14 @@ ASC_HandleEvents()
                     // This is NOT the same as EXPOSED
                     SDL_Log("Event: Window Shown");
                 } break;
-                
+
                 case SDL_WINDOWEVENT_HIDDEN:
                 {
                     //NOTE: This should never happen, just quit if it does.
                     SDL_Log("Unexpected Event: Window Hidden");
                     Application.Running = 0;
                 } break;
-                
+
                 case SDL_WINDOWEVENT_EXPOSED:
                 {
                     Application.Exposed = 1;

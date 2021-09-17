@@ -20,7 +20,7 @@ int
 main(int argc, char **argv)
 {
     int ExitCode = 0;
-    
+
     SDL_memset(&Application, 0, sizeof(Application));
     Application.Dimension.x = SDL_WINDOWPOS_UNDEFINED;
     Application.Dimension.y = SDL_WINDOWPOS_UNDEFINED;
@@ -72,7 +72,7 @@ main(int argc, char **argv)
             {
                 glViewport(0,0, Application.Dimension.w, Application.Dimension.h);
                 SDL_Log("OpenGL Version Loaded: %d.%d", GLVersion.major, GLVersion.minor);
-                
+
                 SDL_memset(&Memory, 0, sizeof(Memory));
                 Memory.Size = Gigabytes(2);
                 Memory.Memory = SDL_malloc((size_t)Memory.Size);
@@ -82,11 +82,14 @@ main(int argc, char **argv)
                 {
                     Asc_MemoryBlock *MemPermanent = ASC_NewMemoryBlock(Megabytes(64),
                                                                        ASC_MEM_STATIC);
+                    Assert(MemPermanent);
                     Asc_MemoryBlock *MemTransient = ASC_NewMemoryBlock(Gigabytes(1),
                                                                        ASC_MEM_ROLLOVER);
-
-                    Assert(MemPermanent);
                     Assert(MemTransient);
+
+                    int *Test = (int*)ASC_Alloc(MemTransient, sizeof(int));
+                    *Test = 0xcccccccc;
+                    ASC_Free(MemTransient, Test, sizeof(int));
 
                     Application.Running = 1;
 
@@ -150,10 +153,10 @@ main(int argc, char **argv)
                     glDeleteShader(fragmentShader);
 
                     float vertices[] = {
-                      -0.5f, -0.5f, 0.0f, // left  
-                      0.5f, -0.5f, 0.0f, // right 
-                      0.0f,  0.5f, 0.0f  // top   
-                    }; 
+                      -0.5f, -0.5f, 0.0f, // left
+                      0.5f, -0.5f, 0.0f, // right
+                      0.0f,  0.5f, 0.0f  // top
+                    };
 
                     unsigned int VBO, VAO;
                     glGenVertexArrays(1, &VAO);
@@ -163,9 +166,9 @@ main(int argc, char **argv)
                     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
                     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
                     glEnableVertexAttribArray(0);
-                    glBindBuffer(GL_ARRAY_BUFFER, 0); 
+                    glBindBuffer(GL_ARRAY_BUFFER, 0);
                     glBindVertexArray(0);
-                    
+
                     while(Application.Running)
                     {
                         Timer_10SecTotalFrames++;
@@ -205,7 +208,7 @@ main(int argc, char **argv)
                         {
                             // button pressed
                         }
-                            
+
 
                         //NOTE: Keyboard
                         if(ASC_Keydown('w') || ASC_Keydown(SDLK_UP))
@@ -218,7 +221,7 @@ main(int argc, char **argv)
                             SDL_SetError("SDL_Version(Compiled): %d.%d.%d\nSDL_Version(Loaded): %d.%d.%d\nOpenGL_Version(Loaded): %d.%d\n\n(c)Phragware 2021\nAll Rights Reserved.", SDLVersion_Compiled.major, SDLVersion_Compiled.minor, SDLVersion_Compiled.patch, SDLVersion_Loaded.major, SDLVersion_Loaded.minor, SDLVersion_Loaded.patch, GLVersion.major, GLVersion.minor);
                             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "About Ascencia", SDL_GetError(), 0);
                             SDL_ClearError();
-                            
+
                         }
 
                         //NOTE: Mouse
@@ -238,11 +241,11 @@ main(int argc, char **argv)
                         // NOTE: Render
                         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
                         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-                        
+
                         glUseProgram(shaderProgram);
                         glBindVertexArray(VAO);
                         glDrawArrays(GL_TRIANGLES, 0, 3);
-                        
+
                         SDL_GL_SwapWindow(Application.Window);
 
                         // NOTE: FrameTiming

@@ -57,17 +57,17 @@ Asc_Application
     SDL_Window *Window;
     SDL_GLContext GLContext;
     SDL_Rect Dimension;
-    uint8 Running;
-    uint8 Exposed;
-    uint8 Minimized;
-    uint8 Maximized;
-    uint8 MouseInWindow;
-    uint8 KeyboardFocus;
+    int8 Running;
+    int8 Exposed;
+    int8 Minimized;
+    int8 Maximized;
+    int8 MouseInWindow;
+    int8 KeyboardFocus;
     SDL_Keycode Keydowns[KEYDOWN_COUNT];
     int MouseX;
     int MouseY;
-    uint8 MouseLeft;
-    uint8 MouseRight;
+    int8 MouseLeft;
+    int8 MouseRight;
 } Application;
 
 #define ASCENCIA_H
