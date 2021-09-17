@@ -49,6 +49,15 @@ ASC_NewMemoryBlock(uint64 Size, int Type)
         Result->Type = Type;
         Result->Memory = (void*)((size_t)Result + sizeof(struct Asc_MemoryBlock));
         Result->Pointer = (uint64)Result->Memory;
+
+#if BUILD_SLOW
+        for(uint8 *iByte = (uint8*)Result->Pointer;
+            iByte < (uint8*)(Result->Pointer + Result->Size); ++iByte)
+        {
+            //set all requested mem to 0xccccccc etc for debugging
+            *iByte = 0xcc;
+        }
+#endif
     }
 
     else

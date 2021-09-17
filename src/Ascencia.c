@@ -80,28 +80,20 @@ main(int argc, char **argv)
 
                 if(Memory.Memory)
                 {
-                    struct Asc_MemoryBlock *MemPermanent = ASC_NewMemoryBlock(Megabytes(64),
-                                                                              ASC_MEM_STATIC);
-                    Assert(MemPermanent);
-                    struct Asc_MemoryBlock *MemTransient = ASC_NewMemoryBlock(Gigabytes(1),
-                                                                              ASC_MEM_ROLLOVER);
-                    Assert(MemTransient);
+                    struct Asc_MemoryBlock *PMem = ASC_NewMemoryBlock(Megabytes(64),
+                                                                      ASC_MEM_STATIC);
+                    Assert(PMem);
+                    struct Asc_MemoryBlock *DMem = ASC_NewMemoryBlock(Megabytes(64),
+                                                                      ASC_MEM_DYNAMIC);
+                    Assert(DMem);
+                    struct Asc_MemoryBlock *TMem = ASC_NewMemoryBlock(Gigabytes(1),
+                                                                      ASC_MEM_ROLLOVER);
+                    Assert(TMem);
 
-                    int *Test = (int*)ASC_Alloc(MemTransient, sizeof(int));
-                    *Test = 0xcccccccc;
-                    ASC_Free(MemTransient, Test, sizeof(int));
-
-                    Application.Running = 1;
-
-                    SDL_GameController *Controller = 0;
-
-                    //NOTE: FrameTiming
-                    uint32 Timer_TotalFrameTicks = 0;
-                    uint32 Timer_TotalFrames = 0;
-                    uint32 Timer_StartTicks = SDL_GetTicks();
-                    uint32 Timer_10SecTotalFrameTicks = 0;
-                    uint32 Timer_10SecTotalFrames = 0;
-                    uint32 Timer_10SecStartTicks = SDL_GetTicks();
+                    int *Test = (int*)ASC_Alloc(DMem, sizeof(int));
+                    Assert(Test);
+                    *Test = 0x12345678;
+                    ASC_Free(DMem, Test, sizeof(int));
 
                     // TEST: OPENGL
                     const char *vertexShaderSource = "#version 330 core\n"
@@ -169,13 +161,20 @@ main(int argc, char **argv)
                     glBindBuffer(GL_ARRAY_BUFFER, 0);
                     glBindVertexArray(0);
 
+                    Application.Running = 1;
+                    SDL_GameController *Controller = 0;
+                    SDL_memset(&Timer, 0, sizeof(struct Asc_Timer));
+                    Timer.Total.StartTicks = SDL_GetTicks();
+                    Timer.Avg.StartTicks = SDL_GetTicks();
+                    Timer.Frame.DesiredTicksPerFrame = 1000.0f/60.0f;
+                    Timer.Avg.SampleTicks = 10000;
+
                     while(Application.Running)
                     {
-                        Timer_10SecTotalFrames++;
-                        Timer_TotalFrames++;
-
-                        uint32 Cap_StartTicks = SDL_GetTicks();
-                        uint64 Timer_StartPerf = SDL_GetPerformanceCounter();
+                        Timer.Total.Frames++;
+                        Timer.Avg.Frames++;
+                        Timer.Frame.StartTicks = SDL_GetTicks();
+                        Timer.Frame.StartPerf = SDL_GetPerformanceCounter();
 
                         ASC_HandleEvents();
 
@@ -249,30 +248,30 @@ main(int argc, char **argv)
                         SDL_GL_SwapWindow(Application.Window);
 
                         // NOTE: FrameTiming
-                        uint32 Timer_FrameTicks = SDL_GetTicks() - Timer_StartTicks;
-                        Timer_TotalFrameTicks += Timer_FrameTicks;
-                        real32 Timer_AvgFPS = Timer_TotalFrames / (Timer_FrameTicks / 1000.0f);
+                        Timer.Frame.Ticks = SDL_GetTicks() - Timer.Frame.StartTicks;
+                        Timer.Total.Ticks += SDL_GetTicks() - Timer.Total.StartTicks;
+                        Timer.Avg.Ticks += SDL_GetTicks() - Timer.Avg.StartTicks;
+                        Timer.Frame.EndPerf = SDL_GetPerformanceCounter() - Timer.Frame.StartPerf;
 
-                        uint32 Timer_10SecFrameTicks = SDL_GetTicks() - Timer_10SecStartTicks;
-                        Timer_10SecTotalFrameTicks += Timer_10SecFrameTicks;
-                        real32 Timer_10SecAvgFPS = Timer_10SecTotalFrames / (Timer_10SecFrameTicks
-                                                                             / 1000.0f);
+                        Timer.Total.AvgFPS = (real32)Timer.Total.Frames /
+                            (((real32)SDL_GetTicks() - (real32)Timer.Total.StartTicks) / 1000.0f);
+                        Timer.Avg.AvgFPS = (real32)Timer.Avg.Frames /
+                            (((real32)SDL_GetTicks() - (real32)Timer.Avg.StartTicks) / 1000.0f);
 
-                        uint64 Timer_EndPerf = SDL_GetPerformanceCounter();
-                        uint64 Timer_FramePerf = Timer_EndPerf - Timer_StartPerf;
-
-                        if(Timer_10SecTotalFrameTicks >= 10000)
+                        if(Timer.Avg.Ticks >= Timer.Avg.SampleTicks)
                         {
-                            Timer_10SecTotalFrameTicks = 0;
-                            Timer_10SecTotalFrames = 0;
-                            Timer_10SecStartTicks = SDL_GetTicks();
+                            Timer.Avg.Ticks = 0;
+                            Timer.Avg.Frames = 0;
+                            Timer.Avg.StartTicks = SDL_GetTicks();
+                            SDL_Log("AvgFps(Total): %.02f, AvgFPS(Last10kFrames): %.02f",
+                                    Timer.Total.AvgFPS, Timer.Avg.AvgFPS);
                         }
 
-                        uint32 Cap_FrameTicks = SDL_GetTicks() - Cap_StartTicks;
-                        real32 Cap_DesiredTicksPerFrame = 1000.0f/60.0f;
-                        if(Cap_FrameTicks < Cap_DesiredTicksPerFrame)
+                        //NOTE: Framerate Limiter
+                        if(Timer.Frame.Ticks < Timer.Frame.DesiredTicksPerFrame)
                         {
-                            SDL_Delay((uint32)(Cap_DesiredTicksPerFrame - Cap_FrameTicks));
+                            SDL_Delay((uint32)(Timer.Frame.DesiredTicksPerFrame -
+                                               (real32)Timer.Frame.Ticks));
                         }
 
 
