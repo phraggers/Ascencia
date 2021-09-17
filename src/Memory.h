@@ -21,7 +21,7 @@ Asc_MemoryBlock
     int8 Initialized;
     uint64 Size; //bytes reserved for block
     uint64 Pointer; //pointer within block to assign new variables
-    Asc_MemoryType Type;
+    int Type; //Asc_MemoryType
     void *Memory;
 };
 
@@ -33,21 +33,21 @@ Asc_Memory
     void *Memory;
 } Memory;
 
-static Asc_MemoryBlock*
-ASC_NewMemoryBlock(uint64 Size, Asc_MemoryType Type)
+static struct Asc_MemoryBlock*
+ASC_NewMemoryBlock(uint64 Size, int Type)
 {
-    Asc_MemoryBlock *Result = 0;
+    struct Asc_MemoryBlock *Result = 0;
 
-    if(Memory.Pointer + sizeof(Asc_MemoryBlock) + Size <= (size_t)Memory.Memory + Memory.Size)
+    if(Memory.Pointer + sizeof(struct Asc_MemoryBlock) + Size <= (size_t)Memory.Memory + Memory.Size)
     {
-        Result = (Asc_MemoryBlock*)Memory.Pointer;
-        Memory.Pointer += (sizeof(Asc_MemoryBlock) + Size);
-        SDL_memset((void*)Result, 0, sizeof(Asc_MemoryBlock));
+        Result = (struct Asc_MemoryBlock*)Memory.Pointer;
+        Memory.Pointer += (sizeof(struct Asc_MemoryBlock) + Size);
+        SDL_memset((void*)Result, 0, sizeof(struct Asc_MemoryBlock));
 
         Result->Initialized = 1;
         Result->Size = Size;
         Result->Type = Type;
-        Result->Memory = (void*)((size_t)Result + sizeof(Asc_MemoryBlock));
+        Result->Memory = (void*)((size_t)Result + sizeof(struct Asc_MemoryBlock));
         Result->Pointer = (uint64)Result->Memory;
     }
 
@@ -65,7 +65,7 @@ ASC_NewMemoryBlock(uint64 Size, Asc_MemoryType Type)
 }
 
 static void*
-ASC_Alloc(Asc_MemoryBlock *Block, size_t Size)
+ASC_Alloc(struct Asc_MemoryBlock *Block, size_t Size)
 {
     void* Result = 0;
 
@@ -108,7 +108,7 @@ ASC_Alloc(Asc_MemoryBlock *Block, size_t Size)
 }
 
 static int8
-ASC_Free(Asc_MemoryBlock *Block, void *Pointer, size_t Size)
+ASC_Free(struct Asc_MemoryBlock *Block, void *Pointer, size_t Size)
 {
     int8 Result = 0;
 

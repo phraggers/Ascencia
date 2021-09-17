@@ -80,11 +80,11 @@ main(int argc, char **argv)
 
                 if(Memory.Memory)
                 {
-                    Asc_MemoryBlock *MemPermanent = ASC_NewMemoryBlock(Megabytes(64),
-                                                                       ASC_MEM_STATIC);
+                    struct Asc_MemoryBlock *MemPermanent = ASC_NewMemoryBlock(Megabytes(64),
+                                                                              ASC_MEM_STATIC);
                     Assert(MemPermanent);
-                    Asc_MemoryBlock *MemTransient = ASC_NewMemoryBlock(Gigabytes(1),
-                                                                       ASC_MEM_ROLLOVER);
+                    struct Asc_MemoryBlock *MemTransient = ASC_NewMemoryBlock(Gigabytes(1),
+                                                                              ASC_MEM_ROLLOVER);
                     Assert(MemTransient);
 
                     int *Test = (int*)ASC_Alloc(MemTransient, sizeof(int));

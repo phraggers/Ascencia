@@ -24,7 +24,7 @@ if '%BuildType%'=='3' (
    set CompilerSwitches=-nologo %CompilerWarnings% -FC -Oi -GR- -Gm- -EHa- -MT -O2
 )
 
-set CompilerInput=w:\src\%ProjectName%.cpp
+set CompilerInput=w:\src\%ProjectName%.c
 set LinkerOptions=-subsystem:windows -opt:ref
 set LinkerLibs=user32.lib gdi32.lib shell32.lib opengl32.lib SDL2main.lib SDL2.lib SDL2_image.lib SDL2_mixer.lib SDL2_net.lib SDL2_net.lib libcurl.lib zlib.lib
 set AdditionalIncludePaths=/I..\deps\include
