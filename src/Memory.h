@@ -42,7 +42,7 @@ ASC_NewMemoryBlock(uint64 Size, int Type)
     {
         Result = (struct Asc_MemoryBlock*)Memory.Pointer;
         Memory.Pointer += (sizeof(struct Asc_MemoryBlock) + Size);
-        SDL_memset((void*)Result, 0, sizeof(struct Asc_MemoryBlock));
+        ZeroPMem(Result, Asc_MemoryBlock);
 
         Result->Initialized = 1;
         Result->Size = Size;

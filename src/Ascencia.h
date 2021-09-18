@@ -18,6 +18,8 @@
 #define Gigabytes(Value) (Megabytes(Value)*1024LL)
 #define Terabytes(Value) (Gigabytes(Value)*1024LL)
 
+#define ZeroMem(Object) (SDL_memset(&Object, 0, sizeof(Object)))
+#define ZeroPMem(Object, Struct) (SDL_memset((void*)Object, 0, sizeof(struct Struct)))
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
 #define INT8_MIN -0x80
@@ -47,36 +49,6 @@ typedef long long int64;
 typedef unsigned long long uint64;
 typedef float real32;
 typedef double real64;
-
-static struct
-Asc_Timer
-{
-    struct Asc_TimerFrame
-    {
-        uint64 StartPerf;
-        uint64 EndPerf;
-        uint32 StartTicks; //cap startticks
-        uint32 Ticks; //endticks - startticks
-        real32 DesiredTicksPerFrame; //1000.0f / desired FPS
-    } Frame;
-
-    struct Asc_TimerTotal
-    {
-        uint32 StartTicks;
-        uint32 Ticks;
-        uint32 Frames;
-        real32 AvgFPS; //avg since start
-    } Total;
-
-    struct Asc_TimerAvg
-    {
-        uint32 StartTicks;
-        uint32 Ticks;
-        uint32 Frames;
-        real32 AvgFPS; //avg over last n Sample frames
-        uint32 SampleTicks; //num frames to sample for avg
-    } Avg;
-} Timer;
 
 //NOTE: doubt anyone will press 15 keys simultaneously
 #define KEYDOWN_COUNT 0xf

@@ -9,6 +9,7 @@
 #include <glad.c>
 #include <SDL/SDL.h>
 #include "Ascencia.h"
+#include "Timer.h"
 #include "Memory.h"
 #include "Events.h"
 
@@ -21,11 +22,15 @@ main(int argc, char **argv)
 {
     int ExitCode = 0;
 
-    SDL_memset(&Application, 0, sizeof(Application));
+    ASC_TimerInit(60);
+    ASC_TimerTStart(0);
+
+    ZeroMem(Application);
     Application.Dimension.x = SDL_WINDOWPOS_UNDEFINED;
     Application.Dimension.y = SDL_WINDOWPOS_UNDEFINED;
     Application.Dimension.w = 1280;
     Application.Dimension.h = 720;
+    Application.Running = 1;
 
     if(!SDL_Init(SDL_INIT_EVERYTHING))
     {
@@ -66,14 +71,14 @@ main(int argc, char **argv)
             SDL_SetWindowMinimumSize(Application.Window, 16*30, 9*30); //16:9
             Application.GLContext = SDL_GL_CreateContext(Application.Window);
             SDL_GL_MakeCurrent(Application.Window, Application.GLContext);
-            SDL_GL_SetSwapInterval(1);
+            SDL_GL_SetSwapInterval(0);
 
             if(gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
             {
                 glViewport(0,0, Application.Dimension.w, Application.Dimension.h);
                 SDL_Log("OpenGL Version Loaded: %d.%d", GLVersion.major, GLVersion.minor);
 
-                SDL_memset(&Memory, 0, sizeof(Memory));
+                ZeroMem(Memory);
                 Memory.Size = Gigabytes(2);
                 Memory.Memory = SDL_malloc((size_t)Memory.Size);
                 Memory.Pointer = (uint64)Memory.Memory;
@@ -86,96 +91,123 @@ main(int argc, char **argv)
                     struct Asc_MemoryBlock *DMem = ASC_NewMemoryBlock(Megabytes(64),
                                                                       ASC_MEM_DYNAMIC);
                     Assert(DMem);
-                    struct Asc_MemoryBlock *TMem = ASC_NewMemoryBlock(Gigabytes(1),
+                    struct Asc_MemoryBlock *TMem = ASC_NewMemoryBlock(Megabytes(256),
                                                                       ASC_MEM_ROLLOVER);
                     Assert(TMem);
 
+                    //TEST: mem test (stops compiler removing unused stuff)
                     int *Test = (int*)ASC_Alloc(DMem, sizeof(int));
                     Assert(Test);
                     *Test = 0x12345678;
                     ASC_Free(DMem, Test, sizeof(int));
 
                     // TEST: OPENGL
-                    const char *vertexShaderSource = "#version 330 core\n"
-                        "layout (location = 0) in vec3 aPos;\n"
-                        "void main()\n"
-                        "{\n"
-                        "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-                        "}\0";
-                    const char *fragmentShaderSource = "#version 330 core\n"
-                        "out vec4 FragColor;\n"
-                        "void main()\n"
-                        "{\n"
-                        "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-                        "}\n\0";
-
-                    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-                    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-                    glCompileShader(vertexShader);
-                    int success;
-                    char infoLog[512];
-                    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-                    if (!success)
+                    uint32 ShaderProgram = UINT32_MAX;
                     {
-                        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-                        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Shader Error!", infoLog, 0);
-                    }
-                    // fragment shader
-                    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-                    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-                    glCompileShader(fragmentShader);
-                    // check for shader compile errors
-                    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-                    if (!success)
-                    {
-                        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-                        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Shader Error!", infoLog, 0);
+                        char *VertexShaderSource = "#version 330 core\n"
+                            "layout (location = 0) in vec3 aPos;\n"
+                            "void main()\n"
+                            "{\n"
+                            "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+                            "}\0";
+                        char *FragmentShaderSource = "#version 330 core\n"
+                            "out vec4 FragColor;\n"
+                            "void main()\n"
+                            "{\n"
+                            "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+                            "}\n\0";
+
+                        uint32 VertexShader = glCreateShader(GL_VERTEX_SHADER);
+                        glShaderSource(VertexShader, 1, &VertexShaderSource, 0);
+                        glCompileShader(VertexShader);
+
+                        int Success;
+                        char InfoLog[512];
+                        glGetShaderiv(VertexShader, GL_COMPILE_STATUS, &Success);
+
+                        if(Success)
+                        {
+                            uint32 FragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+                            glShaderSource(FragmentShader, 1, &FragmentShaderSource, 0);
+                            glCompileShader(FragmentShader);
+                            glGetShaderiv(FragmentShader, GL_COMPILE_STATUS, &Success);
+
+                            if(Success)
+                            {
+                                ShaderProgram = glCreateProgram();
+                                glAttachShader(ShaderProgram, VertexShader);
+                                glAttachShader(ShaderProgram, FragmentShader);
+                                glLinkProgram(ShaderProgram);
+                                glGetProgramiv(ShaderProgram, GL_LINK_STATUS, &Success);
+
+                                if(Success)
+                                {
+                                    glDeleteShader(VertexShader);
+                                    glDeleteShader(FragmentShader);
+
+                                }
+
+                                else // shader program compile error
+                                {
+                                    glGetProgramInfoLog(ShaderProgram, 512, 0, InfoLog);
+                                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+                                                             "Shader Error!", InfoLog, 0);
+                                }
+                            }
+
+                            else // fragment shader error
+                            {
+                                glGetShaderInfoLog(FragmentShader, 512, 0, InfoLog);
+                                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+                                                         "Shader Error!", InfoLog, 0);
+                            }
+                        }
+
+                        else //vertex shader error
+                        {
+                            glGetShaderInfoLog(VertexShader, 512, 0, InfoLog);
+                            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+                                                     "Shader Error!", InfoLog, 0);
+                        }
                     }
 
-                    unsigned int shaderProgram = glCreateProgram();
-                    glAttachShader(shaderProgram, vertexShader);
-                    glAttachShader(shaderProgram, fragmentShader);
-                    glLinkProgram(shaderProgram);
-                    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-                    if (!success) {
-                        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-                        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Shader Error!", infoLog, 0);
-                    }
-                    glDeleteShader(vertexShader);
-                    glDeleteShader(fragmentShader);
+                    real32 Vertices[] =
+                        {
+                          0.5f, 0.5f, 0.0f, // top right
+                          0.5f, -0.5f, 0.0f, // bottom right
+                          -0.5f, -0.5f, 0.0f,  // bottom left
+                          -0.5f, 0.5f, 0.0f // top left
+                        };
 
-                    float vertices[] = {
-                      -0.5f, -0.5f, 0.0f, // left
-                      0.5f, -0.5f, 0.0f, // right
-                      0.0f,  0.5f, 0.0f  // top
-                    };
+                    uint32 Indices[] =
+                        {
+                          0,1,3, // first triangle
+                          1,2,3 // second triangle
+                        };
 
-                    unsigned int VBO, VAO;
+                    uint32 VBO, VAO, EBO;
                     glGenVertexArrays(1, &VAO);
                     glGenBuffers(1, &VBO);
+                    glGenBuffers(1, &EBO);
                     glBindVertexArray(VAO);
                     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-                    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
+                    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
                     glEnableVertexAttribArray(0);
                     glBindBuffer(GL_ARRAY_BUFFER, 0);
                     glBindVertexArray(0);
+                    GLenum PolygonModes[2] = {GL_FILL, GL_LINE};//, GL_POINT};
+                    uint8 PolygonMode = 0;
 
-                    Application.Running = 1;
                     SDL_GameController *Controller = 0;
-                    SDL_memset(&Timer, 0, sizeof(struct Asc_Timer));
-                    Timer.Total.StartTicks = SDL_GetTicks();
-                    Timer.Avg.StartTicks = SDL_GetTicks();
-                    Timer.Frame.DesiredTicksPerFrame = 1000.0f/60.0f;
-                    Timer.Avg.SampleTicks = 10000;
+
+                    SDL_Log("Startup took %.02f ms", ASC_TimerTEnd(0));
 
                     while(Application.Running)
                     {
-                        Timer.Total.Frames++;
-                        Timer.Avg.Frames++;
-                        Timer.Frame.StartTicks = SDL_GetTicks();
-                        Timer.Frame.StartPerf = SDL_GetPerformanceCounter();
-
+                        ASC_TimerNewFrame();
                         ASC_HandleEvents();
 
                         //NOTE: Reset Controller if disconnected & reconnected
@@ -215,6 +247,13 @@ main(int argc, char **argv)
                             // key pressed
                         }
 
+                        if(ASC_KeySingle(SDLK_F10))
+                        {
+                            PolygonMode = ((PolygonMode+1 > ArrayCount(PolygonModes)-1)
+                                           ? 0 : PolygonMode+1);
+                            glPolygonMode(GL_FRONT_AND_BACK, PolygonModes[PolygonMode]);
+                        }
+
                         if(ASC_KeySingle(SDLK_F12))
                         {
                             SDL_SetError("SDL_Version(Compiled): %d.%d.%d\nSDL_Version(Loaded): %d.%d.%d\nOpenGL_Version(Loaded): %d.%d\n\n(c)Phragware 2021\nAll Rights Reserved.", SDLVersion_Compiled.major, SDLVersion_Compiled.minor, SDLVersion_Compiled.patch, SDLVersion_Loaded.major, SDLVersion_Loaded.minor, SDLVersion_Loaded.patch, GLVersion.major, GLVersion.minor);
@@ -241,39 +280,14 @@ main(int argc, char **argv)
                         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
                         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-                        glUseProgram(shaderProgram);
+                        if(ShaderProgram != UINT32_MAX) glUseProgram(ShaderProgram);
                         glBindVertexArray(VAO);
-                        glDrawArrays(GL_TRIANGLES, 0, 3);
+                        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+                        glBindVertexArray(0);
 
                         SDL_GL_SwapWindow(Application.Window);
-
-                        // NOTE: FrameTiming
-                        Timer.Frame.Ticks = SDL_GetTicks() - Timer.Frame.StartTicks;
-                        Timer.Total.Ticks += SDL_GetTicks() - Timer.Total.StartTicks;
-                        Timer.Avg.Ticks += SDL_GetTicks() - Timer.Avg.StartTicks;
-                        Timer.Frame.EndPerf = SDL_GetPerformanceCounter() - Timer.Frame.StartPerf;
-
-                        Timer.Total.AvgFPS = (real32)Timer.Total.Frames /
-                            (((real32)SDL_GetTicks() - (real32)Timer.Total.StartTicks) / 1000.0f);
-                        Timer.Avg.AvgFPS = (real32)Timer.Avg.Frames /
-                            (((real32)SDL_GetTicks() - (real32)Timer.Avg.StartTicks) / 1000.0f);
-
-                        if(Timer.Avg.Ticks >= Timer.Avg.SampleTicks)
-                        {
-                            Timer.Avg.Ticks = 0;
-                            Timer.Avg.Frames = 0;
-                            Timer.Avg.StartTicks = SDL_GetTicks();
-                            SDL_Log("AvgFps(Total): %.02f, AvgFPS(Last10kFrames): %.02f",
-                                    Timer.Total.AvgFPS, Timer.Avg.AvgFPS);
-                        }
-
-                        //NOTE: Framerate Limiter
-                        if(Timer.Frame.Ticks < Timer.Frame.DesiredTicksPerFrame)
-                        {
-                            SDL_Delay((uint32)(Timer.Frame.DesiredTicksPerFrame -
-                                               (real32)Timer.Frame.Ticks));
-                        }
-
+                        ASC_TimerEndFrame();
+                        ASC_TimerFrameLimit();
 
                     } // while(running)
                 } // if(memory)
