@@ -65,13 +65,13 @@ ASC_TimerTEnd(int Index)
     return Result;
 }
 
-static real64
+static inline real64
 ASC_TimerGetPerfElapsed(uint64 Previous)
 {
     return (real64)((SDL_GetPerformanceCounter() - Previous)*1000) / Timer.PerfFreq;
 }
 
-static real64
+static inline real64
 ASC_TimerGetPerfInterval(uint64 Start, uint64 End)
 {
     return (real64)((End - Start)*1000) / Timer.PerfFreq;
@@ -90,7 +90,7 @@ ASC_TimerInit(int TargetFPS)
 }
 
 //NOTE: Called at start of each frame
-static void
+static inline void
 ASC_TimerNewFrame()
 {
     Timer.FrameStart = SDL_GetPerformanceCounter();
@@ -99,7 +99,7 @@ ASC_TimerNewFrame()
 }
 
 //NOTE: Called at end of each frame before limit
-static void
+static inline void
 ASC_TimerEndFrame()
 {
     Timer.FrameEnd = SDL_GetPerformanceCounter();
@@ -114,17 +114,29 @@ ASC_TimerEndFrame()
         Timer.SampleTicks = SDL_GetTicks();
     }
 
-    if(Timer.TotalFrames%(Timer.TargetFPS * 10) == 0) //print fps every 10 sec
-        SDL_Log("AvgFps: %.02f/Total, %.02f/1Sec", Timer.AverageFPS, Timer.SampleAverageFPS);
+#if BUILD_DEBUG
+    if(Timer.TotalFrames%(Timer.TargetFPS * 10) == 0)
+        SDL_Log("AvgFps: %.02f/Total, %.02f/Sec", Timer.AverageFPS, Timer.SampleAverageFPS);
+#endif
 }
 
 //NOTE: called AFTER all other timer funcs
-static void
+static inline void
 ASC_TimerFrameLimit()
 {
     if(ASC_TimerGetPerfInterval(Timer.FrameStart, Timer.FrameEnd) < Timer.TargetFrameTime)
     {
-        SDL_Delay((uint32)(Timer.TargetFrameTime - Timer.PreviousFrameTime));
+        real64 SleepTime = Timer.TargetFrameTime - Timer.PreviousFrameTime;
+        SDL_Delay((uint32)SleepTime);
+        SleepTime -= (uint32)SleepTime;
+        SleepTime += SDL_GetPerformanceCounter();
+        while(SleepTime > SDL_GetPerformanceCounter()){};
+    }
+
+    else
+    {
+        SDL_Log("Missed Framerate by %.02f ms",
+                Timer.PreviousFrameTime - Timer.TargetFrameTime);
     }
 }
 
