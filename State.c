@@ -64,17 +64,26 @@ void State_Quit()
 	}
 }
 
-void* State_Alloc(u64 _Size)
+void* State_Alloc(u64 _Size, u64 _Align)
 {
 	if (!State) return 0;
 
 	void* Result = State->Data;
-	u64* iResult = (u64*)Result;
-	char* cResult = (char*)iResult;
+	u64* iResult = (u64*)Result; // result cast to u64 to read Size tag
+	char* cResult = (char*)iResult; // byte pointer & iterator
+	u64 PrevResult = *iResult; // Size tag at prev block (before shifting)
+
+	// alignment (a u64 is placed before actual returned mem block, so we shift up by sizeof u64)
+	if (_Align)
+	{
+		while ((((u64)cResult + sizeof(u64)) % _Align) != 0) cResult++;
+		iResult = (u64*)cResult;
+		Result = (void*)cResult;
+	}
 
 	while (cResult < (char*)State->DataEnd)
 	{
-		if (*iResult == 0)
+		if (PrevResult == 0)
 		{
 			bool Free = 1;
 
@@ -88,11 +97,19 @@ void* State_Alloc(u64 _Size)
 					return 0;
 				}
 
-				if (*cResult != 0)
+				if (*cResult != 0) // used mem block found, skip to next
 				{
 					Free = 0;
-					Result = (void*)cResult;
-					iResult = (u64*)Result;
+					u64 PrevResult = *iResult;
+
+					// re-align before continuing
+					if (_Align)
+					{
+						while ((((u64)cResult + sizeof(u64)) % _Align) != 0) cResult++;
+						iResult = (u64*)cResult;
+						Result = (void*)cResult;
+					}
+
 					break;
 				}
 			}
@@ -113,9 +130,17 @@ void* State_Alloc(u64 _Size)
 
 		else
 		{
-			cResult += *iResult;
-			Result = (void*)cResult;
-			iResult = (u64*)Result;
+			cResult = (char*)((u64)cResult + PrevResult);
+			iResult = (u64*)cResult;
+			PrevResult = *iResult;
+
+			// re-align before continuing
+			if (_Align)
+			{
+				while ((((u64)cResult + sizeof(u64)) % _Align) != 0) cResult++;
+				iResult = (u64*)cResult;
+				Result = (void*)cResult;
+			}
 
 			if (cResult >= (char*)State->DataEnd)
 			{

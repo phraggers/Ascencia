@@ -573,25 +573,12 @@ void Main_DrawRandomQuads(void* _RandomQuad)
 
 int main(int argc, char** argv)
 {
-	{
-		int x = 0;
-		ASC_TopOfTheStack = (u64)&x;
-	}
-
+	{ int x = 0; ASC_TopOfTheStack = (u64)&x; }
 	ASC_Log(LOGLEVEL_DEBUG, "MAIN: Stack Size: %u", ASC_GetCurrentStackSize());
 
 	if (!Main_Init()) return 1;
-
 	ASC_Log(LOGLEVEL_DEBUG, "MAIN: Stack Size: %u", ASC_GetCurrentStackSize());
-
 	glEnable(GL_MULTISAMPLE);
-
-	//lazyfoo
-	//glMatrixMode(GL_PROJECTION);
-	//glLoadIdentity();
-	//glOrtho(0.0, State->Window.Dimensions.w, State->Window.Dimensions.h, 0.0, 1.0, -1.0);
-	//glMatrixMode(GL_MODELVIEW);
-	//glLoadIdentity();
 
 	void* RndQuad = Main_InitRandomQuads();
 

@@ -69,6 +69,7 @@ u64 ASC_GetCurrentStackSize();
 //      INCLUDES      //
 //-=-=-=-=-=-=-=-=-=-=//
 #include "glad/glad.h"
+#include "cglm/cglm.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_net.h>
