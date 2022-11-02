@@ -358,37 +358,9 @@ void* Main_InitRandomQuads()
 	typedef struct { Vertex Quad[4]; Vertex QuadTarget[4]; r32 Speed; } S_Quad;
 	ASC_Alloc(S_Quad, RandomQuad);
 
+	for (r32* r = (r32*)RandomQuad; (u64)r != (u64)RandomQuad + (u64)sizeof(S_Quad); r++)
 	{
-		Vertex Quad[] = { -0.5f, -0.5f, 1.0f, 1.0f, 1.0f };
-		SDL_memcpy(&RandomQuad->Quad[0], Quad, sizeof(Vertex));
-	}
-	{
-		Vertex Quad[] = { 0.5f, -0.5f, 1.0f, 1.0f, 1.0f };
-		SDL_memcpy(&RandomQuad->Quad[1], Quad, sizeof(Vertex));
-	}
-	{
-		Vertex Quad[] = { 0.5f, 0.5f, 1.0f, 1.0f, 1.0f };
-		SDL_memcpy(&RandomQuad->Quad[2], Quad, sizeof(Vertex));
-	}
-	{
-		Vertex Quad[] = { -0.5f, 0.5f, 1.0f, 1.0f, 1.0f };
-		SDL_memcpy(&RandomQuad->Quad[3], Quad, sizeof(Vertex));
-	}
-	{
-		Vertex QuadTarget[] = { -0.5f, -0.5f, 1.0f, 1.0f, 1.0f };
-		SDL_memcpy(&RandomQuad->QuadTarget[0], QuadTarget, sizeof(Vertex));
-	}
-	{
-		Vertex QuadTarget[] = { 0.5f, -0.5f, 1.0f, 1.0f, 1.0f };
-		SDL_memcpy(&RandomQuad->QuadTarget[1], QuadTarget, sizeof(Vertex));
-	}
-	{
-		Vertex QuadTarget[] = { 0.5f, 0.5f, 1.0f, 1.0f, 1.0f };
-		SDL_memcpy(&RandomQuad->QuadTarget[2], QuadTarget, sizeof(Vertex));
-	}
-	{
-		Vertex QuadTarget[] = { -0.5f, 0.5f, 1.0f, 1.0f, 1.0f };
-		SDL_memcpy(&RandomQuad->QuadTarget[3], QuadTarget, sizeof(Vertex));
+		*r = Random_r32m(-1.5f, 1.5f);
 	}
 
 	RandomQuad->Speed = 0.002f;
@@ -450,7 +422,7 @@ void Main_DrawRandomQuads(void* _RandomQuad)
 		}
 		else
 		{
-			RandomQuad->QuadTarget[i].r = Random_r32m(-1.0f, 1.0f);
+			RandomQuad->QuadTarget[i].r = Random_r32m(-1.5f, 1.5f);
 		}
 
 		if (RandomQuad->Quad[i].g < RandomQuad->QuadTarget[i].g)
@@ -477,7 +449,7 @@ void Main_DrawRandomQuads(void* _RandomQuad)
 		}
 		else
 		{
-			RandomQuad->QuadTarget[i].g = Random_r32m(-1.0f, 1.0f);
+			RandomQuad->QuadTarget[i].g = Random_r32m(-1.5f, 1.5f);
 		}
 
 		if (RandomQuad->Quad[i].b < RandomQuad->QuadTarget[i].b)
@@ -504,7 +476,7 @@ void Main_DrawRandomQuads(void* _RandomQuad)
 		}
 		else
 		{
-			RandomQuad->QuadTarget[i].b = Random_r32m(-1.0f, 1.0f);
+			RandomQuad->QuadTarget[i].b = Random_r32m(-1.5f, 1.5f);
 		}
 
 		if (RandomQuad->Quad[i].x < RandomQuad->QuadTarget[i].x)
@@ -531,7 +503,7 @@ void Main_DrawRandomQuads(void* _RandomQuad)
 		}
 		else
 		{
-			RandomQuad->QuadTarget[i].x = Random_r32m(-1.0f, 1.0f);
+			RandomQuad->QuadTarget[i].x = Random_r32m(-1.5f, 1.5f);
 		}
 
 		if (RandomQuad->Quad[i].y < RandomQuad->QuadTarget[i].y)
@@ -558,7 +530,7 @@ void Main_DrawRandomQuads(void* _RandomQuad)
 		}
 		else
 		{
-			RandomQuad->QuadTarget[i].y = Random_r32m(-1.0f, 1.0f);
+			RandomQuad->QuadTarget[i].y = Random_r32m(-1.5f, 1.5f);
 		}
 
 		glColor3f(RandomQuad->Quad[i].r, RandomQuad->Quad[i].g, RandomQuad->Quad[i].b);
@@ -580,7 +552,11 @@ int main(int argc, char** argv)
 	ASC_Log(LOGLEVEL_DEBUG, "MAIN: Stack Size: %u", ASC_GetCurrentStackSize());
 	glEnable(GL_MULTISAMPLE);
 
-	void* RndQuad = Main_InitRandomQuads();
+	void* Q1 = Main_InitRandomQuads();
+	void* Q2 = Main_InitRandomQuads();
+	void* Q3 = Main_InitRandomQuads();
+	void* Q4 = Main_InitRandomQuads();
+	void* Q5 = Main_InitRandomQuads();
 
 	while (State->Running)
 	{
@@ -596,7 +572,11 @@ int main(int argc, char** argv)
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		Main_DrawRandomQuads(RndQuad);
+		Main_DrawRandomQuads(Q1);
+		Main_DrawRandomQuads(Q2);
+		Main_DrawRandomQuads(Q3);
+		Main_DrawRandomQuads(Q4);
+		Main_DrawRandomQuads(Q5);
 
 		DrawCursor();
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);

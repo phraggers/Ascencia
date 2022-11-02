@@ -99,7 +99,7 @@ bool Window_Screenshot(char* _Path)
 	SDL_LockSurface(image);
 
 	int pitch = image->pitch; // row size
-	ASC_AllocArray(char, pitch, temp); // intermediate buffer
+	ASC_AllocArrayAlign(char, pitch, temp); // intermediate buffer
 	char* pixels = (char*)image->pixels;
 
 	for (int i = 0; i < image->h / 2; ++i)

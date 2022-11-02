@@ -45,6 +45,7 @@ void* State_Init(u64 _Size)
 		StateResult->MemSize = Size;
 		StateResult->Data = (void*)((u64)StateResult + (u64)sizeof(ASC_AppState));
 		StateResult->DataEnd = (void*)((u64)StateResult + Size - 1);
+		StateResult->UsedMem = 0;
 
 		ASC_Log(LOGLEVEL_DEBUG, "STATE: Alloc AppState[0x%x] Size[%u], Data[%u] DataEnd[%u]",
 				Result, Size, StateResult->Data, StateResult->DataEnd);
@@ -69,88 +70,111 @@ void* State_Alloc(u64 _Size, u64 _Align)
 	if (!State) return 0;
 
 	void* Result = State->Data;
-	u64* iResult = (u64*)Result; // result cast to u64 to read Size tag
-	char* cResult = (char*)iResult; // byte pointer & iterator
-	u64 PrevResult = *iResult; // Size tag at prev block (before shifting)
+	u64 RequiredSizeCounter = sizeof(u64) + _Size;
+	void* PreviousRegionEnd = State->Data;
 
-	// alignment (a u64 is placed before actual returned mem block, so we shift up by sizeof u64)
-	if (_Align)
+	for (char* c = (char*)State->Data; (u64)c < (u64)State->DataEnd; c++)
 	{
-		while ((((u64)cResult + sizeof(u64)) % _Align) != 0) cResult++;
-		iResult = (u64*)cResult;
-		Result = (void*)cResult;
-	}
+		u64* iSize = (u64*)c;
 
-	while (cResult < (char*)State->DataEnd)
-	{
-		if (PrevResult == 0)
+		bool Unaligned = 0;
+
+		if (_Align > 0)
 		{
-			bool Free = 1;
-
-			for (u64 i = 0; i < sizeof(u64) + _Size; i++)
+			if ((u64)Result % _Align != 0) // TODO: double check this is the correct check
 			{
-				cResult += i;
-
-				if (cResult >= (char*)State->DataEnd)
-				{
-					ASC_Log(LOGLEVEL_FATAL, "STATE: Out of Memory!");
-					return 0;
-				}
-
-				if (*cResult != 0) // used mem block found, skip to next
-				{
-					Free = 0;
-					u64 PrevResult = *iResult;
-
-					// re-align before continuing
-					if (_Align)
-					{
-						while ((((u64)cResult + sizeof(u64)) % _Align) != 0) cResult++;
-						iResult = (u64*)cResult;
-						Result = (void*)cResult;
-					}
-
-					break;
-				}
+				Unaligned = 1;
 			}
 
-			if (Free)
+			if (!Unaligned)
 			{
-				*iResult = _Size + sizeof(u64);
-
-				// move pointer forward to make space for size variable
-				char* inc = (char*)Result;
-				inc += sizeof(u64);
-				Result = (void*)inc;
-
-				ASC_Log(LOGLEVEL_DEBUG, "STATE: Allocated Memory Block [0x%x], %u Bytes", Result, _Size);
-				return Result;
+				if ((u64)((u64)Result - (u64)sizeof(u64)) <= (u64)PreviousRegionEnd)
+				{
+					Unaligned = 1;
+				}
 			}
 		}
 
-		else
+		if ( (*iSize != 0) || Unaligned)
 		{
-			cResult = (char*)((u64)cResult + PrevResult);
-			iResult = (u64*)cResult;
-			PrevResult = *iResult;
+			RequiredSizeCounter = sizeof(u64) + _Size; // reset counter
 
-			// re-align before continuing
-			if (_Align)
+			u64 IncSize = *iSize;
+			for (u64 i = 0; i < IncSize; i++) c++;
+			Result = (void*)c;
+			if(IncSize > 0) c--; // for() will increment c again
+			PreviousRegionEnd = (void*)c;
+
+			continue;
+		}
+
+		RequiredSizeCounter--;
+		
+		if(RequiredSizeCounter == 0)
+		{
+			if (_Align > 0)
 			{
-				while ((((u64)cResult + sizeof(u64)) % _Align) != 0) cResult++;
-				iResult = (u64*)cResult;
-				Result = (void*)cResult;
+				// shift back to put marker before aligned byte
+				char* ptr = (char*)Result;
+				for (int i = 0; i < sizeof(u64); i++) ptr--;
+				Result = (void*)ptr;
 			}
 
-			if (cResult >= (char*)State->DataEnd)
-			{
-				ASC_Log(LOGLEVEL_FATAL, "STATE: Out of Memory!");
-				return 0;
-			}
+			u64 SizeMarker = sizeof(u64) + _Size;
+			SDL_memcpy(Result, (void*)&SizeMarker, sizeof(u64));
+
+			// shift fwd to return result
+			char* ptr = (char*)Result;
+			for (int i = 0; i < sizeof(u64); i++) ptr++;
+			Result = (void*)ptr;
+
+			State->UsedMem += _Size + sizeof(u64);
+
+			ASC_Log(LOGLEVEL_DEBUG, "STATE: Allocated Memory Block [0x%x] (%u Bytes) (%u Bytes Remaining)",
+					Result, _Size, State->MemSize - State->UsedMem);
+			return Result;
 		}
 	}
 
+	ASC_Log(LOGLEVEL_FATAL, "STATE: Allocator Out of Memory!");
 	return 0;
+}
+
+void* State_ReAlloc(void* _Ptr, u64 _NewSize, u64 _Align)
+{
+	u64 OldSize;
+	{
+		char* Ptr = (char*)_Ptr;
+		Ptr -= sizeof(u64);
+		u64* iPtr = (u64*)Ptr;
+
+		if (Ptr < (char*)State->Data || Ptr > (char*)State->DataEnd)
+		{
+			ASC_Log(LOGLEVEL_FATAL, "STATE: Failed to realloc mem block! (0x%x Out of Bounds!)", _Ptr);
+			return 0;
+		}
+
+		OldSize = *iPtr;
+	}
+
+	void* Result = State_Alloc(_NewSize, _Align);
+
+	if (!Result)
+	{
+		ASC_Log(LOGLEVEL_FATAL, "STATE: Failed to realloc mem block! (%u Bytes From 0x%x To %u Bytes)",
+				OldSize, _Ptr, _NewSize);
+		return 0;
+	}
+
+	if(_NewSize > OldSize) SDL_memcpy(Result, _Ptr, (size_t)OldSize);
+	else SDL_memcpy(Result, _Ptr, _NewSize);
+
+	State_Free(_Ptr);
+
+	ASC_Log(LOGLEVEL_DEBUG, "STATE: Reallocated Memory Block [0x%x] (%u Bytes) to [0x%x] (%u Bytes)",
+			_Ptr, OldSize, Result, _NewSize);
+
+	return Result;
 }
 
 void State_Free(void* _Ptr)
@@ -180,5 +204,8 @@ void State_Free(void* _Ptr)
 		cPtr++;
 	}
 
-	ASC_Log(LOGLEVEL_DEBUG, "STATE: Freed Memory Block [0x%x] (%u Bytes)", _Ptr, Size - sizeof(u64));
+	State->UsedMem -= Size;
+
+	ASC_Log(LOGLEVEL_DEBUG, "STATE: Freed Memory Block [0x%x] (%u Bytes) (%u Bytes Remaining)",
+			_Ptr, Size - sizeof(u64), State->MemSize - State->UsedMem);
 }

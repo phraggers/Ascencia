@@ -54,7 +54,7 @@ typedef   float                  r32;
 typedef   double                 r64;
 
 #ifndef __cplusplus
-typedef   enum { false, true }   bool;
+typedef   enum { false = 0, true = 1 }   bool;
 #endif
 
 #define KB(Value) ((Value)*1024LL)
@@ -69,7 +69,7 @@ u64 ASC_GetCurrentStackSize();
 //      INCLUDES      //
 //-=-=-=-=-=-=-=-=-=-=//
 #include "glad/glad.h"
-#include "cglm/cglm.h"
+#include <cglm/cglm.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_net.h>
@@ -82,9 +82,14 @@ u64 ASC_GetCurrentStackSize();
 #include "State.h"
 
 #ifdef ASC_MAIN
+#define STB_IMAGE_IMPLEMENTATION
 ASC_AppState* State;
 #else
 extern ASC_AppState* State;
 #endif
+#define STBI_MALLOC(sz)           ASC_malloc(sz)
+#define STBI_REALLOC(p,newsz)     ASC_realloc(p,newsz)
+#define STBI_FREE(p)              ASC_free(p)
+#include "stb/stb_image.h"
 
 #endif //_ASCENCIA_H_
