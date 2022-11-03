@@ -21,7 +21,7 @@
 #define LOGTARGET_POPUP   0x12
 
 // Init log and start running thread
-bool Log_Init();
+bool Log_Init(void);
 
 // Any future log will be output to target if log level is >= target level. Returns 1 on success or 0 on fail.
 bool Log_SetLevel(int _Target, int _Level);
@@ -30,13 +30,13 @@ bool Log_SetLevel(int _Target, int _Level);
 int Log_GetLevel(int _Target);
 
 // sets logfile path, returns success
-bool Log_SetLogFilePath();
+bool Log_SetLogFilePath(void);
 
 // get logfile path, returns success
 bool Log_GetLogFilePath(char* _Path);
 
 // cleanup and delete logfile on quit
-void Log_Quit();
+void Log_Quit(void);
 
 // return 1 on success, 0 on fail
 bool ASC_Log(int _Level, const char* _Fmt, ...);

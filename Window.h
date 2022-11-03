@@ -17,10 +17,10 @@ typedef struct
 	bool MouseShown;
 } ASC_Window;
 
-bool Window_Init();
-void Window_Resize();
-bool Window_ToggleFullscreen();
+bool Window_Init(void);
+void Window_Resize(void);
+bool Window_ToggleFullscreen(void);
 bool Window_Screenshot(char* _Path); // can pass 0 if no path needed
-bool Window_ToggleMouse();
+bool Window_ToggleMouse(void);
 
 #endif //_ASC_WINDOW_H_

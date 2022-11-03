@@ -54,7 +54,7 @@ void* State_Init(u64 _Size)
 	return Result;
 }
 
-void State_Quit()
+void State_Quit(void)
 {
 	if (State)
 	{

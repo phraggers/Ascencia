@@ -22,32 +22,41 @@
 #define ASC_realloc(PTR, NEWSIZE) State_ReAlloc(PTR, NEWSIZE, 8)
 #define ASC_free(PTR) State_Free(PTR)
 
-
 typedef struct
 {
 	u64 MemSize; // total memsize
 	u64 UsedMem; // currently allocated mem
+
 	void* Data; // byte where user data starts
 	void* DataEnd; // last byte of usable memory (do not access beyond this byte)
+
 	char AppName[32];
 	char AppOrg[32];
 	char LoginName[32];
+
 	SDL_version AppVersion;
 	SDL_version SDLVersion;
 	SDL_version MixVersion;
 	SDL_version NetVersion;
 	SDL_version GLVersion;
+
 	char* PrefPath;
 	char* BasePath;
-	bool Running;
+	int ArgC;
+	char** ArgV;
+
 	ASC_Timer Timer;
 	ASC_Input Input;
 	ASC_Window Window;
+	ASC_Audio Audio;
+
+	bool Running;
+	GAMESTATE GameState;
 } ASC_AppState;
 
 // Pass 0 for default (sizeof ASC_AppState + ASC_DEFAULTUSERSIZE)
 void* State_Init(u64 _Size);
-void State_Quit();
+void State_Quit(void);
 
 void* State_Alloc(u64 _Size, u64 _Align);
 void* State_ReAlloc(void* _Ptr, u64 _NewSize, u64 _Align);

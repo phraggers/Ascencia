@@ -1,7 +1,7 @@
 
 #include "Ascencia.h"
 
-void Input_HandleEvents()
+void Input_HandleEvents(void)
 {
     SDL_Event Event;
 

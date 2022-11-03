@@ -109,7 +109,7 @@ int Log_GetLevel(int _Target)
 	return -1;
 }
 
-bool Log_SetLogFilePath()
+bool Log_SetLogFilePath(void)
 {
 	bool Result = 0;
 
@@ -127,7 +127,7 @@ bool Log_SetLogFilePath()
 		char DateStamp[64] = { 0 };
 		Util_TimeFormat(DateStamp, "Logs/%yyy-%M-%D_%h-%m-%s_Log.txt");
 
-		SDL_snprintf(LastLogFilePath, LOG_BUFFER_SIZE, "%sLogs/LastLog.txt", State->PrefPath);
+		SDL_snprintf(LastLogFilePath, LOG_BUFFER_SIZE, "%sLogs/_LastLog.txt", State->PrefPath);
 		if (SDL_snprintf(LogFilePath, LOG_BUFFER_SIZE, "%s%s", State->PrefPath, DateStamp) > 0)
 		{
 			Result = 1;
@@ -136,7 +136,7 @@ bool Log_SetLogFilePath()
 
 	else
 	{
-		SDL_snprintf(LastLogFilePath, LOG_BUFFER_SIZE, "LastLog.txt");
+		SDL_snprintf(LastLogFilePath, LOG_BUFFER_SIZE, "_LastLog.txt");
 	}
 
 	if (LogFileLocked)
@@ -217,12 +217,7 @@ static bool Log_ToFile(int _Index)
 		SDL_snprintf(LogFilePath, LOG_BUFFER_SIZE, "CrashLog.txt");
 	}
 
-	FILE* LogFile;
-#if MSVC
-	fopen_s(&LogFile, LogFilePath, "ab");
-#else
-	LogFile = fopen(LogFilePath, "ab");
-#endif
+	SDL_RWops* LogFile = SDL_RWFromFile(LogFilePath, "ab");
 
 	char DateStamp[24] = { 0 };
 	char LevelStamp[7][8] = { "(LOG)", "(DEBUG)", "(INFO)", "(WARN)", "(ERROR)", "(FATAL)", "(LOG)" };
@@ -231,9 +226,16 @@ static bool Log_ToFile(int _Index)
 
 	if (LogFile)
 	{
-		fprintf(LogFile, "%s %s %s\n", DateStamp, LevelStamp[Log_Queue[_Index].Level],
-				Log_Queue[_Index].Buffer);
-		fclose(LogFile);
+		char LogFileBuffer[LOG_BUFFER_SIZE] = { 0 };
+
+		SDL_snprintf(LogFileBuffer, LOG_BUFFER_SIZE, "%s %s %s\n", 
+					 DateStamp, LevelStamp[Log_Queue[_Index].Level], Log_Queue[_Index].Buffer);
+
+		SDL_RWwrite(LogFile, LogFileBuffer, 1, Util_StrLen(LogFileBuffer));
+		SDL_RWclose(LogFile);
+
+		ASC_Free(LogFileBuffer);
+
 		LogFileLocked = 0;
 
 		return 1;
@@ -283,7 +285,7 @@ static void Log_ToPopup(int _Index)
 	}
 }
 
-void Log_Quit()
+void Log_Quit(void)
 {
 	ASC_Log(LOGLEVEL_INFO, "LOG: Quitting");
 
@@ -351,7 +353,6 @@ bool ASC_Log(int _Level, const char* _Fmt, ...)
 				FreeQueueSlotFound = 1;
 
 				Log_Queue[i].Status = LOGSTATUS_STARTED;
-				char Result[LOG_BUFFER_SIZE] = { 0 };
 				Log_Queue[i].Level = _Level;
 
 				va_list args;
@@ -426,7 +427,7 @@ int Log_ThreadFn(void* _Data)
 	return 0;
 }
 
-bool Log_Init()
+bool Log_Init(void)
 {
 	if (LogRunning) return 0;
 

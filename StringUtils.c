@@ -1,8 +1,6 @@
 
 #include "Ascencia.h"
 #include <time.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #if _WIN32
 #include <direct.h>
@@ -30,27 +28,27 @@ void Util_TimeFormat(char* _Dst, const char* _Fmt)
 {
 	time_t RawTime = time(0);
 #if MSVC
-	struct tm tmNow;
-	struct tm* Now = &tmNow;
+	struct tm sNow;
+	struct tm* Now = &sNow;
 	localtime_s(Now, &RawTime);
 #else
-	tm* Now = localtime(&RawTime);
+	struct tm* Now = localtime(&RawTime);
 #endif
 
 	int TimezoneOffset = 0;
 	{
-		time_t TimeZero = 0;
+		time_t ZeroTime = 0;
 
 	#if MSVC
-		struct tm tmNow;
-		struct tm* LocalTime = &tmNow;
-		localtime_s(LocalTime, &TimeZero);
+		struct tm sLocalNow;
+		struct tm* LocalNow = &sLocalNow;
+		localtime_s(LocalNow, &ZeroTime);
 	#else
-		tm* LocalTime = localtime(&TimeZero);
+		struct tm* LocalTime = localtime(&TimeZero);
 	#endif
 
-		int Unaligned = LocalTime->tm_sec + (LocalTime->tm_min + (LocalTime->tm_hour * 60)) * 60;
-		TimezoneOffset = LocalTime->tm_mon ? Unaligned - 24 * 60 * 60 : Unaligned;
+		int Unaligned = LocalNow->tm_sec + (LocalNow->tm_min + (LocalNow->tm_hour * 60)) * 60;
+		TimezoneOffset = LocalNow->tm_mon ? Unaligned - 24 * 60 * 60 : Unaligned;
 	}
 
 	char Result[128];
@@ -276,9 +274,10 @@ int Util_StrCmp(const char* _A, const char* _B)
 	return (int)((u8)(*_A)) - (int)((u8)(*_B));
 }
 
-
 u32 Util_StrLen(const char* _String)
 {
+	if (!_String) return 0;
+
 	u32 Length = 0;
 
 	while (*_String != '\0')
@@ -330,14 +329,7 @@ bool Util_MkDir(const char* _Path)
 
 bool Util_CopyFile(const char* _SrcFile, const char* _DstFile)
 {
-	FILE* SrcFile;
-	FILE* DstFile;
-
-#if MSVC
-	fopen_s(&SrcFile, _SrcFile, "r");
-#else
-	SrcFile = fopen(_SrcFile, "r");
-#endif
+	SDL_RWops* SrcFile = SDL_RWFromFile(_SrcFile, "rb");
 
 	if (!SrcFile)
 	{
@@ -345,28 +337,45 @@ bool Util_CopyFile(const char* _SrcFile, const char* _DstFile)
 		return 0;
 	}
 
-#if MSVC
-	fopen_s(&DstFile, _DstFile, "w");
-#else
-	DstFile = fopen(_DstFile, "w");
-#endif
+	SDL_RWops* DstFile = SDL_RWFromFile(_DstFile, "wb");
 
 	if (!DstFile)
 	{
 		ASC_Log(LOGLEVEL_ERROR, "UTILS: CopyFile failed to open DstFile [%s]", _DstFile);
 		return 0;
 	}
-	
-	char c = fgetc(SrcFile);
 
-	while (c != EOF)
+	i64 Size = SDL_RWsize(SrcFile);
+
+	for (i64 i = 0; i < Size; i++)
 	{
-		fputc(c, DstFile);
-		c = fgetc(SrcFile);
+		char c;
+
+		if (!SDL_RWread(SrcFile, &c, 1, 1))
+		{
+			if (i < (Size - 1))
+			{
+				ASC_Log(LOGLEVEL_ERROR, "UTILS: CopyFile failed to read SrcFile [%s]", _SrcFile);
+				SDL_RWclose(SrcFile);
+				SDL_RWclose(DstFile);
+				return 0;
+			}
+		}
+
+		if (!SDL_RWwrite(DstFile, &c, 1, 1))
+		{
+			if (i < (Size - 1))
+			{
+				ASC_Log(LOGLEVEL_ERROR, "UTILS: CopyFile failed to write DstFile [%s]", _DstFile);
+				SDL_RWclose(SrcFile);
+				SDL_RWclose(DstFile);
+				return 0;
+			}
+		}
 	}
 
-	fclose(SrcFile);
-	fclose(DstFile);
+	SDL_RWclose(SrcFile);
+	SDL_RWclose(DstFile);
 
 	ASC_Log(LOGLEVEL_INFO, "UTILS: CopyFile copied [%s] to [%s]", _SrcFile, _DstFile);
 	return 1;

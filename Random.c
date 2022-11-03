@@ -5,13 +5,13 @@
 
 static bool RandomIsInit = 0;
 
-static inline void Random_Init()
+static inline void Random_Init(void)
 {
 	srand((u32)time(0));
 	RandomIsInit = 1;
 }
 
-i8 Random_s8()
+i8 Random_s8(void)
 {
 	if (!RandomIsInit) Random_Init();
 	i8 Result = (i8)(rand() % ((u16)U8_MAX + 1) - I8_MAX);
@@ -27,7 +27,7 @@ i8 Random_s8m(i8 _Min, i8 _Max)
 	return Result;
 }
 
-u8 Random_u8()
+u8 Random_u8(void)
 {
 	if (!RandomIsInit) Random_Init();
 	return (u8)(rand() % ((u16)U8_MAX + 1));
@@ -39,7 +39,7 @@ u8 Random_u8m(u8 _Min, u8 _Max)
 	return (u8)((rand() % ((_Max + 1) - _Min)) + _Min);
 }
 
-i16 Random_s16()
+i16 Random_s16(void)
 {
 	if (!RandomIsInit) Random_Init();
 	i16 Result = (i16)(rand() % ((u32)U16_MAX + 1) - I16_MAX);
@@ -55,7 +55,7 @@ i16 Random_s16m(i16 _Min, i16 _Max)
 	return Result;
 }
 
-u16 Random_u16()
+u16 Random_u16(void)
 {
 	if (!RandomIsInit) Random_Init();
 	return (u16)(rand() % ((u32)U16_MAX + 1));
@@ -67,7 +67,7 @@ u16 Random_u16m(u16 _Min, u16 _Max)
 	return (u16)((rand() % ((_Max + 1) - _Min)) + _Min);
 }
 
-i32 Random_s32()
+i32 Random_s32(void)
 {
 	if (!RandomIsInit) Random_Init();
 
@@ -94,7 +94,7 @@ i32 Random_s32m(i32 _Min, i32 _Max)
 	return Result;
 }
 
-u32 Random_u32()
+u32 Random_u32(void)
 {
 	if (!RandomIsInit) Random_Init();
 
@@ -117,7 +117,7 @@ u32 Random_u32m(u32 _Min, u32 _Max)
 	return (u32)((rand() % ((_Max + 1) - _Min)) + _Min);
 }
 
-i64 Random_s64()
+i64 Random_s64(void)
 {
 	if (!RandomIsInit) Random_Init();
 
@@ -144,7 +144,7 @@ i64 Random_s64m(i64 _Min, i64 _Max)
 	return Result;
 }
 
-u64 Random_u64()
+u64 Random_u64(void)
 {
 	if (!RandomIsInit) Random_Init();
 
@@ -167,7 +167,7 @@ u64 Random_u64m(u64 _Min, u64 _Max)
 	return (u64)((rand() % ((_Max + 1) - _Min)) + _Min);
 }
 
-r32 Random_r32()
+r32 Random_r32(void)
 {
 	if (!RandomIsInit) Random_Init();
 	return Random_r32m(R32_MIN, R32_MAX);
@@ -179,7 +179,7 @@ r32 Random_r32m(r32 _Min, r32 _Max)
 	return ((_Max - _Min) * ((r32)rand() / RAND_MAX)) + _Min;
 }
 
-r64 Random_r64()
+r64 Random_r64(void)
 {
 	if (!RandomIsInit) Random_Init();
 	return Random_r64m(R64_MIN, R64_MAX);

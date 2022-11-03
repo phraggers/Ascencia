@@ -81,7 +81,7 @@ typedef struct
 	ASC_Controller Controllers[ASC_CONTROLLERS];
 } ASC_Input;
 
-void Input_HandleEvents();
+void Input_HandleEvents(void);
 
 bool Input_KeySingle(SDL_Keycode _Key);
 bool Input_KeyDown(SDL_Keycode _Key);

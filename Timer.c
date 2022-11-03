@@ -2,7 +2,7 @@
 
 static bool Timer_IsInit;
 
-bool Timer_IsTimerInit()
+bool Timer_IsTimerInit(void)
 {
     return Timer_IsInit;
 }
@@ -36,7 +36,7 @@ inline r64 Timer_GetPerfInterval(u64 _Start, u64 _End)
     return (r64)((u64)(_End - _Start) * 1000.0f) / State->Timer.PerfFreq;
 }
 
-void Timer_FrameStart()
+void Timer_FrameStart(void)
 {
     if (!Timer_IsInit) return;
     State->Timer.Frame.Start = SDL_GetPerformanceCounter();
@@ -44,7 +44,7 @@ void Timer_FrameStart()
     State->Timer.Sample.Frames++;
 }
 
-void Timer_FrameEnd()
+void Timer_FrameEnd(void)
 {
     if (!Timer_IsInit) return;
     State->Timer.Frame.End = SDL_GetPerformanceCounter();
@@ -69,7 +69,7 @@ void Timer_FrameEnd()
     }
 }
 
-int Timer_Add()
+int Timer_Add(void)
 {
     if (!Timer_IsInit) return 0;
 

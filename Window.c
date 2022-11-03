@@ -1,7 +1,7 @@
 
 #include "Ascencia.h"
 
-bool Window_Init()
+bool Window_Init(void)
 {
 	SDL_snprintf(State->Window.Title, 64, "%s [%d.%d.%d]", State->AppName, State->AppVersion.major,
 				 State->AppVersion.minor, State->AppVersion.patch);
@@ -35,7 +35,7 @@ bool Window_Init()
 	return 1;
 }
 
-void Window_Resize()
+void Window_Resize(void)
 {
 	SDL_Rect dim = { 0 };
 	SDL_GetWindowSize(State->Window.Handle, &dim.w, &dim.h);
@@ -57,7 +57,7 @@ void Window_Resize()
 	}	
 }
 
-bool Window_ToggleFullscreen()
+bool Window_ToggleFullscreen(void)
 {
 	if (!State->Window.Fullscreen)
 	{
@@ -126,7 +126,7 @@ bool Window_Screenshot(char* _Path)
 	return 0;
 }
 
-bool Window_ToggleMouse()
+bool Window_ToggleMouse(void)
 {
 	if (!State->Window.MouseShown)
 	{

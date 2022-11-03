@@ -32,13 +32,13 @@ typedef struct
     } Sample; // over last second
 } ASC_Timer;
 
-bool Timer_IsTimerInit();
+bool Timer_IsTimerInit(void);
 void Timer_Init(int _TargetFPS);
 inline r64 Timer_GetPerfElapsed(u64 _Previous);
 inline r64 Timer_GetPerfInterval(u64 _Start, u64 _End);
-void Timer_FrameStart();
-void Timer_FrameEnd();
-int Timer_Add(); // returns timer ID
+void Timer_FrameStart(void);
+void Timer_FrameEnd(void);
+int Timer_Add(void); // returns timer ID
 r64 Timer_Delta(int _ID);
 r64 Timer_End(int _ID);
 

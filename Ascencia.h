@@ -1,6 +1,12 @@
 #ifndef _ASCENCIA_H_
 #define _ASCENCIA_H_
 
+#if !(defined _MSC_VER)
+#define _MSC_VER 0
+#endif
+#if !(defined __INTEL_COMPILER)
+#define __INTEL_COMPILER 0
+#endif
 #if _MSC_VER && !__INTEL_COMPILER
 #define MSVC 1
 #endif
@@ -63,12 +69,12 @@ typedef   enum { false = 0, true = 1 }   bool;
 #define TB(Value) (GB(Value)*1024LL)
 
 u64 ASC_TopOfTheStack;
-u64 ASC_GetCurrentStackSize();
+u64 ASC_GetCurrentStackSize(void);
 
 //-=-=-=-=-=-=-=-=-=-=//
 //      INCLUDES      //
 //-=-=-=-=-=-=-=-=-=-=//
-#include "glad/glad.h"
+#include <glad/glad.h>
 #include <cglm/cglm.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
@@ -76,9 +82,11 @@ u64 ASC_GetCurrentStackSize();
 #include "StringUtils.h"
 #include "Timer.h"
 #include "Window.h"
+#include "Audio.h"
 #include "Input.h"
 #include "Random.h"
 #include "Log.h"
+#include "GameState.h"
 #include "State.h"
 
 #ifdef ASC_MAIN
@@ -90,6 +98,6 @@ extern ASC_AppState* State;
 #define STBI_MALLOC(sz)           ASC_malloc(sz)
 #define STBI_REALLOC(p,newsz)     ASC_realloc(p,newsz)
 #define STBI_FREE(p)              ASC_free(p)
-#include "stb/stb_image.h"
+#include <stb/stb_image.h>
 
 #endif //_ASCENCIA_H_

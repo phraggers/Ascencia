@@ -22,12 +22,18 @@
  /*-----------------------
   =-=-= IMPORTANT!!! =-=-=
   ------------------------
- - MUST ensure at least 1MB STACK SIZE (1048576 BYTES) */
+ - MUST ensure STACK SIZE at least 1KB (1024 bytes) pref 1 MB (1048576 bytes)
+ (maybe gonna fix that, default c stack is 256 bytes) */
 
 /*
 * 
 =-=-= TODO =-=-=
 
+- cleanup state init: no logging, or simplify logging (any errors there will be fatal anyway)
+- cleanup log: less shit on stack, no more pre-state logging
+- cleanup all 'default', 'global' or define const variables into few (or one) place(s), think about config/save data
+- threads and timers, need multiple timers, perhaps a thread struct & funcs
+- GameState (logic for where the game is, main menu, new game, etc) Need to somehow have accessible variables for running game loop, init state and run state?
 - FileIO
 - Audio
 - Textures
@@ -54,7 +60,7 @@ Shift + Down : Decrease random shape transform speed faster
 #define ASC_MAIN
 #include "Ascencia.h"
 
-u64 ASC_GetCurrentStackSize()
+u64 ASC_GetCurrentStackSize(void)
 {
 	int x = 0;
 	return ASC_TopOfTheStack - (u64)&x;
@@ -72,7 +78,7 @@ static inline void Main_SetSDLGLAttribute(SDL_GLattr _attr, int _value)
 	}
 }
 
-static bool Main_Init()
+static bool Main_Init(int _argc, char** _argv)
 {
 	if (!Log_Init())
 	{
@@ -107,6 +113,9 @@ static bool Main_Init()
 	State->AppVersion.patch = 0;
 	State->PrefPath = SDL_GetPrefPath(State->AppOrg, State->AppName);
 	State->BasePath = SDL_GetBasePath();
+	State->ArgC = _argc;
+	State->ArgV = _argv;
+	State->GameState = GS_NONE;
 
 	ASC_Log(LOGLEVEL_INFO, "MAIN: PrefPath: %s", State->PrefPath);
 	ASC_Log(LOGLEVEL_INFO, "MAIN: BasePath: %s", State->BasePath);
@@ -213,7 +222,7 @@ static bool Main_Init()
 	return 1;
 }
 
-static void Main_Quit()
+static void Main_Quit(void)
 {
 	ASC_Log(LOGLEVEL_DEBUG, "MAIN: Stack Size: %u", ASC_GetCurrentStackSize());
 
@@ -249,28 +258,24 @@ static void Main_Quit()
 	State_Quit();
 }
 
-typedef struct
+typedef struct { r32 X; r32 Y; } NormalizedCoordinates;
+static NormalizedCoordinates GetNormalizedCoordinates(int _X, int _Y)
 {
-	r32 X;
-	r32 Y;
-} NormalizedMouse;
-static NormalizedMouse GetNormalizedMouse()
-{
-	NormalizedMouse Result = { 0 };
-	Result.X = (((r32)((r32)State->Input.Mouse.X / (r32)State->Window.Dimensions.w) * 2.0f) - 1.0f);
-	Result.Y = -(((r32)((r32)State->Input.Mouse.Y / (r32)State->Window.Dimensions.h) * 2.0f) - 1.0f);
+	NormalizedCoordinates Result = { 0 };
+	Result.X = (((r32)((r32)_X / (r32)State->Window.Dimensions.w) * 2.0f) - 1.0f);
+	Result.Y = -(((r32)((r32)_Y / (r32)State->Window.Dimensions.h) * 2.0f) - 1.0f);
 	return Result;
 }
 
-static void DrawCursor()
+static void DrawCursor(void)
 {
 	if (State->Window.MouseShown) return;
 	if (!State->Window.MouseFocus) return;
 
-	r32 Scale = 0.12f;
+	r32 Scale = 0.10f; // 0.05f - 0.20f, 0.10f default
 	r32 Rot = 25.0f;
 
-	NormalizedMouse Mouse = GetNormalizedMouse();
+	NormalizedCoordinates Mouse = GetNormalizedCoordinates(State->Input.Mouse.X, State->Input.Mouse.Y);
 
 	typedef struct { r32 x, y, r, g, b; } Vertex;
 	Vertex Outer[4] = { 0 };
@@ -352,211 +357,19 @@ static void DrawCursor()
 	glEnd();
 }
 
-void* Main_InitRandomQuads()
-{
-	typedef struct { r32 x; r32 y; r32 r; r32 g; r32 b; } Vertex;
-	typedef struct { Vertex Quad[4]; Vertex QuadTarget[4]; r32 Speed; } S_Quad;
-	ASC_Alloc(S_Quad, RandomQuad);
-
-	for (r32* r = (r32*)RandomQuad; (u64)r != (u64)RandomQuad + (u64)sizeof(S_Quad); r++)
-	{
-		*r = Random_r32m(-1.5f, 1.5f);
-	}
-
-	RandomQuad->Speed = 0.002f;
-
-	return RandomQuad;
-}
-
-void Main_DrawRandomQuads(void* _RandomQuad)
-{
-	typedef struct { r32 x; r32 y; r32 r; r32 g; r32 b; } Vertex;
-	typedef struct { Vertex Quad[4]; Vertex QuadTarget[4]; r32 Speed; } S_Quad;
-	S_Quad* RandomQuad = (S_Quad*)_RandomQuad;
-
-	r32 Speed = RandomQuad->Speed;
-
-	if (Input_KeyRepeat(SDLK_UP))
-	{
-		if (Input_KeyDown(SDLK_LSHIFT)) Speed += 0.01f;
-		else Speed += 0.0001f;
-		ASC_Log(LOGLEVEL_INFO, "Speed: %.04f", Speed);
-	}
-
-	if (Input_KeyRepeat(SDLK_DOWN))
-	{
-		if (Input_KeyDown(SDLK_LSHIFT)) Speed -= 0.01f;
-		else Speed -= 0.0001f;
-		ASC_Log(LOGLEVEL_INFO, "Speed: %.04f", Speed);
-	}
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glBegin(GL_QUADS);
-
-	for (int i = 0; i < 4; i++)
-	{
-		if (RandomQuad->Quad[i].r < RandomQuad->QuadTarget[i].r)
-		{
-			if (RandomQuad->QuadTarget[i].r - RandomQuad->Quad[i].r < Speed)
-			{
-				RandomQuad->Quad[i].r = RandomQuad->QuadTarget[i].r;
-			}
-			else
-			{
-				RandomQuad->Quad[i].r += Speed;
-			}
-		}
-		else if (RandomQuad->Quad[i].r > RandomQuad->QuadTarget[i].r)
-		{
-			if (RandomQuad->Quad[i].r - RandomQuad->QuadTarget[i].r < Speed)
-			{
-				RandomQuad->Quad[i].r = RandomQuad->QuadTarget[i].r;
-			}
-			else
-			{
-				RandomQuad->Quad[i].r -= Speed;
-			}
-		}
-		else
-		{
-			RandomQuad->QuadTarget[i].r = Random_r32m(-1.5f, 1.5f);
-		}
-
-		if (RandomQuad->Quad[i].g < RandomQuad->QuadTarget[i].g)
-		{
-			if (RandomQuad->QuadTarget[i].g - RandomQuad->Quad[i].g < Speed)
-			{
-				RandomQuad->Quad[i].g = RandomQuad->QuadTarget[i].g;
-			}
-			else
-			{
-				RandomQuad->Quad[i].g += Speed;
-			}
-		}
-		else if (RandomQuad->Quad[i].g > RandomQuad->QuadTarget[i].g)
-		{
-			if (RandomQuad->Quad[i].g - RandomQuad->QuadTarget[i].g < Speed)
-			{
-				RandomQuad->Quad[i].g = RandomQuad->QuadTarget[i].g;
-			}
-			else
-			{
-				RandomQuad->Quad[i].g -= Speed;
-			}
-		}
-		else
-		{
-			RandomQuad->QuadTarget[i].g = Random_r32m(-1.5f, 1.5f);
-		}
-
-		if (RandomQuad->Quad[i].b < RandomQuad->QuadTarget[i].b)
-		{
-			if (RandomQuad->QuadTarget[i].b - RandomQuad->Quad[i].b < Speed)
-			{
-				RandomQuad->Quad[i].b = RandomQuad->QuadTarget[i].b;
-			}
-			else
-			{
-				RandomQuad->Quad[i].b += Speed;
-			}
-		}
-		else if (RandomQuad->Quad[i].b > RandomQuad->QuadTarget[i].b)
-		{
-			if (RandomQuad->Quad[i].b - RandomQuad->QuadTarget[i].b < Speed)
-			{
-				RandomQuad->Quad[i].b = RandomQuad->QuadTarget[i].b;
-			}
-			else
-			{
-				RandomQuad->Quad[i].b -= Speed;
-			}
-		}
-		else
-		{
-			RandomQuad->QuadTarget[i].b = Random_r32m(-1.5f, 1.5f);
-		}
-
-		if (RandomQuad->Quad[i].x < RandomQuad->QuadTarget[i].x)
-		{
-			if (RandomQuad->QuadTarget[i].x - RandomQuad->Quad[i].x < Speed)
-			{
-				RandomQuad->Quad[i].x = RandomQuad->QuadTarget[i].x;
-			}
-			else
-			{
-				RandomQuad->Quad[i].x += Speed;
-			}
-		}
-		else if (RandomQuad->Quad[i].x > RandomQuad->QuadTarget[i].x)
-		{
-			if (RandomQuad->Quad[i].x - RandomQuad->QuadTarget[i].x < Speed)
-			{
-				RandomQuad->Quad[i].x = RandomQuad->QuadTarget[i].x;
-			}
-			else
-			{
-				RandomQuad->Quad[i].x -= Speed;
-			}
-		}
-		else
-		{
-			RandomQuad->QuadTarget[i].x = Random_r32m(-1.5f, 1.5f);
-		}
-
-		if (RandomQuad->Quad[i].y < RandomQuad->QuadTarget[i].y)
-		{
-			if (RandomQuad->QuadTarget[i].y - RandomQuad->Quad[i].y < Speed)
-			{
-				RandomQuad->Quad[i].y = RandomQuad->QuadTarget[i].y;
-			}
-			else
-			{
-				RandomQuad->Quad[i].y += Speed;
-			}
-		}
-		else if (RandomQuad->Quad[i].y > RandomQuad->QuadTarget[i].y)
-		{
-			if (RandomQuad->Quad[i].y - RandomQuad->QuadTarget[i].y < Speed)
-			{
-				RandomQuad->Quad[i].y = RandomQuad->QuadTarget[i].y;
-			}
-			else
-			{
-				RandomQuad->Quad[i].y -= Speed;
-			}
-		}
-		else
-		{
-			RandomQuad->QuadTarget[i].y = Random_r32m(-1.5f, 1.5f);
-		}
-
-		glColor3f(RandomQuad->Quad[i].r, RandomQuad->Quad[i].g, RandomQuad->Quad[i].b);
-		glVertex2f(RandomQuad->Quad[i].x, RandomQuad->Quad[i].y);
-	}
-
-	glEnd();
-
-	RandomQuad->Speed = Speed;
-}
-
-
 int main(int argc, char** argv)
 {
 	{ int x = 0; ASC_TopOfTheStack = (u64)&x; }
 	ASC_Log(LOGLEVEL_DEBUG, "MAIN: Stack Size: %u", ASC_GetCurrentStackSize());
 
-	if (!Main_Init()) return 1;
+	if (!Main_Init(argc, argv)) return 1;
 	ASC_Log(LOGLEVEL_DEBUG, "MAIN: Stack Size: %u", ASC_GetCurrentStackSize());
 	glEnable(GL_MULTISAMPLE);
 
-	void* Q1 = Main_InitRandomQuads();
-	void* Q2 = Main_InitRandomQuads();
-	void* Q3 = Main_InitRandomQuads();
-	void* Q4 = Main_InitRandomQuads();
-	void* Q5 = Main_InitRandomQuads();
+	GameState_Set(GS_INIT);
+	void* Q1 = Game_InitRandomQuads();
+
+	
 
 	while (State->Running)
 	{
@@ -572,11 +385,7 @@ int main(int argc, char** argv)
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		Main_DrawRandomQuads(Q1);
-		Main_DrawRandomQuads(Q2);
-		Main_DrawRandomQuads(Q3);
-		Main_DrawRandomQuads(Q4);
-		Main_DrawRandomQuads(Q5);
+		Game_DrawRandomQuads(Q1);
 
 		DrawCursor();
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
