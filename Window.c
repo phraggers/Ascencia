@@ -3,7 +3,7 @@
 
 bool Window_Init(void)
 {
-	SDL_snprintf(State->Window.Title, 64, "%s [%d.%d.%d]", State->AppName, State->AppVersion.major,
+	SDL_snprintf(State->Window.Title, 64, "%s [%d.%d.%d]", DEF_APPNAME, State->AppVersion.major,
 				 State->AppVersion.minor, State->AppVersion.patch);
 
 	State->Window.Handle = SDL_CreateWindow(State->Window.Title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,

@@ -68,12 +68,59 @@ typedef   enum { false = 0, true = 1 }   bool;
 #define GB(Value) (MB(Value)*1024LL)
 #define TB(Value) (GB(Value)*1024LL)
 
+//-=-=-=-=-=-=-=-=-=-=//
+//   DEFAULT PREFS    //
+//-=-=-=-=-=-=-=-=-=-=//
+// system
+#define DEF_APPORG "Phragware"
+#define DEF_APPNAME "Ascencia"
+#define DEF_APPVER_MAJ 0
+#define DEF_APPVER_MIN 1
+#define DEF_APPVER_PAT 0
+
+// audio
+#define DEF_AUDIO_FREQ 48000
+#define DEF_AUDIO_FORMAT MIX_DEFAULT_FORMAT
+#define DEF_AUDIO_CHANNELS 2
+#define DEF_AUDIO_CHUNKSIZE 1024
+
+// gfx
+#define DEF_GFX_GLMAJ 4
+#define DEF_GFX_GLMIN 1
+#define DEF_GFX_GLCOMPAT 1
+#define DEF_GFX_DOUBLEBUFFER 1
+#define DEF_GFX_MULTISAMPLEBUFFERS 1
+#define DEF_GFX_MULTISAMPLESAMPLES 8
+#define DEF_GFX_ACCELERATED 1
+#define DEF_GFX_STENCILSIZE 8
+
+// window
+#define DEF_WINDOW_WIDTH 960
+#define DEF_WINDOW_HEIGHT 540
+
+// state
+#define DEF_ALLOCSIZE MB(256)
+
+// logging
+#define DEF_LOG_BUFFER_SIZE 256
+#define DEF_LOG_QUEUE_COUNT 24
+
+// input
+#define DEF_INPUT_KEYCOUNT 16
+#define DEF_INPUT_DEADZONE 3200
+#define DEF_INPUT_CONTROLLERS 4
+
+// timer
+#define DEF_TIMER_SLOTS 32
+
 u64 ASC_TopOfTheStack;
 u64 ASC_GetCurrentStackSize(void);
 
 //-=-=-=-=-=-=-=-=-=-=//
 //      INCLUDES      //
 //-=-=-=-=-=-=-=-=-=-=//
+#define _CRT_SECURE_NO_WARNINGS 1
+#include <curl/curl.h>
 #include <glad/glad.h>
 #include <cglm/cglm.h>
 #include <SDL2/SDL.h>

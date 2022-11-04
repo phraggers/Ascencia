@@ -4,12 +4,12 @@ void* State_Init(u64 _Size)
 {
 	u64 Size = _Size;
 
-	if ((Size < sizeof(ASC_AppState) + ASC_DEFAULTUSERSIZE) ||
+	if ((Size < sizeof(ASC_AppState) + DEF_ALLOCSIZE) ||
 		((Size % 8) != 0))
 	{
-		if (Size < sizeof(ASC_AppState) + ASC_DEFAULTUSERSIZE)
+		if (Size < sizeof(ASC_AppState) + DEF_ALLOCSIZE)
 		{
-			Size = sizeof(ASC_AppState) + ASC_DEFAULTUSERSIZE;
+			Size = sizeof(ASC_AppState) + DEF_ALLOCSIZE;
 		}
 
 		while ((Size % 8) != 0)
@@ -18,37 +18,22 @@ void* State_Init(u64 _Size)
 		}
 	}
 
-	if (_Size != Size)
-	{
-		ASC_Log(LOGLEVEL_DEBUG, "STATE: Requested %u Bytes, Requesting: %u Bytes",
-				_Size, Size);
-	}
-	else
-	{
-		ASC_Log(LOGLEVEL_DEBUG, "STATE: Requested size: %u Bytes", _Size);
-	}
-
 	void* Result = SDL_malloc(Size);
 
 	if (!Result)
 	{
-		ASC_Log(LOGLEVEL_FATAL, "STATE: Error allocating Memory");
 		return 0;
 	}
+
 	else
 	{
 		ASC_AppState* StateResult = (ASC_AppState*)Result;
-		ASC_Log(LOGLEVEL_DEBUG, "STATE: Clearing Memory to 0");
 		SDL_memset(Result, 0, Size);
-		ASC_Log(LOGLEVEL_DEBUG, "STATE: Memory Cleared");
 
 		StateResult->MemSize = Size;
 		StateResult->Data = (void*)((u64)StateResult + (u64)sizeof(ASC_AppState));
 		StateResult->DataEnd = (void*)((u64)StateResult + Size - 1);
 		StateResult->UsedMem = 0;
-
-		ASC_Log(LOGLEVEL_DEBUG, "STATE: Alloc AppState[0x%x] Size[%u], Data[%u] DataEnd[%u]",
-				Result, Size, StateResult->Data, StateResult->DataEnd);
 	}
 
 	return Result;

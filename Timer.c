@@ -16,7 +16,7 @@ void Timer_Init(int _TargetFPS)
     State->Timer.Frame.End = SDL_GetPerformanceCounter();
     State->Timer.Frame.TargetTime = 1000.0f / State->Timer.TargetFPS;
     
-    for (int i = 0; i < TIMER_SLOTS; i++)
+    for (int i = 0; i < DEF_TIMER_SLOTS; i++)
     {
         State->Timer.Timers[i] = 0;
     }
@@ -73,7 +73,7 @@ int Timer_Add(void)
 {
     if (!Timer_IsInit) return 0;
 
-    for (int i = 1; i < TIMER_SLOTS; i++)
+    for (int i = 1; i < DEF_TIMER_SLOTS; i++)
     {
         if (State->Timer.Timers[i] == 0)
         {

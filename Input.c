@@ -6,7 +6,7 @@ void Input_HandleEvents(void)
     SDL_Event Event;
 
     // Keys: set WasDown state
-    for (int i = 0; i < ASC_KEYCOUNT; i++)
+    for (int i = 0; i < DEF_INPUT_KEYCOUNT; i++)
     {
         if (State->Input.Keys[i].Key) // check only recently used keys
         {
@@ -104,7 +104,7 @@ void Input_HandleEvents(void)
 
     // Controllers State
     {
-        for (int i = 0; i < ASC_CONTROLLERS; i++)
+        for (int i = 0; i < DEF_INPUT_CONTROLLERS; i++)
         {
             if (State->Input.Controllers[i].Connected)
             {
@@ -820,7 +820,7 @@ void Input_HandleEvents(void)
             {
                 bool KeyFound = 0;
 
-                for (int i = 0; i < ASC_KEYCOUNT; i++)
+                for (int i = 0; i < DEF_INPUT_KEYCOUNT; i++)
                 {
                     if (State->Input.Keys[i].Key == Event.key.keysym.sym)
                     {
@@ -832,7 +832,7 @@ void Input_HandleEvents(void)
 
                 if (!KeyFound)
                 {
-                    for (int i = 0; i < ASC_KEYCOUNT; i++)
+                    for (int i = 0; i < DEF_INPUT_KEYCOUNT; i++)
                     {
                         if (State->Input.Keys[i].Key == 0)
                         {
@@ -856,7 +856,7 @@ void Input_HandleEvents(void)
             {
                 bool KeyFound = 0;
 
-                for (int i = 0; i < ASC_KEYCOUNT; i++)
+                for (int i = 0; i < DEF_INPUT_KEYCOUNT; i++)
                 {
                     if (State->Input.Keys[i].Key == Event.key.keysym.sym)
                     {
@@ -954,7 +954,7 @@ void Input_HandleEvents(void)
             {
                 bool SlotFound = 0;
 
-                for (int i = 0; i < ASC_CONTROLLERS; i++)
+                for (int i = 0; i < DEF_INPUT_CONTROLLERS; i++)
                 {
                     if (!State->Input.Controllers[i].Controller &&
                         !State->Input.Controllers[i].Connected)
@@ -969,7 +969,7 @@ void Input_HandleEvents(void)
                             ASC_Log(LOGLEVEL_INFO, "INPUT: Controller[%d] Connected", i);
 
                             // ensure no doubles
-                            for (int j = 0; j < ASC_CONTROLLERS; j++)
+                            for (int j = 0; j < DEF_INPUT_CONTROLLERS; j++)
                             {
                                 if (j != i && 
                                     State->Input.Controllers[i].Controller == State->Input.Controllers[j].Controller)
@@ -1000,7 +1000,7 @@ void Input_HandleEvents(void)
 
             case SDL_JOYDEVICEREMOVED:
             {
-                for (int i = 0; i < ASC_CONTROLLERS; i++)
+                for (int i = 0; i < DEF_INPUT_CONTROLLERS; i++)
                 {
                     if (State->Input.Controllers[i].ID == Event.cdevice.which)
                     {
@@ -1023,7 +1023,7 @@ void Input_HandleEvents(void)
             case SDL_CONTROLLERBUTTONDOWN:
             case SDL_CONTROLLERBUTTONUP:
             {
-                if (Event.jaxis.value >= ASC_DEADZONE)
+                if (Event.jaxis.value >= DEF_INPUT_DEADZONE)
                 {
                     ASC_Log(LOGLEVEL_DEBUG, "INPUT: Controller[%d] Axis[%d] Value[%d]", Event.jdevice.which, Event.jaxis.axis, Event.jaxis.value);
                 }
@@ -1042,7 +1042,7 @@ bool Input_KeySingle(SDL_Keycode _Key)
 {
     int KeyFound = -1;
 
-    for (int i = 0; i < ASC_KEYCOUNT; i++)
+    for (int i = 0; i < DEF_INPUT_KEYCOUNT; i++)
     {
         if (State->Input.Keys[i].Key == _Key)
         {
@@ -1073,7 +1073,7 @@ bool Input_KeyDown(SDL_Keycode _Key)
 {
     int KeyFound = -1;
 
-    for (int i = 0; i < ASC_KEYCOUNT; i++)
+    for (int i = 0; i < DEF_INPUT_KEYCOUNT; i++)
     {
         if (State->Input.Keys[i].Key == _Key)
         {
@@ -1094,7 +1094,7 @@ bool Input_KeyRepeat(SDL_Keycode _Key)
 {
     int KeyFound = -1;
 
-    for (int i = 0; i < ASC_KEYCOUNT; i++)
+    for (int i = 0; i < DEF_INPUT_KEYCOUNT; i++)
     {
         if (State->Input.Keys[i].Key == _Key)
         {
@@ -1121,7 +1121,7 @@ bool Input_KeyUp(SDL_Keycode _Key)
 {
     int KeyFound = -1;
 
-    for (int i = 0; i < ASC_KEYCOUNT; i++)
+    for (int i = 0; i < DEF_INPUT_KEYCOUNT; i++)
     {
         if (State->Input.Keys[i].Key == _Key)
         {
@@ -1996,7 +1996,7 @@ i16 Input_ControllerAxisDZ(int _Controller, SDL_GameControllerAxis _Axis)
     if (_Axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
         Result = State->Input.Controllers[_Controller].RightTrigger;
 
-    i16 DZ = ASC_DEADZONE;
+    i16 DZ = DEF_INPUT_DEADZONE;
     if (Result <= -DZ) return Result;
     if (Result >= DZ) return Result;
 

@@ -28,7 +28,7 @@ void* Game_InitRandomQuads(void)
 
 	for (r32* r = (r32*)RandomQuad; (u64)r != (u64)RandomQuad + (u64)sizeof(S_Quad); r++)
 	{
-		*r = Random_r32m(-1.5f, 1.5f);
+		*r = Random_r32r(-1.5f, 1.5f);
 	}
 
 	RandomQuad->Speed = 0.002f;
@@ -48,14 +48,14 @@ void Game_DrawRandomQuads(void* _RandomQuad)
 	{
 		if (Input_KeyDown(SDLK_LSHIFT)) Speed += 0.01f;
 		else Speed += 0.0001f;
-		ASC_Log(LOGLEVEL_INFO, "Speed: %.04f", Speed);
+		ASC_Log(LOGLEVEL_INFO, "GAMESTATE: Speed: %.04f", Speed);
 	}
 
 	if (Input_KeyRepeat(SDLK_DOWN))
 	{
 		if (Input_KeyDown(SDLK_LSHIFT)) Speed -= 0.01f;
 		else Speed -= 0.0001f;
-		ASC_Log(LOGLEVEL_INFO, "Speed: %.04f", Speed);
+		ASC_Log(LOGLEVEL_INFO, "GAMESTATE: Speed: %.04f", Speed);
 	}
 
 	glMatrixMode(GL_PROJECTION);
@@ -90,7 +90,7 @@ void Game_DrawRandomQuads(void* _RandomQuad)
 		}
 		else
 		{
-			RandomQuad->QuadTarget[i].r = Random_r32m(-1.5f, 1.5f);
+			RandomQuad->QuadTarget[i].r = Random_r32r(-1.5f, 1.5f);
 		}
 
 		if (RandomQuad->Quad[i].g < RandomQuad->QuadTarget[i].g)
@@ -117,7 +117,7 @@ void Game_DrawRandomQuads(void* _RandomQuad)
 		}
 		else
 		{
-			RandomQuad->QuadTarget[i].g = Random_r32m(-1.5f, 1.5f);
+			RandomQuad->QuadTarget[i].g = Random_r32r(-1.5f, 1.5f);
 		}
 
 		if (RandomQuad->Quad[i].b < RandomQuad->QuadTarget[i].b)
@@ -144,7 +144,7 @@ void Game_DrawRandomQuads(void* _RandomQuad)
 		}
 		else
 		{
-			RandomQuad->QuadTarget[i].b = Random_r32m(-1.5f, 1.5f);
+			RandomQuad->QuadTarget[i].b = Random_r32r(-1.5f, 1.5f);
 		}
 
 		if (RandomQuad->Quad[i].x < RandomQuad->QuadTarget[i].x)
@@ -171,7 +171,7 @@ void Game_DrawRandomQuads(void* _RandomQuad)
 		}
 		else
 		{
-			RandomQuad->QuadTarget[i].x = Random_r32m(-1.5f, 1.5f);
+			RandomQuad->QuadTarget[i].x = Random_r32r(-1.5f, 1.5f);
 		}
 
 		if (RandomQuad->Quad[i].y < RandomQuad->QuadTarget[i].y)
@@ -198,7 +198,7 @@ void Game_DrawRandomQuads(void* _RandomQuad)
 		}
 		else
 		{
-			RandomQuad->QuadTarget[i].y = Random_r32m(-1.5f, 1.5f);
+			RandomQuad->QuadTarget[i].y = Random_r32r(-1.5f, 1.5f);
 		}
 
 		glColor3f(RandomQuad->Quad[i].r, RandomQuad->Quad[i].g, RandomQuad->Quad[i].b);

@@ -29,9 +29,6 @@
 * 
 =-=-= TODO =-=-=
 
-- cleanup state init: no logging, or simplify logging (any errors there will be fatal anyway)
-- cleanup log: less shit on stack, no more pre-state logging
-- cleanup all 'default', 'global' or define const variables into few (or one) place(s), think about config/save data
 - threads and timers, need multiple timers, perhaps a thread struct & funcs
 - GameState (logic for where the game is, main menu, new game, etc) Need to somehow have accessible variables for running game loop, init state and run state?
 - FileIO
@@ -80,43 +77,36 @@ static inline void Main_SetSDLGLAttribute(SDL_GLattr _attr, int _value)
 
 static bool Main_Init(int _argc, char** _argv)
 {
-	if (!Log_Init())
-	{
-		// this feels pointless, but meh
-		SDL_Log("FATAL: Failed to allocate memory for Log!");
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal", "Failed to allocate memory for Log!", 0);
-		return 0;
-	}
-
 	State = (ASC_AppState*)State_Init(0);
 
 	if (!State)
 	{
-		ASC_Log(LOGLEVEL_FATAL, "MAIN: Failed to allocate main memory!");
+		return 0;
+	}
+
+	if (!Log_Init())
+	{
 		return 0;
 	}
 
 	Timer_Init(60);
 	int StartupTimer = Timer_Add();
 
-	SDL_snprintf(State->AppName, 32, "Ascencia");
-	SDL_snprintf(State->AppOrg, 32, "Phragware");
+	//char* env = SDL_getenv("USERNAME");
+	//ASC_Log(LOGLEVEL_INFO, "MAIN: Login[%s]", ((env) ? env : "None"));
+	//if (env) SDL_free(env);
 
-	{
-		char* env = SDL_getenv("USERNAME");
-		ASC_Log(LOGLEVEL_INFO, "MAIN: Login[%s]", ((env) ? env : "None"));
-		if(env) SDL_free(env);
-	}
-
-	State->AppVersion.major = 0;
-	State->AppVersion.minor = 1;
-	State->AppVersion.patch = 0;
-	State->PrefPath = SDL_GetPrefPath(State->AppOrg, State->AppName);
+	State->AppVersion.major = DEF_APPVER_MAJ;
+	State->AppVersion.minor = DEF_APPVER_MIN;
+	State->AppVersion.patch = DEF_APPVER_PAT;
+	State->PrefPath = SDL_GetPrefPath(DEF_APPORG, DEF_APPNAME);
 	State->BasePath = SDL_GetBasePath();
 	State->ArgC = _argc;
 	State->ArgV = _argv;
 	State->GameState = GS_NONE;
 
+	ASC_Log(LOGLEVEL_INFO, "MAIN: %s %d.%d.%d",
+			DEF_APPNAME, State->AppVersion.major, State->AppVersion.minor, State->AppVersion.patch);
 	ASC_Log(LOGLEVEL_INFO, "MAIN: PrefPath: %s", State->PrefPath);
 	ASC_Log(LOGLEVEL_INFO, "MAIN: BasePath: %s", State->BasePath);
 	Log_SetLogFilePath();
@@ -146,19 +136,14 @@ static bool Main_Init(int _argc, char** _argv)
 		ASC_Log(LOGLEVEL_INFO, "MAIN: SDLMixer %d.%d.%d", (int)State->MixVersion.major,
 				(int)State->MixVersion.minor, (int)State->MixVersion.patch);
 
-		int Freq = 48000;
-		Uint16 Format = MIX_DEFAULT_FORMAT;
-		int Channels = 2;
-		int ChunkSize = 1024;
-
-		if (Mix_OpenAudio(Freq, Format, Channels, ChunkSize) < 0)
+		if (Mix_OpenAudio(DEF_AUDIO_FREQ, DEF_AUDIO_FORMAT, DEF_AUDIO_CHANNELS, DEF_AUDIO_CHUNKSIZE) < 0)
 		{
 			ASC_Log(LOGLEVEL_FATAL, "MAIN: Failed to open Audio Device: %s", Mix_GetError());
 			return 0;
 		}
 
 		ASC_Log(LOGLEVEL_INFO, "MAIN: AudioDevice Opened: Freq[%d] Format[%d] Channels[%d] Chunksize[%d]",
-				Freq, Format, Channels, ChunkSize);
+				DEF_AUDIO_FREQ, DEF_AUDIO_FORMAT, DEF_AUDIO_CHANNELS, DEF_AUDIO_CHUNKSIZE);
 	}
 
 	// SDL Net
@@ -185,18 +170,20 @@ static bool Main_Init(int _argc, char** _argv)
 		ASC_Log(LOGLEVEL_DEBUG, "MAIN: JoystickEventState[%d]", SDL_JoystickEventState(SDL_QUERY));
 	}
 
-	Main_SetSDLGLAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	Main_SetSDLGLAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
-	Main_SetSDLGLAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
-	Main_SetSDLGLAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	Main_SetSDLGLAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-	Main_SetSDLGLAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
-	Main_SetSDLGLAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-	Main_SetSDLGLAttribute(SDL_GL_STENCIL_SIZE, 8);
+	Main_SetSDLGLAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, DEF_GFX_GLMAJ);
+	Main_SetSDLGLAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, DEF_GFX_GLMIN);
+	Main_SetSDLGLAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 
+						   ((DEF_GFX_GLCOMPAT) ? SDL_GL_CONTEXT_PROFILE_COMPATIBILITY : 
+							SDL_GL_CONTEXT_PROFILE_CORE));
+	Main_SetSDLGLAttribute(SDL_GL_DOUBLEBUFFER, DEF_GFX_DOUBLEBUFFER);
+	Main_SetSDLGLAttribute(SDL_GL_MULTISAMPLEBUFFERS, DEF_GFX_MULTISAMPLEBUFFERS);
+	Main_SetSDLGLAttribute(SDL_GL_MULTISAMPLESAMPLES, DEF_GFX_MULTISAMPLESAMPLES);
+	Main_SetSDLGLAttribute(SDL_GL_ACCELERATED_VISUAL, DEF_GFX_ACCELERATED);
+	Main_SetSDLGLAttribute(SDL_GL_STENCIL_SIZE, DEF_GFX_STENCILSIZE);
 
 	// Window
-	State->Window.Dimensions.w = 960;
-	State->Window.Dimensions.h = 540;
+	State->Window.Dimensions.w = DEF_WINDOW_WIDTH;
+	State->Window.Dimensions.h = DEF_WINDOW_HEIGHT;
 
 	if (!Window_Init())
 	{
@@ -246,9 +233,7 @@ static void Main_Quit(void)
 	Mix_Quit();
 	ASC_Log(LOGLEVEL_DEBUG, "MAIN: SDLMixer Quit");
 
-	u32 SDLFlags = SDL_WasInit(SDL_INIT_EVERYTHING);
-
-	if ((SDLFlags |= SDL_INIT_EVERYTHING) > 0)
+	if ((SDL_WasInit(SDL_INIT_EVERYTHING)))
 	{
 		SDL_Quit();
 		ASC_Log(LOGLEVEL_INFO, "MAIN: SDL Quit");
@@ -334,6 +319,8 @@ static void DrawCursor(void)
 	Inner[3].x = 0.08f * Scale;
 	Inner[3].y = -(0.32f * Scale);
 
+	glDisable(GL_DEPTH_TEST);
+
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW);
@@ -355,21 +342,52 @@ static void DrawCursor(void)
 	}
 
 	glEnd();
+
+	glEnable(GL_DEPTH_TEST);
+}
+
+size_t write_data(void* buffer, size_t size, size_t nmemb, void* userp)
+{
+	size_t bytes = size * nmemb;
+	ASC_Log(LOGLEVEL_DEBUG, "CURL: New chunk (%u bytes)", bytes);
+
+	return bytes;
 }
 
 int main(int argc, char** argv)
 {
 	{ int x = 0; ASC_TopOfTheStack = (u64)&x; }
-	ASC_Log(LOGLEVEL_DEBUG, "MAIN: Stack Size: %u", ASC_GetCurrentStackSize());
-
 	if (!Main_Init(argc, argv)) return 1;
 	ASC_Log(LOGLEVEL_DEBUG, "MAIN: Stack Size: %u", ASC_GetCurrentStackSize());
+	
 	glEnable(GL_MULTISAMPLE);
+	glEnable(GL_STENCIL_TEST); //TODO: test these
+	glEnable(GL_DEPTH_TEST); //TODO: test these
 
 	GameState_Set(GS_INIT);
 	void* Q1 = Game_InitRandomQuads();
 
-	
+	{
+		int curltime = Timer_Add();
+		CURL* curl = curl_easy_init();
+		if (curl)
+		{
+			curl_easy_setopt(curl, CURLOPT_URL, "http://example.com");
+			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+			curl_easy_setopt(curl, CURLOPT_HEADER, 1);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+
+			CURLcode res = curl_easy_perform(curl);
+
+			if (res != CURLE_OK)
+			{
+				ASC_Log(LOGLEVEL_ERROR, "CURL: Perform error: %s", curl_easy_strerror(res));
+			}
+
+			curl_easy_cleanup(curl);
+		}
+		ASC_Log(LOGLEVEL_INFO, "MAIN: CurlOp took %.02f ms", Timer_End(curltime));
+	}
 
 	while (State->Running)
 	{

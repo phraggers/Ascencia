@@ -2,11 +2,9 @@
 #ifndef _ASC_TIMER_H_
 #define _ASC_TIMER_H_
 
-#define TIMER_SLOTS 32
-
 typedef struct
 {
-    u64 Timers[TIMER_SLOTS]; // timer slots
+    u64 Timers[DEF_TIMER_SLOTS]; // timer slots
     u64 PerfFreq;
     int TargetFPS;
 

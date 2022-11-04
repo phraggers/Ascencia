@@ -3,47 +3,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define LOG_BUFFER_SIZE 256
-#define LOG_QUEUE_COUNT 24
-
 #define LOGSTATUS_NONE    0
 #define LOGSTATUS_STARTED 1
 #define LOGSTATUS_WAITING 2
 #define LOGSTATUS_DONE    3
-
-static bool LogRunning = 0;
-
-#if _DEBUG
-static int ConsoleLevel = LOGLEVEL_ALL;
-static int FileLevel = LOGLEVEL_INFO;
-static int PopupLevel = LOGLEVEL_ERROR;
-#else
-static int ConsoleLevel = LOGLEVEL_WARN;
-static int FileLevel = LOGLEVEL_ERROR;
-static int PopupLevel = LOGLEVEL_FATAL;
-#endif
-static char LastLogFilePath[LOG_BUFFER_SIZE] = { 0 };
-static char LogFilePath[LOG_BUFFER_SIZE] = { 0 };
-static bool LogFileLocked = 0;
-
-typedef struct
-{
-	int Status;
-	int Level;
-	char Buffer[LOG_BUFFER_SIZE];
-} Log_QueueElement;
-
-static Log_QueueElement Log_Queue[LOG_QUEUE_COUNT] = { 0 };
-
-typedef struct
-{
-	int ConsoleLevel;
-	int FileLevel;
-	int PopupLevel;
-	char LogFilePath[LOG_BUFFER_SIZE];
-	bool LogFileLocked;
-	Log_QueueElement Log_Queue[LOG_QUEUE_COUNT];
-} S_Log;
 
 bool Log_SetLevel(int _Target, int _Level)
 {
@@ -61,52 +24,24 @@ bool Log_SetLevel(int _Target, int _Level)
 	{
 		case LOGTARGET_CONSOLE:
 		{
-			ConsoleLevel = _Level;
+			State->Log.ConsoleLevel = _Level;
 			return 1;
 		} break;
 
 		case LOGTARGET_FILE:
 		{
-			FileLevel = _Level;
+			State->Log.FileLevel = _Level;
 			return 1;
 		} break;
 
 		case LOGTARGET_POPUP:
 		{
-			PopupLevel = _Level;
+			State->Log.PopupLevel = _Level;
 			return 1;
 		} break;
 	}
 
 	return 0;
-}
-
-int Log_GetLevel(int _Target)
-{
-	if (_Target < LOGTARGET_CONSOLE || _Target > LOGTARGET_POPUP)
-	{
-		return -1;
-	}
-
-	switch (_Target)
-	{
-		case LOGTARGET_CONSOLE:
-		{
-			return ConsoleLevel;
-		} break;
-
-		case LOGTARGET_FILE:
-		{
-			return FileLevel;
-		} break;
-
-		case LOGTARGET_POPUP:
-		{
-			return PopupLevel;
-		} break;
-	}
-
-	return -1;
 }
 
 bool Log_SetLogFilePath(void)
@@ -116,36 +51,22 @@ bool Log_SetLogFilePath(void)
 	if (State)
 	{
 		char LogsDirPath[128] = { 0 };
-		SDL_snprintf(LogsDirPath, 128, "%s/Logs", State->AppName);
-		char* CreateLogsDir = SDL_GetPrefPath(State->AppOrg, LogsDirPath);
+		SDL_snprintf(LogsDirPath, 128, "%s/Logs", DEF_APPNAME);
+		char* CreateLogsDir = SDL_GetPrefPath(DEF_APPORG, LogsDirPath);
 		SDL_memset(LogsDirPath, 0, 128);
 		SDL_snprintf(LogsDirPath, 128, CreateLogsDir);
 		SDL_free(CreateLogsDir);
 		if(!Util_DirExists(LogsDirPath)) Util_MkDir(LogsDirPath);
 
-		for (int i = 0; i < LOG_BUFFER_SIZE; i++) LogFilePath[i] = 0;
+		for (int i = 0; i < DEF_LOG_BUFFER_SIZE; i++) State->Log.LogFilePath[i] = 0;
 		char DateStamp[64] = { 0 };
 		Util_TimeFormat(DateStamp, "Logs/%yyy-%M-%D_%h-%m-%s_Log.txt");
 
-		SDL_snprintf(LastLogFilePath, LOG_BUFFER_SIZE, "%sLogs/_LastLog.txt", State->PrefPath);
-		if (SDL_snprintf(LogFilePath, LOG_BUFFER_SIZE, "%s%s", State->PrefPath, DateStamp) > 0)
+		SDL_snprintf(State->Log.LastLogFilePath, DEF_LOG_BUFFER_SIZE, "%sLogs/_LastLog.txt", State->PrefPath);
+		if (SDL_snprintf(State->Log.LogFilePath, DEF_LOG_BUFFER_SIZE, "%s%s", State->PrefPath, DateStamp) > 0)
 		{
 			Result = 1;
 		}
-	}
-
-	else
-	{
-		SDL_snprintf(LastLogFilePath, LOG_BUFFER_SIZE, "_LastLog.txt");
-	}
-
-	if (LogFileLocked)
-	{
-		while (LogFileLocked) {}
-		LogFileLocked = 1;
-		Util_CopyFile("CrashLog.txt", LogFilePath);
-		Util_RemoveFile("CrashLog.txt");
-		LogFileLocked = 0;
 	}
 
 	return Result;
@@ -153,7 +74,7 @@ bool Log_SetLogFilePath(void)
 
 bool Log_GetLogFilePath(char* _Path)
 {
-	if (SDL_snprintf(_Path, LOG_BUFFER_SIZE, LogFilePath) < 1)
+	if (SDL_snprintf(_Path, DEF_LOG_BUFFER_SIZE, State->Log.LogFilePath) < 1)
 	{
 		return 0;
 	}
@@ -163,20 +84,20 @@ bool Log_GetLogFilePath(char* _Path)
 
 inline static void Log_ClearBuffer(int _Index)
 {
-	for (int i = 0; i < LOG_BUFFER_SIZE; i++)
+	for (int i = 0; i < DEF_LOG_BUFFER_SIZE; i++)
 	{
-		Log_Queue[_Index].Buffer[i] = 0;
+		State->Log.Log_Queue[_Index].Buffer[i] = 0;
 	}
 
-	Log_Queue[_Index].Level = 0;
-	Log_Queue[_Index].Status = LOGSTATUS_NONE;
+	State->Log.Log_Queue[_Index].Level = 0;
+	State->Log.Log_Queue[_Index].Status = LOGSTATUS_NONE;
 }
 
 inline static int Log_BufferStringLength(int _Index)
 {
-	for (int i = 0; i < LOG_BUFFER_SIZE; i++)
+	for (int i = 0; i < DEF_LOG_BUFFER_SIZE; i++)
 	{
-		if (Log_Queue[_Index].Buffer[i] == 0)
+		if (State->Log.Log_Queue[_Index].Buffer[i] == 0)
 		{
 			return i;
 		}
@@ -188,95 +109,90 @@ inline static int Log_BufferStringLength(int _Index)
 static void Log_ToConsole(int _Index)
 {
 	char DateStamp[24] = { 0 };
-	char LevelStamp[7][8] = { "(LOG)", "(DEBUG)", "(INFO)", "(WARN)", "(ERROR)", "(FATAL)", "(LOG)" };
+	char LevelStamp[7][8] = { "[ LOG ]", "[DEBUG]", "[INFO ]", "[WARN ]", "[ERROR]", "[FATAL]", "[ LOG ]" };
 	Util_TimeFormat(DateStamp, "[%yyy-%M-%D %h:%m:%s]");
 
-	if (Log_Queue[_Index].Level >= LOGLEVEL_ERROR)
+	if (State->Log.Log_Queue[_Index].Level >= LOGLEVEL_ERROR)
 	{
-		fprintf(stderr, "%s %s %s\n", DateStamp, LevelStamp[Log_Queue[_Index].Level],
-				Log_Queue[_Index].Buffer);
+		fprintf(stderr, "%s %s %s\n", DateStamp, LevelStamp[State->Log.Log_Queue[_Index].Level],
+				State->Log.Log_Queue[_Index].Buffer);
 	}
 	else
 	{
-		printf("%s %s %s\n", DateStamp, LevelStamp[Log_Queue[_Index].Level],
-			   Log_Queue[_Index].Buffer);
+		printf("%s %s %s\n", DateStamp, LevelStamp[State->Log.Log_Queue[_Index].Level],
+			   State->Log.Log_Queue[_Index].Buffer);
 	}
 }
 
 static bool Log_ToFile(int _Index)
 {
-	if (LogFileLocked)
+	if (State->Log.LogFileLocked)
 	{
-		while (LogFileLocked) {}
+		while (State->Log.LogFileLocked) {}
 	}
 
-	LogFileLocked = 1;
+	State->Log.LogFileLocked = 1;
 
-	if (!State)
-	{
-		SDL_snprintf(LogFilePath, LOG_BUFFER_SIZE, "CrashLog.txt");
-	}
-
-	SDL_RWops* LogFile = SDL_RWFromFile(LogFilePath, "ab");
+	SDL_RWops* LogFile = SDL_RWFromFile(State->Log.LogFilePath, "ab");
 
 	char DateStamp[24] = { 0 };
-	char LevelStamp[7][8] = { "(LOG)", "(DEBUG)", "(INFO)", "(WARN)", "(ERROR)", "(FATAL)", "(LOG)" };
+	char LevelStamp[7][8] = { "[ LOG ]", "[DEBUG]", "[INFO ]", "[WARN ]", "[ERROR]", "[FATAL]", "[ LOG ]" };
 	Util_TimeFormat(DateStamp, "[%yyy-%M-%D %h:%m:%s]");
 
 
 	if (LogFile)
 	{
-		char LogFileBuffer[LOG_BUFFER_SIZE] = { 0 };
+		ASC_AllocArray(char, DEF_LOG_BUFFER_SIZE, LogFileBuffer);
 
-		SDL_snprintf(LogFileBuffer, LOG_BUFFER_SIZE, "%s %s %s\n", 
-					 DateStamp, LevelStamp[Log_Queue[_Index].Level], Log_Queue[_Index].Buffer);
+		SDL_snprintf(LogFileBuffer, DEF_LOG_BUFFER_SIZE, "%s %s %s\n", 
+					 DateStamp, LevelStamp[State->Log.Log_Queue[_Index].Level],
+					 State->Log.Log_Queue[_Index].Buffer);
 
 		SDL_RWwrite(LogFile, LogFileBuffer, 1, Util_StrLen(LogFileBuffer));
 		SDL_RWclose(LogFile);
 
 		ASC_Free(LogFileBuffer);
-
-		LogFileLocked = 0;
+		State->Log.LogFileLocked = 0;
 
 		return 1;
 	}
 
 	else
 	{
-		LogFileLocked = 0;
+		State->Log.LogFileLocked = 0;
 		return 0;
 	}
 }
 static void Log_ToPopup(int _Index)
 {
-	if (Log_Queue[_Index].Level == LOGLEVEL_DEBUG)
+	if (State->Log.Log_Queue[_Index].Level == LOGLEVEL_DEBUG)
 	{
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Debug",
-								 Log_Queue[_Index].Buffer, 0);
+								 State->Log.Log_Queue[_Index].Buffer, 0);
 	}
 
-	else if (Log_Queue[_Index].Level == LOGLEVEL_INFO)
+	else if (State->Log.Log_Queue[_Index].Level == LOGLEVEL_INFO)
 	{
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Info",
-								 Log_Queue[_Index].Buffer, 0);
+								 State->Log.Log_Queue[_Index].Buffer, 0);
 	}
 
-	else if (Log_Queue[_Index].Level == LOGLEVEL_WARN)
+	else if (State->Log.Log_Queue[_Index].Level == LOGLEVEL_WARN)
 	{
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Warning",
-								 Log_Queue[_Index].Buffer, 0);
+								 State->Log.Log_Queue[_Index].Buffer, 0);
 	}
 
-	else if (Log_Queue[_Index].Level == LOGLEVEL_ERROR)
+	else if (State->Log.Log_Queue[_Index].Level == LOGLEVEL_ERROR)
 	{
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
-								 Log_Queue[_Index].Buffer, 0);
+								 State->Log.Log_Queue[_Index].Buffer, 0);
 	}
 
-	else if (Log_Queue[_Index].Level == LOGLEVEL_FATAL)
+	else if (State->Log.Log_Queue[_Index].Level == LOGLEVEL_FATAL)
 	{
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal",
-								 Log_Queue[_Index].Buffer, 0);
+								 State->Log.Log_Queue[_Index].Buffer, 0);
 	}
 
 	else
@@ -290,18 +206,18 @@ void Log_Quit(void)
 	ASC_Log(LOGLEVEL_INFO, "LOG: Quitting");
 
 	int BusyCounter = 0;
-	int Busy = LOG_QUEUE_COUNT;
+	int Busy = DEF_LOG_QUEUE_COUNT;
 
 	while (Busy)
 	{
-		for (int i = 0; i < LOG_QUEUE_COUNT; i++)
+		for (int i = 0; i < DEF_LOG_QUEUE_COUNT; i++)
 		{
-			if (Log_Queue[i].Status == LOGSTATUS_DONE)
+			if (State->Log.Log_Queue[i].Status == LOGSTATUS_DONE)
 			{
 				Log_ClearBuffer(i);
 			}
 
-			if (Log_Queue[i].Status == LOGSTATUS_NONE)
+			if (State->Log.Log_Queue[i].Status == LOGSTATUS_NONE)
 			{
 				Busy--;
 			}
@@ -309,9 +225,10 @@ void Log_Quit(void)
 
 		if (Busy > 0)
 		{
-			Busy = LOG_QUEUE_COUNT;
+			Busy = DEF_LOG_QUEUE_COUNT;
 		}
 
+		//TODO: make this better, maybe a timer or something? or just make sure it cant get stuck
 		BusyCounter++;
 
 		if (BusyCounter > INT_MAX)
@@ -322,10 +239,46 @@ void Log_Quit(void)
 		}
 	}
 
-	LogRunning = 0;
+	State->Log.LogRunning = 0;
 
-	Util_CopyFile(LogFilePath, LastLogFilePath);
-	Util_RemoveFile(LogFilePath);
+	Util_CopyFile(State->Log.LogFilePath, State->Log.LastLogFilePath);
+	Util_RemoveFile(State->Log.LogFilePath);
+}
+
+int Log_ThreadFn(void* _Data)
+{
+	ASC_S_Log* Log = (ASC_S_Log*)_Data;
+
+	int BusyQueue = DEF_LOG_QUEUE_COUNT;
+
+	while (BusyQueue)
+	{
+		BusyQueue = DEF_LOG_QUEUE_COUNT;
+
+		for (int i = 0; i < DEF_LOG_QUEUE_COUNT; i++)
+		{
+			if (State->Log.Log_Queue[i].Status == LOGSTATUS_WAITING)
+			{
+				if (State->Log.ConsoleLevel <= State->Log.Log_Queue[i].Level) Log_ToConsole(i);
+				if (State->Log.FileLevel <= State->Log.Log_Queue[i].Level) Log_ToFile(i);
+				State->Log.Log_Queue[i].Status = LOGSTATUS_DONE;
+			}
+
+			if (State->Log.Log_Queue[i].Status == LOGSTATUS_DONE)
+			{
+				Log_ClearBuffer(i);
+			}
+
+			if (State->Log.Log_Queue[i].Status == LOGSTATUS_NONE ||
+				State->Log.Log_Queue[i].Status == LOGSTATUS_DONE)
+			{
+				BusyQueue--;
+			}
+		}
+	}
+
+	State->Log.LogRunning = 0;
+	return 0;
 }
 
 bool ASC_Log(int _Level, const char* _Fmt, ...)
@@ -335,9 +288,9 @@ bool ASC_Log(int _Level, const char* _Fmt, ...)
 		return 0;
 	}
 
-	if (ConsoleLevel > _Level &&
-		FileLevel > _Level &&
-		PopupLevel > _Level)
+	if (State->Log.ConsoleLevel > _Level &&
+		State->Log.FileLevel > _Level &&
+		State->Log.PopupLevel > _Level)
 	{
 		return 0;
 	}
@@ -346,23 +299,23 @@ bool ASC_Log(int _Level, const char* _Fmt, ...)
 
 	while (!FreeQueueSlotFound)
 	{
-		for (int i = 0; i < LOG_QUEUE_COUNT; i++)
+		for (int i = 0; i < DEF_LOG_QUEUE_COUNT; i++)
 		{
-			if (Log_Queue[i].Status == LOGSTATUS_NONE)
+			if (State->Log.Log_Queue[i].Status == LOGSTATUS_NONE)
 			{
 				FreeQueueSlotFound = 1;
 
-				Log_Queue[i].Status = LOGSTATUS_STARTED;
-				Log_Queue[i].Level = _Level;
+				State->Log.Log_Queue[i].Status = LOGSTATUS_STARTED;
+				State->Log.Log_Queue[i].Level = _Level;
 
 				va_list args;
 				va_start(args, _Fmt);
-				SDL_vsnprintf(Log_Queue[i].Buffer, LOG_BUFFER_SIZE, _Fmt, args);
+				SDL_vsnprintf(State->Log.Log_Queue[i].Buffer, DEF_LOG_BUFFER_SIZE, _Fmt, args);
 				va_end(args);
 
-				if (PopupLevel <= _Level) Log_ToPopup(i);
+				if (State->Log.PopupLevel <= _Level) Log_ToPopup(i);
 
-				Log_Queue[i].Status = LOGSTATUS_WAITING;
+				State->Log.Log_Queue[i].Status = LOGSTATUS_WAITING;
 
 				break;
 			}
@@ -376,18 +329,25 @@ bool ASC_Log(int _Level, const char* _Fmt, ...)
 		}
 	}
 
+	if (!State->Log.LogRunning)
+	{
+		State->Log.LogRunning = 1;
+		SDL_Thread* Thread = SDL_CreateThread(Log_ThreadFn, "ASC_Thread_Log", (void*)&State->Log);
+		SDL_DetachThread(Thread);
+	}
+
 	if (_Level == LOGLEVEL_FATAL)
 	{
-		int BusyQueue = LOG_QUEUE_COUNT;
+		int BusyQueue = DEF_LOG_QUEUE_COUNT;
 		
 		while (BusyQueue)
 		{
-			BusyQueue = LOG_QUEUE_COUNT;
+			BusyQueue = DEF_LOG_QUEUE_COUNT;
 
-			for (int i = 0; i < LOG_QUEUE_COUNT; i++)
+			for (int i = 0; i < DEF_LOG_QUEUE_COUNT; i++)
 			{
-				if (Log_Queue[i].Status == LOGSTATUS_NONE ||
-					Log_Queue[i].Status == LOGSTATUS_DONE)
+				if (State->Log.Log_Queue[i].Status == LOGSTATUS_NONE ||
+					State->Log.Log_Queue[i].Status == LOGSTATUS_DONE)
 				{
 					BusyQueue--;
 				}
@@ -400,57 +360,20 @@ bool ASC_Log(int _Level, const char* _Fmt, ...)
 	return 1;
 }
 
-int Log_ThreadFn(void* _Data)
-{
-	S_Log* Log = (S_Log*)_Data;
-
-	while (LogRunning)
-	{
-		for (int i = 0; i < LOG_QUEUE_COUNT; i++)
-		{
-			if (Log_Queue[i].Status == LOGSTATUS_WAITING)
-			{
-				if (ConsoleLevel <= Log_Queue[i].Level) Log_ToConsole(i);
-				if (FileLevel <= Log_Queue[i].Level) Log_ToFile(i);
-				Log_Queue[i].Status = LOGSTATUS_DONE;
-			}
-
-			if (Log_Queue[i].Status == LOGSTATUS_DONE)
-			{
-				Log_ClearBuffer(i);
-			}
-		}
-	}
-
-	if(Log) SDL_free(Log);
-
-	return 0;
-}
-
 bool Log_Init(void)
 {
-	if (LogRunning) return 0;
-
-	S_Log* Log = (S_Log*)SDL_malloc(sizeof(S_Log));
-	if (!Log) return 0;
-
-	SDL_memset(Log, 0, sizeof(S_Log));
-	LogRunning = 1;
+	State->Log.LogRunning = 0;
 
 #if _DEBUG
-	Log->ConsoleLevel = LOGLEVEL_ALL;
-	Log->FileLevel = LOGLEVEL_INFO;
-	Log->PopupLevel = LOGLEVEL_ERROR;
+	State->Log.ConsoleLevel = LOGLEVEL_ALL;
+	State->Log.FileLevel = LOGLEVEL_INFO;
+	State->Log.PopupLevel = LOGLEVEL_ERROR;
 #else
-	Log->ConsoleLevel = LOGLEVEL_WARN;
-	Log->FileLevel = LOGLEVEL_ERROR;
-	Log->PopupLevel = LOGLEVEL_FATAL;
+	State->Log.ConsoleLevel = LOGLEVEL_WARN;
+	State->Log.FileLevel = LOGLEVEL_ERROR;
+	State->Log.PopupLevel = LOGLEVEL_FATAL;
 #endif
 
-	SDL_Thread* Thread = SDL_CreateThread(Log_ThreadFn, "ASC_Thread_Log", (void*)Log);
-	SDL_DetachThread(Thread);
-
-	ASC_Log(LOGLEVEL_DEBUG, "LOG: Alloc Log[0x%x] Size[%u]", Log, sizeof(S_Log));
 	ASC_Log(LOGLEVEL_INFO, "LOG: Initialized");
 
 	return 1;

@@ -20,14 +20,33 @@
 #define LOGTARGET_FILE    0x11
 #define LOGTARGET_POPUP   0x12
 
+typedef struct
+{
+	int Status;
+	int Level;
+	char Buffer[DEF_LOG_BUFFER_SIZE];
+} Log_QueueElement;
+
+typedef struct
+{
+	bool LogRunning;
+
+	int ConsoleLevel;
+	int FileLevel;
+	int PopupLevel;
+
+	char LastLogFilePath[DEF_LOG_BUFFER_SIZE];
+	char LogFilePath[DEF_LOG_BUFFER_SIZE];
+	bool LogFileLocked;
+
+	Log_QueueElement Log_Queue[DEF_LOG_QUEUE_COUNT];
+} ASC_S_Log;
+
 // Init log and start running thread
 bool Log_Init(void);
 
 // Any future log will be output to target if log level is >= target level. Returns 1 on success or 0 on fail.
 bool Log_SetLevel(int _Target, int _Level);
-
-// returns _Target's current output Level. Returns -1 on fail.
-int Log_GetLevel(int _Target);
 
 // sets logfile path, returns success
 bool Log_SetLogFilePath(void);

@@ -1,10 +1,6 @@
 #ifndef _ASC_INPUT_H_
 #define _ASC_INPUT_H_
 
-#define ASC_KEYCOUNT 16
-#define ASC_DEADZONE 3200
-#define ASC_CONTROLLERS 4
-
 typedef struct 
 {
 	SDL_Keycode Key;
@@ -76,9 +72,9 @@ typedef struct
 
 typedef struct
 {
-	ASC_KeyState Keys[ASC_KEYCOUNT];
+	ASC_KeyState Keys[DEF_INPUT_KEYCOUNT];
 	ASC_Mouse Mouse;
-	ASC_Controller Controllers[ASC_CONTROLLERS];
+	ASC_Controller Controllers[DEF_INPUT_CONTROLLERS];
 } ASC_Input;
 
 void Input_HandleEvents(void);
