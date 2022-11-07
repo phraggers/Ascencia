@@ -139,7 +139,6 @@ static bool Log_ToFile(int _Index)
 	char LevelStamp[7][8] = { "[ LOG ]", "[DEBUG]", "[INFO ]", "[WARN ]", "[ERROR]", "[FATAL]", "[ LOG ]" };
 	Util_TimeFormat(DateStamp, "[%yyy-%M-%D %h:%m:%s]");
 
-
 	if (LogFile)
 	{
 		ASC_AllocArray(char, DEF_LOG_BUFFER_SIZE, LogFileBuffer);
@@ -203,12 +202,10 @@ static void Log_ToPopup(int _Index)
 
 void Log_Quit(void)
 {
-	ASC_Log(LOGLEVEL_INFO, "LOG: Quitting");
-
+	State->Log.Init = 0;
 	int BusyCounter = 0;
-	int Busy = DEF_LOG_QUEUE_COUNT;
 
-	while (Busy)
+	while (State->Log.LogRunning)
 	{
 		for (int i = 0; i < DEF_LOG_QUEUE_COUNT; i++)
 		{
@@ -216,35 +213,12 @@ void Log_Quit(void)
 			{
 				Log_ClearBuffer(i);
 			}
-
-			if (State->Log.Log_Queue[i].Status == LOGSTATUS_NONE)
-			{
-				Busy--;
-			}
 		}
 
-		if (!DEF_MULTITHREAD)
-		{
-			Busy = 0;
-		}
-		
-		if (Busy > 0)
-		{
-			Busy = DEF_LOG_QUEUE_COUNT;
-		}
-
-		//TODO: make this better, maybe a timer or something? or just make sure it cant get stuck
 		BusyCounter++;
 
-		if (BusyCounter > INT_MAX)
-		{
-			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Stuck Thread!",
-									 "Seems like Log thread got stuck. Force quitting!", 0);
-			exit(1);
-		}
+		if (BusyCounter > 1024 || DEF_MULTITHREAD) State->Log.LogRunning = 0;
 	}
-
-	State->Log.LogRunning = 0;
 
 	Util_CopyFile(State->Log.LogFilePath, State->Log.LastLogFilePath);
 	Util_RemoveFile(State->Log.LogFilePath);
@@ -252,12 +226,19 @@ void Log_Quit(void)
 
 int Log_ThreadFn(void* _Data)
 {
+	if (!State || !State->Log.Init) return;
+
 	ASC_S_Log* Log = (ASC_S_Log*)_Data;
 
 	int BusyQueue = DEF_LOG_QUEUE_COUNT;
 
 	while (BusyQueue)
 	{
+		if (!State || !State->Log.Init)
+		{
+			return 0;
+		}
+
 		BusyQueue = DEF_LOG_QUEUE_COUNT;
 
 		for (int i = 0; i < DEF_LOG_QUEUE_COUNT; i++)
@@ -293,6 +274,8 @@ int Log_ThreadFn(void* _Data)
 
 bool ASC_Log(int _Level, const char* _Fmt, ...)
 {
+	if (!State || !State->Log.Init) return 0;
+
 	if (_Level < LOGLEVEL_DEBUG || _Level > LOGLEVEL_FATAL)
 	{
 		return 0;
@@ -404,6 +387,7 @@ bool Log_Init(void)
 	State->Log.PopupLevel = LOGLEVEL_FATAL;
 #endif
 
+	State->Log.Init = 1;
 	ASC_Log(LOGLEVEL_INFO, "LOG: Initialized");
 
 	return 1;

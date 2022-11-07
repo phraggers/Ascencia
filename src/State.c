@@ -43,7 +43,6 @@ void State_Quit(void)
 {
 	if (State)
 	{
-		ASC_Log(LOGLEVEL_DEBUG, "STATE: Freeing Memory");
 		if (State->PrefPath) SDL_free(State->PrefPath);
 		if (State->BasePath) SDL_free(State->BasePath);
 		SDL_free(State);

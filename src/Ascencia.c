@@ -235,8 +235,8 @@ static void Main_Quit(void)
 
 	if ((SDL_WasInit(SDL_INIT_EVERYTHING)))
 	{
-		SDL_Quit();
 		ASC_Log(LOGLEVEL_INFO, "MAIN: SDL Quit");
+		SDL_Quit();
 	}
 
 	Log_Quit();

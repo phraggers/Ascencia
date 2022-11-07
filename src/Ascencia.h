@@ -76,7 +76,7 @@ typedef   enum { false = 0, true = 1 }   bool;
 #define DEF_APPNAME "Ascencia"
 #define DEF_APPVER_MAJ 0
 #define DEF_APPVER_MIN 1
-#define DEF_APPVER_PAT 0
+#define DEF_APPVER_PAT 1
 #define DEF_MULTITHREAD 1
 
 // audio

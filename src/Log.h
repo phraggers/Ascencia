@@ -29,6 +29,7 @@ typedef struct
 
 typedef struct
 {
+	bool Init;
 	bool LogRunning;
 
 	int ConsoleLevel;
