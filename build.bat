@@ -13,7 +13,7 @@ set LIBS=%~dp0lib
 set DEBUG_BUILD=1
 
 set COPTS=-nologo -MT -Gm- -GR- -EHa -Oi -FC -W4 -wd4201 -wd4100 -wd4211 -D_CRT_SECURE_NO_WARNINGS
-set LINK=-LIBPATH:%LIBS% -opt:ref SDL3.lib SDL3_image.lib ws2_32.lib OpenAL32.lib sndfile.lib ogg.lib opus.lib vorbis.lib vorbisenc.lib vorbisfile.lib FLAC.lib libmp3lame-static.lib libmpghip-static.lib mpg123.lib shlwapi.lib libcrypto.lib libssl.lib advapi32.lib user32.lib crypt32.lib enet.lib winmm.lib archive.lib bz2.lib zlib.lib lz4.lib lzma.lib zstd.lib
+set LINK=-LIBPATH:%LIBS% -opt:ref SDL3.lib ws2_32.lib OpenAL32.lib sndfile.lib ogg.lib opus.lib vorbis.lib vorbisenc.lib vorbisfile.lib FLAC.lib libmp3lame-static.lib libmpghip-static.lib mpg123.lib shlwapi.lib libcrypto.lib libssl.lib advapi32.lib user32.lib crypt32.lib enet.lib winmm.lib archive.lib bz2.lib zlib.lib lz4.lib lzma.lib zstd.lib
 
 :DoBuild
 if %DEBUG_BUILD%==1 goto DoDebug

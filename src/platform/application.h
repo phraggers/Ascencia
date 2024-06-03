@@ -11,11 +11,9 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_thread.h>
-#include <SDL3/SDL_image.h>
 #include <enet/enet.h>
 #include <archive.h>
 #include <archive_entry.h>
-#include <glm/glm.hpp>
 
 #define ASC_HEAD
 #include <util/modules.h>
@@ -35,7 +33,7 @@ struct ASC_Application
 
 static ASC_Application *gApp;
 
-static bool ASC_Init(void);
+static bool ASC_Init(int argc, char **argv);
 static bool ASC_Run(void);
 static void ASC_Quit();
 static bool ASC_ProcessKeybind(ASC_Keybind *keybind);
@@ -47,13 +45,38 @@ static void ASC_UpdateClock(void);
 
 /*============================================================*/
 
-static bool ASC_Init(void)
+static bool ASC_Init(int argc, char **argv)
 {
     gApp = (ASC_Application*)malloc(sizeof(*gApp));
     memset(gApp, 0, sizeof(*gApp));
     ASC_UpdateClock();
 
-    if(!ASC_ConfigInit()) ASC_Fatal("Config Initialization Error");
+    {
+        bool noPref = 0;
+        bool resetConfig = 0;
+        bool noFullscreen = 0;
+        bool fullscreen = 0;
+
+        for(int argIndex = 0; argIndex < argc; argIndex++)
+        {
+            cstr arg = (cstr)malloc(strlen(argv[argIndex]));
+            for(int i=0;i<strlen(argv[argIndex]);i++)
+            {
+                arg[i] = (char)tolower(argv[argIndex][i]);
+            }
+            free(arg);
+
+            ASC_DebugLog("arg : %s", arg);
+
+            if(strstr(arg, "-nopref")) noPref = 1;
+            if(strstr(arg, "-resetconfig")) resetConfig = 1;
+            if(strstr(arg, "-nofullscreen")) noFullscreen = 1;
+            if(strstr(arg, "-fullscreen")) fullscreen = 1;
+        }
+
+        if(!ASC_ConfigInit(noPref, resetConfig, noFullscreen, fullscreen)) ASC_Fatal("Config Initialization Error");
+    }
+
     if(!ASC_LogInit()) ASC_Fatal("Log Initialization Error");
     if(!ASC_NetInit()) ASC_Fatal("Network Initialization Error");
     if(!ASC_WindowInit()) ASC_Fatal("Window Initialization Error");
@@ -61,7 +84,7 @@ static bool ASC_Init(void)
     if(!ASC_TimerInit()) ASC_Fatal("Timer Initialization Error");
     if(!ASC_AssetsInit()) ASC_Fatal("Assets Initialization Error");
 
-    ASC_InfoLog("ASC_Init: %s %s [%d.%d]", gApp->config.app_org, gApp->config.app_name, gApp->config.app_ver_maj, gApp->config.app_ver_min);
+    ASC_InfoLog("ASC_Init: %s %s [%d.%d.%d]", gApp->config.app_org, gApp->config.app_name, gApp->config.app_ver[0], gApp->config.app_ver[1], gApp->config.app_ver[2]);
 
     gApp->running = 1;
     return 1;
@@ -69,29 +92,12 @@ static bool ASC_Init(void)
 
 static bool ASC_Run(void)
 {
-    { // Testing code
-        ASC_AssetsLoadFile("ascencia_main_theme.mp3");
-        u32 maintheme = 0;
-        maintheme = ASC_AudioAddSFX(ASC_GetAsset("ascencia_main_theme.mp3"));
-        ASC_AudioRemoveSFX(maintheme);
-        ASC_AssetsUnloadFile("ascencia_main_theme.mp3");
-
-        ASC_AssetsLoadFile("test.png");
-        ASC_VirtualFileHandle *testpng = ASC_GetAsset("test.png");
-        SDL_IOStream *surfio = SDL_IOFromConstMem(testpng->data, testpng->size);
-        SDL_Surface *surf = 0;
-        surf = IMG_LoadPNG_IO(surfio);
-        if(!surf) ASC_DebugLog("img failed to load, %s", IMG_GetError());
-        else ASC_DebugLog("img loaded");
-        SDL_DestroySurface(surf);
-        SDL_CloseIO(surfio);
-        ASC_AssetsUnloadFile("test.png");
-    }
-
     while(gApp->running)
     {
         ASC_TimerFrameStart();
-        ASC_UpdateClock();
+
+        // clock doesn't need to updated every frame
+        if(gApp->timer.ticks % 10 == 0) ASC_UpdateClock();
 
         if(!ASC_WindowHandleEvents())
         {
@@ -192,13 +198,16 @@ static bool ASC_ProcessKeybind(ASC_Keybind *keybind)
 
 static void ASC_ProcessKeybinds(void)
 {
-    if(ASC_ProcessKeybind(&gApp->config.keybinds.AppQuit))
+    ASC_Keybinds *kb = &gApp->config.keybinds;
+
+    if(ASC_ProcessKeybind(&kb->AppQuit))
     {
         ASC_DebugLog("Keybind: Quit");
         gApp->running = 0;
     }
 
-    if(ASC_ProcessKeybind(&gApp->config.keybinds.AppFullscreen))
+    if(ASC_ProcessKeybind(&kb->AppFullscreen[0]) ||
+       ASC_ProcessKeybind(&kb->AppFullscreen[1]))
     {
         ASC_DebugLog("Keybind: Fullscreen");
         ASC_WindowToggleFullscreen();

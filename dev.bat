@@ -8,10 +8,7 @@ cmd /k
 set /P CommitMessage="git commit message: "
 if ["%CommitMessage%"]==[""] goto _end
 git init
-git add src
-git add readme.md
-git add build.bat
-git add dev.bat
+git add src readme.md build.bat dev.bat
 git commit -m "%CommitMessage%"
 git push origin master
 :_end

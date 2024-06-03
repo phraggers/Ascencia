@@ -103,22 +103,8 @@ static bool ASC_WindowInit(void)
         ASC_InfoLog("ASC_WindowInit: Loaded SDL [%d.%d.%d]", ver.major, ver.minor, ver.patch);
     }
 
-    if(!IMG_Init(IMG_INIT_PNG))
-    {
-        ASC_Error("ASC_WindowInit: IMG_Init error: %s", IMG_GetError());
-        return 0;
-    }
-    else
-    {
-        SDL_Version ver = {0};
-        ver.major = SDL_IMAGE_MAJOR_VERSION;
-        ver.minor = SDL_IMAGE_MINOR_VERSION;
-        ver.patch = SDL_IMAGE_MICRO_VERSION;
-        ASC_InfoLog("ASC_WindowInit: Loaded IMG [%d.%d.%d]", ver.major, ver.minor, ver.patch);
-    }
-
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, config->gl_ver_maj);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, config->gl_ver_min);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, config->gl_ver[0]);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, config->gl_ver[1]);
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
@@ -161,7 +147,7 @@ static bool ASC_WindowInit(void)
         ASC_DebugLog("ASC_WindowInit: SDLGLContext set to window");
     }
 
-    if(!ASC_LoadGLFunctions(config->gl_ver_maj, config->gl_ver_min))
+    if(!ASC_LoadGLFunctions(config->gl_ver[0], config->gl_ver[1]))
     {
         return 0;
     }
@@ -299,8 +285,11 @@ static bool ASC_WindowHandleEvents(void)
             case SDL_EVENT_WINDOW_SHOWN:
             case SDL_EVENT_WINDOW_TAKE_FOCUS:
             {
-                ASC_DebugLog("WindowEvent: Window has focus");
-                window->hasFocus = 1;
+                if(!window->hasFocus)
+                {
+                    ASC_DebugLog("WindowEvent: Window has focus");
+                    window->hasFocus = 1;
+                }
             } break;
 
             case SDL_EVENT_WINDOW_HIDDEN:
@@ -310,6 +299,15 @@ static bool ASC_WindowHandleEvents(void)
             {
                 ASC_DebugLog("WindowEvent: Window does not have focus");
                 window->hasFocus = 0;
+            } break;
+
+            case SDL_EVENT_WINDOW_MOVED:
+            case SDL_EVENT_WINDOW_RESIZED:
+            {
+                int x,y,w,h;
+                SDL_GetWindowPosition(window->handle, &x, &y);
+                SDL_GetWindowSize(window->handle, &w, &h);
+                ASC_DebugLog("WindowEvent: Window pos changed [x:%d y:%d w:%d h:%d]", x,y,w,h);
             } break;
         }
      }
@@ -325,7 +323,7 @@ static bool ASC_WindowHandleEvents(void)
      // tbh using Xinput is much easier than this, but hey-ho SDL is great at everything else
      // (and xinput is windows only)
      
-     bool gamepadHandled[ASC_NUM_GAMEPADS]; // using this to check if it is connected
+     bool gamepadHandled[ASC_NUM_GAMEPADS] = {0}; // using this to check if it is connected
      
      int numJoysticks;
      u32 *joystickIDs = SDL_GetJoysticks(&numJoysticks); //array of connected IDs
@@ -572,7 +570,11 @@ static bool ASC_WindowSetVSync(bool vsync)
 
         else
         {
-            SDL_GL_SetSwapInterval(1);
+            // try adaptive vsync first (-1). If it isnt supported, use standard vsync (1).
+            if(SDL_GL_SetSwapInterval(-1) < 0)
+            {
+                SDL_GL_SetSwapInterval(1);
+            }
             gApp->config.vsync = 1;
             return 1;
         }

@@ -107,8 +107,6 @@ static void ASC_Fatal_(const cstr format, ...)
     vsnprintf(buffer, 1024, format, args);
     va_end(args);
 
-    ASC_UpdateClock();
-
     #if ASC_DEBUG
     fprintf(stderr, "\033[1;31m[FATAL]\033[0m [%02d:%02d:%02d] [\033[0;33m%s:\033[0m \033[0;36m%d\033[0m]: %s\n", gApp->clock.hour, gApp->clock.minute, gApp->clock.second, filesub, line, buffer);
     #else
@@ -135,8 +133,6 @@ static void ASC_Error_(const cstr format, ...)
     vsnprintf(buffer, 1024, format, args);
     va_end(args);
 
-    ASC_UpdateClock();
-
     #if ASC_DEBUG
     fprintf(stderr, "\033[1;31m[ERROR]\033[0m [%02d:%02d:%02d] [\033[0;33m%s:\033[0m \033[0;36m%d\033[0m]: %s\n", gApp->clock.hour, gApp->clock.minute, gApp->clock.second, filesub, line, buffer);
     #else
@@ -161,8 +157,6 @@ static void ASC_InfoLog_(const cstr format, ...)
     vsnprintf(buffer, 1024, format, args);
     va_end(args);
 
-    ASC_UpdateClock();
-
     #if ASC_DEBUG
     fprintf(stdout, "\033[1;32m[INFO]\033[0m [%02d:%02d:%02d] [\033[0;33m%s:\033[0m \033[0;36m%d\033[0m]: %s\n", gApp->clock.hour, gApp->clock.minute, gApp->clock.second, filesub, line, buffer);
     #else
@@ -183,8 +177,6 @@ static void ASC_DebugLog_(const cstr file, const int line, const cstr format, ..
     va_start(args, format);
     vsnprintf(buffer, 1024, format, args);
     va_end(args);
-
-    ASC_UpdateClock();
 
     fprintf(stdout, "\033[1;36m[DEBUG]\033[0m [%02d:%02d:%02d] [\033[0;33m%s:\033[0m \033[0;36m%d\033[0m]: %s\n", gApp->clock.hour, gApp->clock.minute, gApp->clock.second, filesub, line, buffer);
     fflush(stdout);

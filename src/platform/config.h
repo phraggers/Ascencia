@@ -15,6 +15,7 @@
 #define CONFIG_APP_NAME "Ascencia"
 #define CONFIG_APP_VER_MAJ 0
 #define CONFIG_APP_VER_MIN 1
+#define CONFIG_APP_VER_REV 1
 #define CONFIG_GL_VER_MAJ 4
 #define CONFIG_GL_VER_MIN 5
 
@@ -54,17 +55,15 @@ typedef struct
 typedef struct
 {
     ASC_Keybind AppQuit;
-    ASC_Keybind AppFullscreen;
+    ASC_Keybind AppFullscreen[2];
 } ASC_Keybinds;
 
 typedef struct
 {
     char app_org[32];
     char app_name[32];
-    i32 app_ver_maj;
-    i32 app_ver_min;
-    i32 gl_ver_maj;
-    i32 gl_ver_min;
+    i32 app_ver[3];
+    i32 gl_ver[2];
 
     // Config File Variables
     i32 window_width;
@@ -82,10 +81,10 @@ typedef struct
 #define GCONFIGPATH_LEN 512
 static char *gConfigPath = 0;
 
-static bool ASC_ConfigInit(void);
+static bool ASC_ConfigInit(bool noConfig, bool resetConfig, bool noFullscreen, bool fullscreen);
 static void ASC_ConfigQuit(void);
 static void ASC_ConfigKeybindsInit(void);
-static bool ASC_LoadConfigFile(void);
+static bool ASC_LoadConfigFile(bool forcedFullscreen);
 static bool ASC_SaveConfigFile(void);
 
 #endif
@@ -94,16 +93,17 @@ static bool ASC_SaveConfigFile(void);
 
 #ifdef ASC_IMPL
 
-static bool ASC_ConfigInit(void)
+static bool ASC_ConfigInit(bool noPref, bool resetConfig, bool noFullscreen, bool fullscreen)
 {
     ASC_Config *config = &gApp->config;
 
     memcpy(config->app_org, CONFIG_APP_ORG, 32);
     memcpy(config->app_name, CONFIG_APP_NAME, 32);
-    config->app_ver_maj = CONFIG_APP_VER_MAJ;
-    config->app_ver_min = CONFIG_APP_VER_MIN;
-    config->gl_ver_maj = CONFIG_GL_VER_MAJ;
-    config->gl_ver_min = CONFIG_GL_VER_MIN;
+    config->app_ver[0] = CONFIG_APP_VER_MAJ;
+    config->app_ver[1] = CONFIG_APP_VER_MIN;
+    config->app_ver[2] = CONFIG_APP_VER_REV;
+    config->gl_ver[0] = CONFIG_GL_VER_MAJ;
+    config->gl_ver[1] = CONFIG_GL_VER_MIN;
 
     config->window_width = CONFIG_DEFAULT_WINDOW_WIDTH;
     config->window_height = CONFIG_DEFAULT_WINDOW_HEIGHT;
@@ -113,13 +113,33 @@ static bool ASC_ConfigInit(void)
     config->gl_multisampling = CONFIG_GL_MULTISAMPLING;
     ASC_ConfigKeybindsInit();
 
+    if(noFullscreen)
+    {
+        ASC_InfoLog("-nofullscreen : forcing no fullscreen");
+        config->fullscreen = 0;
+    }
+
+    if(fullscreen)
+    {
+        ASC_InfoLog("-fullscreen : forcing fullscreen");
+        config->fullscreen = 1;
+    }
+
     cstr basepath = SDL_GetBasePath();
     memcpy(config->base_path, basepath, strlen(basepath));
     SDL_free(basepath);
 
-    cstr prefpath = SDL_GetPrefPath(CONFIG_APP_ORG, CONFIG_APP_NAME);
-    memcpy(config->pref_path, prefpath, strlen(prefpath));
-    SDL_free(prefpath);
+    if(noPref)
+    {
+        ASC_InfoLog("-nopref : Setting PrefPath to %s", config->base_path);
+        memcpy(config->pref_path, config->base_path, strlen(config->base_path));
+    }
+    else
+    {
+        cstr prefpath = SDL_GetPrefPath(CONFIG_APP_ORG, CONFIG_APP_NAME);
+        memcpy(config->pref_path, prefpath, strlen(prefpath));
+        SDL_free(prefpath);
+    }
 
     gConfigPath = (char*)malloc(GCONFIGPATH_LEN);
 
@@ -127,7 +147,14 @@ static bool ASC_ConfigInit(void)
     strcpy(gConfigPath, config->pref_path);
     strcat(gConfigPath, "config.bin");
 
-    if(!ASC_LoadConfigFile()) return 0;
+    if(resetConfig)
+    {
+        ASC_InfoLog("-resetconfig : Resetting config...");
+        remove(gConfigPath);
+        return ASC_SaveConfigFile();
+    }
+
+    if(!ASC_LoadConfigFile(fullscreen || noFullscreen)) return 0;
 
     return 1;
 }
@@ -141,10 +168,11 @@ static void ASC_ConfigKeybindsInit(void)
 {
     ASC_Config *config = &gApp->config;
     config->keybinds.AppQuit = {SDL_SCANCODE_F4, ASC_KEYBIND_DOWNTICK, ASC_KEYBIND_MOD_ALT};
-    config->keybinds.AppFullscreen = {SDL_SCANCODE_F11, ASC_KEYBIND_DOWNTICK, 0};
+    config->keybinds.AppFullscreen[0] = {SDL_SCANCODE_F11, ASC_KEYBIND_DOWNTICK, 0};
+    config->keybinds.AppFullscreen[1] = {SDL_SCANCODE_RETURN, ASC_KEYBIND_DOWNTICK, ASC_KEYBIND_MOD_ALT};
 }
 
-static bool ASC_LoadConfigFile(void)
+static bool ASC_LoadConfigFile(bool forcedFullscreen)
 {
     ASC_Config *config = &gApp->config;
 
@@ -173,18 +201,23 @@ static bool ASC_LoadConfigFile(void)
             return ASC_SaveConfigFile();
         }
 
-        i32 headVer[2] = {0,0};
-        fread(headVer, sizeof(i32), 2, configFile);
-        if(headVer[0] != config->app_ver_maj || headVer[1] != config->app_ver_min)
+        i32 headVer[3] = {0,0,0};
+        fread(headVer, sizeof(i32), 3, configFile);
+        if(headVer[0] != config->app_ver[0] || headVer[1] != config->app_ver[1] || headVer[2] != config->app_ver[2])
         {
-            ASC_Error("ASC_LoadConfigFile: Config file version mis-match, config version: %d.%d", headVer[0], headVer[1]);
+            ASC_Error("ASC_LoadConfigFile: Config file version mis-match, config version: %d.%d.%d", headVer[0], headVer[1], headVer[2]);
             //TODO decide what to do here. probably do check on major ver, check if ver is later, write code to update config if earlier version, etc.
+            // for now, just remake it.
+            fclose(configFile);
+            remove(gConfigPath);
+            return ASC_SaveConfigFile();
         }
     }
 
     fread(&config->window_width, sizeof(i32), 1, configFile);
     fread(&config->window_height, sizeof(i32), 1, configFile);
-    fread(&config->fullscreen, sizeof(b8), 1, configFile);
+    if(!forcedFullscreen) fread(&config->fullscreen, sizeof(b8), 1, configFile);
+    else fseek(configFile, sizeof(b8), SEEK_CUR);
     fread(&config->vsync, sizeof(b8), 1, configFile);
     fread(&config->fps, sizeof(i32), 1, configFile);
     fread(&config->gl_multisampling, sizeof(i32), 1, configFile);
@@ -217,8 +250,7 @@ static bool ASC_SaveConfigFile(void)
     }
 
     fwrite("ASCCFG", 1, 6, configFile);
-    fwrite(&config->app_ver_maj, sizeof(i32), 1, configFile);
-    fwrite(&config->app_ver_min, sizeof(i32), 1, configFile);
+    fwrite(&config->app_ver, sizeof(i32), 3, configFile);
     fwrite(&config->window_width, sizeof(i32), 1, configFile);
     fwrite(&config->window_height, sizeof(i32), 1, configFile);
     fwrite(&config->fullscreen, sizeof(b8), 1, configFile);
