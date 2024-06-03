@@ -1,7 +1,8 @@
 .gitignore
+.gitattributes
 .git
 .vscode
-.lnk
+AppData_Phragware.lnk
 build/
 include/
 data/
