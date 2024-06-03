@@ -10,4 +10,4 @@
 - zlib, libarchive for compression & data files
 - ENet for networking
 - libcrypto/OpenSSL for hashing
-- OpenAL audio
+- OpenAL audio (sndfile loader)
