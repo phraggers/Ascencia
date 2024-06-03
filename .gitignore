@@ -1,6 +1,9 @@
 .gitignore
 .git
+.vscode
+.lnk
 build/
 include/
+data/
 lib/
 misc/
