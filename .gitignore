@@ -1,9 +1,0 @@
-.gitignore
-.git
-.vscode
-AppData_Phragware.lnk
-build/
-include/
-data/
-lib/
-misc/
