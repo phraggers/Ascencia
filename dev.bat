@@ -10,6 +10,8 @@ if ["%CommitMessage%"]==[""] goto _end
 git init
 git add src
 git add readme.md
+git add build.bat
+git add dev.bat
 git commit -m "%CommitMessage%"
 git push origin master
 :_end
