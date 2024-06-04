@@ -9,9 +9,16 @@
 
 #include <util/types.h>
 
+#ifdef ASC_WINDOWS
+    #include <WinSock2.h>
+#else // ASC_LINUX / ASC_MACOS
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <fcntl.h>
+#endif
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_thread.h>
-#include <enet/enet.h>
 #include <archive.h>
 #include <archive_entry.h>
 
@@ -51,32 +58,7 @@ static bool ASC_Init(int argc, char **argv)
     memset(gApp, 0, sizeof(*gApp));
     ASC_UpdateClock();
 
-    {
-        bool noPref = 0;
-        bool resetConfig = 0;
-        bool noFullscreen = 0;
-        bool fullscreen = 0;
-
-        for(int argIndex = 0; argIndex < argc; argIndex++)
-        {
-            cstr arg = (cstr)malloc(strlen(argv[argIndex]));
-            for(int i=0;i<strlen(argv[argIndex]);i++)
-            {
-                arg[i] = (char)tolower(argv[argIndex][i]);
-            }
-            free(arg);
-
-            ASC_DebugLog("arg : %s", arg);
-
-            if(strstr(arg, "-nopref")) noPref = 1;
-            if(strstr(arg, "-resetconfig")) resetConfig = 1;
-            if(strstr(arg, "-nofullscreen")) noFullscreen = 1;
-            if(strstr(arg, "-fullscreen")) fullscreen = 1;
-        }
-
-        if(!ASC_ConfigInit(noPref, resetConfig, noFullscreen, fullscreen)) ASC_Fatal("Config Initialization Error");
-    }
-
+    if(!ASC_ConfigInit(argc, argv)) ASC_Fatal("Config Initialization Error");
     if(!ASC_LogInit()) ASC_Fatal("Log Initialization Error");
     if(!ASC_NetInit()) ASC_Fatal("Network Initialization Error");
     if(!ASC_WindowInit()) ASC_Fatal("Window Initialization Error");
@@ -105,11 +87,8 @@ static bool ASC_Run(void)
             break;
         }
 
-        if(!ASC_NetHandleEvents())
-        {
-            gApp->running = 0;
-            break;
-        }
+        // net frame
+        ASC_NetFrame();
 
         ASC_ProcessKeybinds();
 

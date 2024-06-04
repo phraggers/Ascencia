@@ -10,8 +10,11 @@
     cmdline Args:
     -nopref : doesn't create an AppData or home directory for configs, all saves are at basepath
     -resetconfig : deletes old config and restores defaults
+    -resetkeybinds : deletes old keybinds and restores defaults
     -nofullscreen : ignores config setting and forces no fullscreen at startup
     -fullscreen : ignores config setting and forces fullscreen at startup
+    -vsyncon : ignore config setting and force vsync on at startup
+    -vsyncoff : ignore config setting and force vsync off at startup
 
 */
 

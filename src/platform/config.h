@@ -9,6 +9,7 @@
 
 /* Global Defines */
 #define AUDIO_SFX_BUFFERS 0xff
+#define NETWORK_PORT 32000
 
 /* Non-Configurables */
 #define CONFIG_APP_ORG "Phragware"
@@ -79,13 +80,16 @@ typedef struct
 } ASC_Config;
 
 #define GCONFIGPATH_LEN 512
-static char *gConfigPath = 0;
+static cstr gConfigPath = 0;
+static cstr gKeybindsPath = 0;
 
-static bool ASC_ConfigInit(bool noConfig, bool resetConfig, bool noFullscreen, bool fullscreen);
+static bool ASC_ConfigInit(int argc, char **argv);
 static void ASC_ConfigQuit(void);
 static void ASC_ConfigKeybindsInit(void);
-static bool ASC_LoadConfigFile(bool forcedFullscreen);
+static bool ASC_LoadConfigFile(bool defFullscreen, bool defVsync);
 static bool ASC_SaveConfigFile(void);
+static bool ASC_LoadKeybindsFile(void);
+static bool ASC_SaveKeybindsFile(void);
 
 #endif
 
@@ -93,8 +97,40 @@ static bool ASC_SaveConfigFile(void);
 
 #ifdef ASC_IMPL
 
-static bool ASC_ConfigInit(bool noPref, bool resetConfig, bool noFullscreen, bool fullscreen)
+static bool ASC_ConfigInit(int argc, char **argv)
 {
+    bool noPref = 0;
+    bool resetConfig = 0;
+    bool resetKeybinds = 0;
+    bool noFullscreen = 0;
+    bool fullscreen = 0;
+    bool vsyncOn = 0;
+    bool vsyncOff = 0;
+
+    for(int argIndex = 0; argIndex < argc; argIndex++)
+    {
+        cstr arg = (cstr)malloc(strlen(argv[argIndex]));
+        for(int i=0;i<strlen(argv[argIndex]);i++)
+        {
+            if(argIndex > 0) arg[i] = (char)tolower(argv[argIndex][i]);
+            else arg[i] = argv[argIndex][i];
+        }
+        free(arg);
+        
+        ASC_DebugLog("arg[%d] : %s", argIndex, arg);
+
+        if(argIndex > 0)
+        {
+            if(strstr(arg, "-nopref")) noPref = 1;
+            if(strstr(arg, "-resetconfig")) resetConfig = 1;
+            if(strstr(arg, "-resetkeybinds")) resetKeybinds = 1;
+            if(strstr(arg, "-nofullscreen")) noFullscreen = 1;
+            if(strstr(arg, "-fullscreen")) fullscreen = 1;
+            if(strstr(arg, "-vsyncon")) vsyncOn = 1;
+            if(strstr(arg, "-vsyncoff")) vsyncOff = 1;
+        }
+    }
+
     ASC_Config *config = &gApp->config;
 
     memcpy(config->app_org, CONFIG_APP_ORG, 32);
@@ -125,6 +161,18 @@ static bool ASC_ConfigInit(bool noPref, bool resetConfig, bool noFullscreen, boo
         config->fullscreen = 1;
     }
 
+    if(vsyncOn)
+    {
+        ASC_InfoLog("-vsyncon : forcing vsync on");
+        config->vsync = 1;
+    }
+
+    if(vsyncOff)
+    {
+        ASC_InfoLog("-vsyncoff : forcing vsync off");
+        config->vsync = 0;
+    }
+
     cstr basepath = SDL_GetBasePath();
     memcpy(config->base_path, basepath, strlen(basepath));
     SDL_free(basepath);
@@ -141,11 +189,15 @@ static bool ASC_ConfigInit(bool noPref, bool resetConfig, bool noFullscreen, boo
         SDL_free(prefpath);
     }
 
-    gConfigPath = (char*)malloc(GCONFIGPATH_LEN);
-
+    gConfigPath = (cstr)malloc(GCONFIGPATH_LEN);
     memset(gConfigPath, 0, GCONFIGPATH_LEN);
     strcpy(gConfigPath, config->pref_path);
     strcat(gConfigPath, "config.bin");
+
+    gKeybindsPath = (cstr)malloc(GCONFIGPATH_LEN);
+    memset(gKeybindsPath, 0, GCONFIGPATH_LEN);
+    strcpy(gKeybindsPath, config->pref_path);
+    strcat(gKeybindsPath, "keybinds.bin");
 
     if(resetConfig)
     {
@@ -154,9 +206,17 @@ static bool ASC_ConfigInit(bool noPref, bool resetConfig, bool noFullscreen, boo
         return ASC_SaveConfigFile();
     }
 
-    if(!ASC_LoadConfigFile(fullscreen || noFullscreen)) return 0;
+    if(resetKeybinds)
+    {
+        ASC_InfoLog("-resetkeybinds : Resetting keybinds...");
+        remove(gKeybindsPath);
+        return ASC_SaveKeybindsFile();
+    }
 
-    return 1;
+    bool result = ASC_LoadConfigFile((fullscreen||noFullscreen), (vsyncOn||vsyncOff));
+    result = ASC_LoadKeybindsFile() && result;
+
+    return result;
 }
 
 static void ASC_ConfigQuit(void)
@@ -172,7 +232,7 @@ static void ASC_ConfigKeybindsInit(void)
     config->keybinds.AppFullscreen[1] = {SDL_SCANCODE_RETURN, ASC_KEYBIND_DOWNTICK, ASC_KEYBIND_MOD_ALT};
 }
 
-static bool ASC_LoadConfigFile(bool forcedFullscreen)
+static bool ASC_LoadConfigFile(bool defFullscreen, bool defVsync)
 {
     ASC_Config *config = &gApp->config;
 
@@ -216,12 +276,12 @@ static bool ASC_LoadConfigFile(bool forcedFullscreen)
 
     fread(&config->window_width, sizeof(i32), 1, configFile);
     fread(&config->window_height, sizeof(i32), 1, configFile);
-    if(!forcedFullscreen) fread(&config->fullscreen, sizeof(b8), 1, configFile);
+    if(!defFullscreen) fread(&config->fullscreen, sizeof(b8), 1, configFile);
     else fseek(configFile, sizeof(b8), SEEK_CUR);
-    fread(&config->vsync, sizeof(b8), 1, configFile);
+    if(!defVsync) fread(&config->vsync, sizeof(b8), 1, configFile);
+    else fseek(configFile, sizeof(b8), SEEK_CUR);
     fread(&config->fps, sizeof(i32), 1, configFile);
     fread(&config->gl_multisampling, sizeof(i32), 1, configFile);
-    fread(&config->keybinds, sizeof(ASC_Keybinds), 1, configFile);
     
     fclose(configFile);
 
@@ -257,11 +317,91 @@ static bool ASC_SaveConfigFile(void)
     fwrite(&config->vsync, sizeof(b8), 1, configFile);
     fwrite(&config->fps, sizeof(i32), 1, configFile);
     fwrite(&config->gl_multisampling, sizeof(i32), 1, configFile);
-    fwrite(&config->keybinds, sizeof(ASC_Keybinds), 1, configFile);
     
     fclose(configFile);
 
-    ASC_InfoLog("ASC_SaveConfigFile: Saved config");
+    ASC_InfoLog("ASC_SaveConfigFile: Saved %s", gConfigPath);
+
+    return 1;
+}
+
+static bool ASC_LoadKeybindsFile(void)
+{
+    ASC_Config *config = &gApp->config;
+
+    if(!gKeybindsPath)
+    {
+        ASC_Error("ASC_LoadKeybindsFile: Keybinds path null");
+        return 0;
+    }
+
+    FILE *keybindsFile = 0;
+    keybindsFile = fopen(gKeybindsPath, "rb");
+
+    if(!keybindsFile)
+    {
+        ASC_InfoLog("ASC_LoadKeybindsFile: Keybinds file does not exist, creating new");
+        return ASC_SaveKeybindsFile();
+    }
+
+    { // Read Header
+        char headTag[6] = {0};
+        fread(headTag, 1, 6, keybindsFile);
+        if(strcmp(headTag, "ASCCFG") != 0)
+        {
+            ASC_Error("ASC_LoadKeybindsFile: Keybinds file header invalid, overwriting with new");
+            fclose(keybindsFile);
+            return ASC_SaveKeybindsFile();
+        }
+
+        i32 headVer[3] = {0,0,0};
+        fread(headVer, sizeof(i32), 3, keybindsFile);
+        if(headVer[0] != config->app_ver[0] || headVer[1] != config->app_ver[1] || headVer[2] != config->app_ver[2])
+        {
+            ASC_Error("ASC_LoadKeybindsFile: Keybinds file version mis-match, keybinds version: %d.%d.%d", headVer[0], headVer[1], headVer[2]);
+            //TODO decide what to do here. probably do check on major ver, check if ver is later, write code to update config if earlier version, etc.
+            // for now, just remake it.
+            fclose(keybindsFile);
+            remove(gKeybindsPath);
+            return ASC_SaveKeybindsFile();
+        }
+    }
+
+    fread(&config->keybinds, sizeof(ASC_Keybinds), 1, keybindsFile);
+    
+    fclose(keybindsFile);
+
+    ASC_InfoLog("ASC_LoadKeybindsFile: Loaded keybinds");
+
+    return 1;
+}
+
+static bool ASC_SaveKeybindsFile(void)
+{
+    ASC_Config *config = &gApp->config;
+
+    if(!gKeybindsPath)
+    {
+        ASC_Error("ASC_SaveKeybindsFile: Keybinds path null");
+        return 0;
+    }
+
+    FILE *keybindsFile = 0;
+    keybindsFile = fopen(gKeybindsPath, "wb");
+
+    if(!keybindsFile)
+    {
+        ASC_Error("ASC_SaveKeybindsFile: Failed to open Keybinds file for writing: %s", gKeybindsPath);
+        return 0;
+    }
+
+    fwrite("ASCCFG", 1, 6, keybindsFile);
+    fwrite(&config->app_ver, sizeof(i32), 3, keybindsFile);
+    fwrite(&config->keybinds, sizeof(ASC_Keybinds), 1, keybindsFile);
+    
+    fclose(keybindsFile);
+
+    ASC_InfoLog("ASC_SaveKeybindsFile: Saved %s", gKeybindsPath);
 
     return 1;
 }
