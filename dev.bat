@@ -13,3 +13,4 @@ git commit -m "%CommitMessage%"
 git push origin master
 :_end
 popd
+pause
