@@ -9,14 +9,13 @@
 
 /* Global Defines */
 #define AUDIO_SFX_BUFFERS 0xff
-#define NETWORK_PORT 32000
 
 /* Non-Configurables */
 #define CONFIG_APP_ORG "Phragware"
 #define CONFIG_APP_NAME "Ascencia"
 #define CONFIG_APP_VER_MAJ 0
 #define CONFIG_APP_VER_MIN 1
-#define CONFIG_APP_VER_REV 1
+#define CONFIG_APP_VER_REV 2
 #define CONFIG_GL_VER_MAJ 4
 #define CONFIG_GL_VER_MIN 5
 
@@ -26,7 +25,12 @@
 #define CONFIG_DEFAULT_FULLSCREEN 0
 #define CONFIG_DEFAULT_VSYNC 1
 #define CONFIG_DEFAULT_FPS 60
-#define CONFIG_GL_MULTISAMPLING 4
+#define CONFIG_DEFAULT_GL_MULTISAMPLING 4
+#define CONFIG_DEFAULT_SERVER_IP_A 127
+#define CONFIG_DEFAULT_SERVER_IP_B 0
+#define CONFIG_DEFAULT_SERVER_IP_C 0
+#define CONFIG_DEFAULT_SERVER_IP_D 1
+#define CONFIG_DEFAULT_SERVER_PORT 32000
 
 /* Keybind Modifiers (not configurable) */
 #define ASC_KEYBIND_MOD_LSHIFT (1<<0)
@@ -73,6 +77,9 @@ typedef struct
     b8 vsync;
     i32 fps;
     i32 gl_multisampling;
+    u8 server_ip[4];
+    u16 server_port;
+
     ASC_Keybinds keybinds;
 
     char base_path[256];
@@ -146,7 +153,13 @@ static bool ASC_ConfigInit(int argc, char **argv)
     config->fullscreen = CONFIG_DEFAULT_FULLSCREEN;
     config->vsync = CONFIG_DEFAULT_VSYNC;
     config->fps = CONFIG_DEFAULT_FPS;
-    config->gl_multisampling = CONFIG_GL_MULTISAMPLING;
+    config->gl_multisampling = CONFIG_DEFAULT_GL_MULTISAMPLING;
+    config->server_ip[0] = CONFIG_DEFAULT_SERVER_IP_A;
+    config->server_ip[1] = CONFIG_DEFAULT_SERVER_IP_B;
+    config->server_ip[2] = CONFIG_DEFAULT_SERVER_IP_C;
+    config->server_ip[3] = CONFIG_DEFAULT_SERVER_IP_D;
+    config->server_port = CONFIG_DEFAULT_SERVER_PORT;
+
     ASC_ConfigKeybindsInit();
 
     if(noFullscreen)
@@ -282,6 +295,8 @@ static bool ASC_LoadConfigFile(bool defFullscreen, bool defVsync)
     else fseek(configFile, sizeof(b8), SEEK_CUR);
     fread(&config->fps, sizeof(i32), 1, configFile);
     fread(&config->gl_multisampling, sizeof(i32), 1, configFile);
+    fread(&config->server_ip, sizeof(u8), 4, configFile);
+    fread(&config->server_port, sizeof(u16), 1, configFile);
     
     fclose(configFile);
 
@@ -317,6 +332,8 @@ static bool ASC_SaveConfigFile(void)
     fwrite(&config->vsync, sizeof(b8), 1, configFile);
     fwrite(&config->fps, sizeof(i32), 1, configFile);
     fwrite(&config->gl_multisampling, sizeof(i32), 1, configFile);
+    fwrite(&config->server_ip, sizeof(u8), 4, configFile);
+    fwrite(&config->server_port, sizeof(u16), 1, configFile);
     
     fclose(configFile);
 

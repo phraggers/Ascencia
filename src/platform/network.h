@@ -7,9 +7,36 @@
 
 #ifdef ASC_HEAD
 
+enum NETPACKET_TYPE : u8
+{
+    NETPACKET_NONE = 0,
+    NETPACKET_CLIENT_REQUEST_DATA,
+    NETPACKET_CLIENT_PROVIDE_DATA,
+    NETPACKET_SERVER_REQUEST_DATA,
+    NETPACKET_SERVER_PROVIDE_DATA,
+};
+
+enum NETPACKET_DATA_TYPE : u8
+{
+    NETPACKET_DATA_NONE = 0,
+    NETPACKET_DATA_ID,
+};
+
+typedef struct
+{
+    u16 target;
+    u16 source;
+    NETPACKET_TYPE type;
+    NETPACKET_DATA_TYPE dataType;
+    u8 dataSize;
+    u8 data[0xff];
+} ASC_NetPacket;
+
 typedef struct
 {
     bool running;
+    u16 localID; // temporary, used to request ID from server
+    u16 clientID;
     SDL_Semaphore *dataLock;
     SDL_Thread *thread;
 } ASC_NetThreadData;
@@ -58,7 +85,7 @@ static bool ASC_NetInit(void)
         return 0;
     }
 
-    gApp->network.port = NETWORK_PORT;
+    gApp->network.port = gApp->config.server_port;
     gApp->network.address.sin_family = AF_INET;
     gApp->network.address.sin_addr.S_un.S_addr = INADDR_ANY;
     gApp->network.address.sin_port = htons(gApp->network.port);
@@ -112,10 +139,32 @@ static void ASC_NetQuit(void)
 
 static bool ASC_NetFrame(void)
 {
-    if(gApp->timer.ticks % 50 == 0)
+    SDL_WaitSemaphore(gApp->network.netThread.dataLock);
+    u16 clientID = gApp->network.netThread.clientID;
+    while(!gApp->network.netThread.localID) // using while so it can't be 0
     {
-        ASC_NetSendPacket(ASC_NetAddress(127,0,0,1, 32000), (ptr)"hello world", 12);
+        gApp->network.netThread.localID = ASC_RANDU16;
     }
+    u16 localID = gApp->network.netThread.localID;
+    SDL_PostSemaphore(gApp->network.netThread.dataLock);
+
+    if(!clientID)
+    {
+        if(gApp->timer.ticks % 50 == 0)
+        {
+            ASC_NetPacket packet = {0};
+            packet.target = 1;
+            packet.source = localID;
+            packet.type = NETPACKET_CLIENT_REQUEST_DATA;
+            packet.dataType = NETPACKET_DATA_ID;
+
+            ASC_NetSendPacket(ASC_NetAddress(gApp->config.server_ip[0], gApp->config.server_ip[1], gApp->config.server_ip[2], gApp->config.server_ip[3], gApp->config.server_port), (ptr)&packet, sizeof(packet));
+
+            ASC_InfoLog("ASC_NetFrame: Requested ID from server (localID %u)", localID);
+        }
+    }
+
+    
 
     return 1;
 }
@@ -132,7 +181,7 @@ static bool ASC_NetSendPacket(sockaddr_in dest, ptr data, int size)
         return 0;
     }
 
-    ASC_InfoLog("ASC_NetSendPacket: Packet Sent [%u:%u] (%d bytes)", ntohl(dest.sin_addr.S_un.S_addr), ntohs(dest.sin_port), size);
+    ASC_DebugLog("ASC_NetSendPacket: Packet Sent [%u:%u] (%d bytes)", ntohl(dest.sin_addr.S_un.S_addr), ntohs(dest.sin_port), size);
 
     return 1;
 }
@@ -159,21 +208,65 @@ int ASC_NetThread(ptr data)
         SDL_WaitSemaphore(tdata->dataLock);
         running = tdata->running;
 
-        u8 packetData[256];
-        u32 maxPacketSize = sizeof(packetData);
+        ASC_NetPacket packet = {0};
         sockaddr_in from;
         #ifdef ASC_WINDOWS
         typedef int socklen_t;
         #endif
         socklen_t fromLength = sizeof(from);
 
-        int bytes = recvfrom(gApp->network.handle, (cstr)packetData, maxPacketSize, 0, (sockaddr*)&from, &fromLength);
+        int bytes = recvfrom(gApp->network.handle, (cstr)&packet, sizeof(ASC_NetPacket), 0, (sockaddr*)&from, &fromLength);
 
         if(bytes > 0)
         {
-            u32 fromAddress = ntohl(from.sin_addr.S_un.S_addr);
-            u16 fromPort = ntohs(from.sin_port);
-            ASC_InfoLog("NetThread: Packet Received [%u:%u] (%d bytes)",fromAddress, fromPort, bytes);
+            if(packet.source == 1)
+            {
+                if(!tdata->clientID) // not yet connected
+                {
+                    if(packet.target == tdata->localID)
+                    {
+                        if(packet.type == NETPACKET_SERVER_PROVIDE_DATA && 
+                        packet.dataType == NETPACKET_DATA_ID)
+                        {
+                            if(packet.dataSize != sizeof(u16))
+                            {
+                                ASC_Error("NetThread: received invalid ID packet from server");
+                            }
+                            else
+                            {
+                                memcpy(&tdata->clientID, (ptr)packet.data, sizeof(u16));
+                                ASC_InfoLog("NetThread: Connected to server with ID: %u", tdata->clientID);
+                            }
+                        }
+                    }
+                }
+                else // connected to server (tdata->clientID > 0)
+                {
+                    switch(packet.type)
+                    {
+                        case NETPACKET_SERVER_REQUEST_DATA:
+                        {
+
+                        } break;
+
+                        case NETPACKET_SERVER_PROVIDE_DATA:
+                        {
+
+                        } break;
+                     
+                        default:
+                        {
+                            ASC_Error("NetThread: Server sent invalid packet type (%u)", packet.type);
+                        } break;
+                    }
+                }
+            }
+            else //msg not from server
+            {
+                u32 fromAddress = ntohl(from.sin_addr.S_un.S_addr);
+                u16 fromPort = ntohs(from.sin_port);
+                ASC_DebugLog("NetThread: Packet Received [%u:%u] (%d bytes)",fromAddress, fromPort, bytes);
+            }
         }
 
         SDL_PostSemaphore(tdata->dataLock);

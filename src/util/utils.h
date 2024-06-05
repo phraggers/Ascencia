@@ -7,10 +7,38 @@
 
 #ifdef ASC_HEAD
 
+#include <math.h>
 #include <openssl/evp.h>
 
-static r64 ASC_norm64(r64 val, r64 min, r64 max); // normalize 0.0 - 1.0 (64bit)
-static r32 ASC_norm32(r32 val, r32 min, r32 max); // normalize 0.0 - 1.0 (32bit)
+/* Maths Helpers */
+i32 ASC_sign(i32 v); // sign of
+r32 ASC_abs(r32 v); // absolute value
+i32 ASC_round_i32(r32 v); // round r32 to nearest i32
+u32 ASC_round_u32(r32 v); // round r32 to nearest u32
+i32 ASC_trunc_i32(r32 v); // truncate r32 to i32
+i32 ASC_floor_i32(r32 v); // floor r32 to i32
+i32 ASC_ceil_i32(r32 v); // ceil r32 to i32
+r32 ASC_div(r32 n, r32 d); // divide n/d, if d==0, returns 0.0f
+r64 ASC_norm64(r64 v, r64 min, r64 max); // normalize 0.0 - 1.0 (64bit)
+r32 ASC_norm32(r32 v, r32 min, r32 max); // normalize 0.0 - 1.0 (32bit)    
+r32 ASC_clamp(r32 v, r32 min, r32 max); // clamp between min and max
+r32 ASC_clampMin(r32 v, r32 min); // clamp to >= min
+r32 ASC_clampMax(r32 v, r32 max); // clamp to <= max
+r32 ASC_clampN(r32 v); // clamp to normalized value >= 0.0, <= 1.0
+u32 ASC_rotl(u32 v, i32 s); // rotate bits left (s times)
+u32 ASC_rotr(u32 v, i32 s); // rotate bits right (s times)
+r32 ASC_lerp(r32 a, r32 b, r32 t); // linear interpolation
+r32 ASC_qlerp(r32 a, r32 b, r32 t); // quick lerp (fewer CPU cycles but less precise)
+r64 ASC_pi64(void); // returns 64bit pi
+r32 ASC_pi32(void); // returns 32bit pi
+r64 ASC_tau64(void); // returns 64bit 2*pi
+r32 ASC_tau32(void); // returns 32bit 2*pi
+r32 ASC_sqrt(r32 v); // square root
+r32 ASC_square(r32 v); // v*v
+r32 ASC_pow32(r32 v, r32 s); // v^s
+r32 ASC_sin(r32 a);
+r32 ASC_cos(r32 a);
+r32 ASC_atan2(r32 y, r32 x);
 
 // get hashed u32 from input (inputSize = sizeof input)
 static u32 ASC_Hash32bit(ptr input, u64 inputSize);
@@ -41,14 +69,151 @@ static void ASC_SeedRand(ptr value, u64 valueSize); // eg: int seed = 1234; ASC_
 
 #ifdef ASC_IMPL
 
-static r64 ASC_norm64(r64 val, r64 min, r64 max)
+i32 ASC_sign(i32 v)
 {
-    return ((val-min) / (max-min));
+    return (v>=0)? 1 : -1;
 }
 
-static r32 ASC_norm32(r32 val, r32 min, r32 max)
+r32 ASC_abs(r32 v)
 {
-    return ((val-min) / (max-min));
+    return (r32)fabs(v);
+}
+
+i32 ASC_round_i32(r32 v)
+{
+    return (i32)floorf(v);
+}
+
+u32 ASC_round_u32(r32 v)
+{
+    return (u32)floorf(v);
+}
+
+i32 ASC_trunc_i32(r32 v)
+{
+    return (i32)v;
+}
+
+i32 ASC_floor_i32(r32 v)
+{
+    return (i32)floorf(v);
+}
+
+i32 ASC_ceil_i32(r32 v)
+{
+    return (i32)ceilf(v);
+}
+
+r32 ASC_div(r32 n, r32 d)
+{
+    if(d != 0.0f)
+    {
+        return n/d;
+    }
+    
+    return 0.0f;
+}
+
+r64 ASC_norm64(r64 v, r64 min, r64 max)
+{
+    return ((v-min) / (max-min));
+}
+
+r32 ASC_norm32(r32 v, r32 min, r32 max)
+{
+    return ((v-min) / (max-min));
+}
+
+r32 ASC_clamp(r32 v, r32 min, r32 max)
+{
+    return ((((v<min)?min:v)>max)?max:v);
+}
+
+r32 ASC_clampMin(r32 v, r32 min)
+{
+    return ((v<min)?min:v);
+}
+
+r32 ASC_clampMax(r32 v, r32 max)
+{
+    return ((v>max)?max:v);
+}
+
+r32 ASC_clampNorm(r32 v)
+{
+    return ((((v<0.0f)?0.0f:v)>1.0f)?1.0f:v);
+}
+
+u32 ASC_rotl(u32 v, i32 s)
+{
+    s &= 31;
+    return ((v<<s) | (v>>(32-s)));
+}
+
+u32 ASC_rotr(u32 v, i32 s)
+{
+    s &= 31;
+    return ((v>>s) | (v<<(32-s)));
+}
+
+r32 ASC_lerp(r32 a, r32 b, r32 t)
+{
+    return ((1.0f-t) *a) + (t*b);
+}
+
+r32 ASC_qlerp(r32 a, r32 b, r32 t)
+{
+    return a + t * (b - a);
+}
+
+r32 ASC_sqrt(r32 v)
+{
+    return sqrtf(v);
+}
+
+r32 ASC_square(r32 v)
+{
+    return v*v;
+}
+
+r32 ASC_pow32(r32 v, r32 s)
+{
+    return powf(v,s);
+}
+
+r64 ASC_pi64(void)
+{
+    return (r64)3.141592653589793238462643383279502884L;
+}
+
+r32 ASC_pi32(void)
+{
+    return (r32)3.141592653589793238463;
+}
+
+r64 ASC_tau64(void)
+{
+    return (r64)6.283185307179586476925286766559L;
+}
+
+r32 ASC_tau32(void)
+{
+    return (r32)6.2831853071795864769;
+}
+
+r32 ASC_sin(r32 a)
+{
+    return sinf(a);
+}
+
+r32 ASC_cos(r32 a)
+{
+    return cosf(a);
+}
+
+r32 ASC_atan2(r32 y, r32 x)
+{
+    return atan2f(y,x);
 }
 
 // CREDIT: modified version from Paul Hsieh: www.azillionmonkeys.com/qed/hash.html
