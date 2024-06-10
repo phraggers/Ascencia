@@ -36,6 +36,7 @@ struct ASC_Application
     ASC_Window window;
     ASC_Audio audio;
     ASC_Assets assets;
+    ASC_Logic logic;
 };
 
 static ASC_Application *gApp;
@@ -65,6 +66,7 @@ static bool ASC_Init(int argc, char **argv)
     if(!ASC_AudioInit()) ASC_Fatal("Audio Initialization Error");
     if(!ASC_TimerInit()) ASC_Fatal("Timer Initialization Error");
     if(!ASC_AssetsInit()) ASC_Fatal("Assets Initialization Error");
+    if(!ASC_LogicInit()) ASC_Fatal("Logic Initialization Error");
 
     ASC_InfoLog("ASC_Init: %s %s [%d.%d.%d]", gApp->config.app_org, gApp->config.app_name, gApp->config.app_ver[0], gApp->config.app_ver[1], gApp->config.app_ver[2]);
 

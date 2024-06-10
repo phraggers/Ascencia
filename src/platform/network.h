@@ -20,6 +20,7 @@ enum NETPACKET_DATA_TYPE : u8
 {
     NETPACKET_DATA_NONE = 0,
     NETPACKET_DATA_ID,
+    NETPACKET_DATA_USERLOGIN,
 };
 
 typedef struct
@@ -246,7 +247,18 @@ int ASC_NetThread(ptr data)
                     {
                         case NETPACKET_SERVER_REQUEST_DATA:
                         {
+                            switch(packet.dataType)
+                            {
+                                case NETPACKET_DATA_USERLOGIN:
+                                {
+                                    //TODO
+                                } break;
 
+                                default:
+                                {
+                                    ASC_Error("NetThread: Server sent invalid packet datatype (%u)", packet.dataType);
+                                } break;
+                            }
                         } break;
 
                         case NETPACKET_SERVER_PROVIDE_DATA:
