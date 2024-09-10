@@ -1,6 +1,8 @@
 
 :: === ASCENCIA WIN32 DEV SCRIPT ===
 
+:: To build release, just run this script with no arguments
+
 ::  usage: dev.bat code build debug run
 ::  code : open code editor (defined in dev.bat)
 ::  build : build Ascencia using dev.bat build settings
@@ -136,14 +138,11 @@ for %%x in (%*) do (
     if "%%~x"=="run" set arg_run=1
 )
 
+:: default config: build release
 if %arg_code%==0 if %arg_build%==0 if %arg_debug%==0 if %arg_run%==0 (
-    echo No operation selected.
-    echo usage: dev code build debug run
-    echo code : open code editor as defined in dev.bat
-    echo build : build Ascencia using dev.bat build settings
-    echo debug : open debug build in Visual Studio
-    echo run : run release build
-    goto WIN32_EXIT
+    set build_debug=0
+    set build_release=1
+    set arg_build=1
 )
 
 :WIN32_ARG_SELECT
