@@ -7,6 +7,21 @@
 ::  debug : open debug build in Visual Studio
 ::  run : run release build
 
+:: === RESOURCEHACKER.EXE LICENCE ===
+:: DISCLAIMER: I am NOT distributng ResourceHacker.exe with this bat,
+:: I am using this script to acquire ResourceHacker directly from the ResourceHacker website.
+:: Please see https://www.angusj.com/resourcehacker/ for more details about this freeware.
+:: ---------------------------------------------------------------------------------------------
+::This Resource HackerTM software is released as freeware provided that you agree to the following terms and conditions:
+::
+::    This software is not to be distributed via any website domain or any other media without the prior written approval of the copyright owner.
+::    This software is not to be used in any way to illegally modify software. 
+::
+::DISCLAIMER: A user of this Resource HackerTM software acknowledges that he or she is receiving this software on an "as is" basis and the user is not relying on the accuracy or functionality of the software for any purpose. The user further acknowledges that any use of this software will be at the user's own risk and the copyright owner accepts no responsibility whatsoever arising from the use or application of the software.
+::
+::The above licence terms constitute "copyright management information" within the meaning of Section 1202 of Title 17 of the United States Code and must not be altered or removed from the licensed works. Their alteration or removal from the licensed works, and the distribution of licensed works without all the above licence terms in an unaltered way, may contravene Section 1202 and give rise civil and/or criminal consequences.
+::------------------------------------------------------------------------------------------------
+
 @echo off
 pushd %~dp0
 setlocal EnableDelayedExpansion
@@ -365,23 +380,23 @@ if not exist assets\rh.exe (
 )
 
 if %build_debug%==1 (
-    if not exist build\debug mkdir build\debug
-    del /q build\debug\*.*
-    if exist build\int\ascencia-d.exe copy build\int\ascencia-d.exe build\debug\ascencia-d.exe
-    if exist build\int\ascencia-d.dll copy build\int\ascencia-d.dll build\debug\ascencia-d.dll
-    if exist build\int\asc_stdlib-d.dll copy build\int\asc_stdlib-d.dll build\debug\asc_stdlib-d.dll
-    rh -open build\debug\ascencia-d.exe -resource assets\ascencia.ico -mask ICONGROUP,MAINICON, -action addskip -save build\debug\ascencia-d.exe
-    robocopy data build\debug /S /J /NDL /NJH /NJS /nc /ns /np
+    if not exist %~dp0build\debug mkdir %~dp0build\debug
+    del /q %~dp0build\debug\*.*
+    if exist %~dp0build\int\ascencia-d.dll copy %~dp0build\int\ascencia-d.dll %~dp0build\debug\ascencia-d.dll
+    if exist %~dp0build\int\ascencia-d.exe copy %~dp0build\int\ascencia-d.exe %~dp0build\debug\ascencia-d.exe
+    if exist %~dp0build\int\asc_stdlib-d.dll copy %~dp0build\int\asc_stdlib-d.dll %~dp0build\debug\asc_stdlib-d.dll
+    rh -open %~dp0build\debug\ascencia-d.exe -resource %~dp0assets\ascencia.ico -mask ICONGROUP,MAINICON, -action addskip -save %~dp0build\debug\ascencia-d.exe
+    robocopy %~dp0data %~dp0build\debug /S /J /NDL /NJH /NJS /nc /ns /np
 )
 
 if %build_release%==1 (
-    if not exist release mkdir release
-    del /q build\release\*.*
-    if exist build\int\ascencia.exe copy build\int\ascencia.exe build\release\ascencia.exe
-    if exist build\int\ascencia.dll copy build\int\ascencia.dll build\release\ascencia.dll
-    if exist build\int\asc_stdlib.dll copy build\int\asc_stdlib.dll build\release\asc_stdlib.dll
-    rh -open build\release\ascencia.exe -resource assets\ascencia.ico -mask ICONGROUP,MAINICON, -action addskip -save build\release\ascencia.exe
-    robocopy data build\release /S /J /NDL /NJH /NJS /nc /ns /np
+    if not exist %~dp0build\release mkdir %~dp0build\release
+    del /q %~dp0build\release\*.*
+    if exist %~dp0build\int\ascencia.exe copy %~dp0build\int\ascencia.exe %~dp0build\release\ascencia.exe
+    if exist %~dp0build\int\ascencia.dll copy %~dp0build\int\ascencia.dll %~dp0build\release\ascencia.dll
+    if exist %~dp0build\int\asc_stdlib.dll copy %~dp0build\int\asc_stdlib.dll %~dp0build\release\asc_stdlib.dll
+    rh -open %~dp0build\release\ascencia.exe -resource %~dp0assets\ascencia.ico -mask ICONGROUP,MAINICON, -action addskip -save %~dp0build\release\ascencia.exe
+    robocopy %~dp0data %~dp0build\release /S /J /NDL /NJH /NJS /nc /ns /np
 )
 
 if %cleanup_after_build%==1 goto WIN32_DO_CLEANUP
