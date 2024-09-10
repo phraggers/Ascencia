@@ -6,20 +6,19 @@
 <hr/>
 
 ### How to build:
-    Requirements:
-        - Windows 7 or later 64-bit
-        - Visual Studio Community (https://visualstudio.microsoft.com/) installed on C:\ drive
-        - powershell (comes with Windows since Vista)
-        - bitsadmin (comes with Windows since XP)
+Requirements:
+    - Windows 7 or later 64-bit
+    - Visual Studio Community (https://visualstudio.microsoft.com/) installed on C:\ drive
+    - powershell (comes with Windows since Vista)
+    - bitsadmin (comes with Windows since XP)
 
-    Just download this repository and run dev.bat
-    find the build in build/release folder
+Just download this repository and run dev.bat.
+Find the build in build/release folder.
 <hr/>
 
 ## Version History:<br/>
 
 - dev:
-- v0.0.1 [2024-09-10]:
-	- initial win32 platform layer
-
+    - v0.0.1 [2024-09-10]:
+	    - initial win32 platform layer
 <hr/>
