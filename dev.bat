@@ -143,6 +143,7 @@ if %arg_code%==0 if %arg_build%==0 if %arg_debug%==0 if %arg_run%==0 (
     set build_debug=0
     set build_release=1
     set arg_build=1
+    set cleanup_after_build=1
 )
 
 :WIN32_ARG_SELECT
