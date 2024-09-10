@@ -16,7 +16,7 @@ Just download this repository and run dev.bat.
 Find the build in build/release folder.
 <hr/>
 
-## Version History:<br/>
+### Version History:
 
 - dev:
     - v0.1.0:
