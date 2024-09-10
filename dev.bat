@@ -1,14 +1,22 @@
 
 :: === ASCENCIA WIN32 DEV SCRIPT ===
 
-::  usage: dev code build debug run
+::  usage: dev.bat code build debug run
 ::  code : open code editor (defined in dev.bat)
 ::  build : build Ascencia using dev.bat build settings
 ::  debug : open debug build in Visual Studio
 ::  run : run release build
 
+:: === BUILD REQUIREMENTS: ===
+
+:: Windows 7 x64 or higher
+:: Visual Studio Community (https://visualstudio.microsoft.com/) installed on C:\ drive
+:: powershell (comes with Windows since Vista)
+:: bitsadmin (comes with Windows since XP)
+
 :: === RESOURCEHACKER.EXE LICENCE ===
-:: DISCLAIMER: I am NOT distributng ResourceHacker.exe with this bat,
+
+:: DISCLAIMER: I am NOT distributng ResourceHacker.exe with this repository,
 :: I am using this script to acquire ResourceHacker directly from the ResourceHacker website.
 :: Please see https://www.angusj.com/resourcehacker/ for more details about this freeware.
 :: ---------------------------------------------------------------------------------------------
