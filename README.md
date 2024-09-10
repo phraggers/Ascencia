@@ -7,10 +7,10 @@
 
 ### How to build:
 Requirements:
-    - Windows 7 or later 64-bit
-    - Visual Studio Community (https://visualstudio.microsoft.com/) installed on C:\ drive
-    - powershell (comes with Windows since Vista)
-    - bitsadmin (comes with Windows since XP)
+- Windows 7 or later 64-bit
+- Visual Studio Community (https://visualstudio.microsoft.com/) installed on C:\ drive
+- powershell (comes with Windows since Vista)
+- bitsadmin (comes with Windows since XP)
 
 Just download this repository and run dev.bat.
 Find the build in build/release folder.
