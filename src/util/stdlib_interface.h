@@ -13,8 +13,8 @@
     for main build
 */
 
-#ifndef ASCENCIA_STDLIB_INTERFACE_H
-#define ASCENCIA_STDLIB_INTERFACE_H
+#ifndef ASCENCIA_UTIL_STDLIB_INTERFACE_H
+#define ASCENCIA_UTIL_STDLIB_INTERFACE_H
 
 typedef int (*pSTD_puts)(const cstr cstring);
 typedef ptr (*pSTD_memcpy)(ptr dst, ptr src, u64 size);
@@ -43,4 +43,4 @@ extern STD_interface *G_stdlib_interface;
 #define STD_strcpy G_stdlib_interface->fnSTD_strcpy
 #define STD_strcat G_stdlib_interface->fnSTD_strcat
 
-#endif /* ASCENCIA_STDLIB_INTERFACE_H */
+#endif /* ASCENCIA_UTIL_STDLIB_INTERFACE_H */

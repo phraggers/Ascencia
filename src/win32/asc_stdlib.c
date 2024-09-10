@@ -17,12 +17,17 @@
 /*===================
     stdio.h
 =====================*/
-
 int STD_puts(const cstr cstring)
+#ifdef DEBUG
 {
     int result = puts(cstring);
     return result;
 }
+#else
+{
+    return 0;
+}
+#endif
 
 /*===================
     string.h
@@ -59,8 +64,8 @@ cstr STD_strcpy(cstr dst, const cstr src)
     }
     
     //just cheese it for now
-    //most of my strings are 0xff len anyway
-    strcpy_s(dst, 0xff, src);
+    //most of my strings are path length len anyway
+    strcpy_s(dst, MAX_PATH_LENGTH, src);
     return dst;
 }
 
@@ -72,7 +77,7 @@ cstr STD_strcat(cstr dst, cstr src)
     }
 
     //just cheese it for now
-    //most of my strings are 0xff len anyway
-    strcat_s(dst, 0xff, src);
+     //most of my strings are path length len anyway
+    strcat_s(dst, MAX_PATH_LENGTH, src);
     return dst;
 }

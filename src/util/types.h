@@ -6,8 +6,10 @@
  * Date: Sat Sep 07 2024
 ============================================================*/
 
-#ifndef ASCENCIA_TYPES_H
-#define ASCENCIA_TYPES_H
+#ifndef ASCENCIA_UTIL_TYPES_H
+#define ASCENCIA_UTIL_TYPES_H
+
+#define MAX_PATH_LENGTH 0xff
 
 #include <stdint.h>
 #include <limits.h>
@@ -62,4 +64,14 @@ typedef char* cstr;
     // re-interpret data bits(v) as new type(t)
 #define Reinterpret(t,v) (*((const t*)(v)))
 
-#endif /* ASCENCIA_TYPES_H */
+typedef struct sirect
+{
+    int x,y,w,h;
+} irect;
+
+typedef struct sfrect
+{
+    r32 x,y,w,h;
+} frect;
+
+#endif /* ASCENCIA_UTIL_TYPES_H */

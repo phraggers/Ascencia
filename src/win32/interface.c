@@ -8,9 +8,6 @@
 #include <util/types.h>
 #include <win32/shared.h>
 
-/* local functions */
-local bool _InitStdLib(void);
-
 /* WINDOWS TYPES -> MY TYPES
 ATOM        u16
 BOOL        i32
@@ -193,9 +190,7 @@ WORD        u16
 WPARAM      u64
 */
 
-/*==============================
-   kernel32.lib
-  ============================*/
+/* kernel32.lib */
 extern ptr GetModuleHandleA(const cstr module_name);
 extern cstr GetCommandLineA(void);
 extern ptr LoadLibraryA(const cstr lib_name);
@@ -207,13 +202,14 @@ extern i32 HeapFree(ptr heap, u32 flags, ptr mem);
 extern u32 GetModuleFileNameA(ptr module, cstr filename, u32 size);
 extern ptr AddDllDirectory(cstr path);
 extern u32 GetLastError(void);
-extern ptr CreateFileA(cstr path, u32 access, u32 smode, ptr sec, u32 creation, u32 flags, ptr template);
+extern ptr CreateFileA(cstr path, u32 access, u32 smode, ptr sec, u32 creation, u32 flags, ptr ftemplate);
 extern b32 CloseHandle(ptr handle);
-typedef union _LARGE_INTEGER { struct {u32 LowPart; i32 HighPart;} s; 
-struct {u32 LowPart; i32 HighPart;} u; i64 QuadPart;} LARGE_INTEGER;
 extern b32 GetFileSizeEx(ptr handle, LARGE_INTEGER *size);
 extern b32 ReadFile(ptr handle, ptr buffer, u32 bytes_to_read, u32 *bytes_read, ptr overlapped);
 extern b32 WriteFile(ptr handle, const ptr buffer, u32 bytes_to_write, u32 *bytes_written, ptr overlapped);
+extern b32 DeleteFileA(cstr path);
+extern b32 CreateDirectoryA(cstr path, ptr sec);
+extern b32 RemoveDirectoryA(cstr path);
 
 /*==============================
    Platform Interface
@@ -221,10 +217,10 @@ extern b32 WriteFile(ptr handle, const ptr buffer, u32 bytes_to_write, u32 *byte
 
 bool WIN_InterfaceInit(WIN_Data *win32_data)
 {
+
     win32_data = PL_Alloc0(sizeof(WIN_Data));
     if(!win32_data)
     {
-        //TODO: error: malloc error
         return 0;
     }
     G_win32_data = win32_data;
@@ -234,11 +230,21 @@ bool WIN_InterfaceInit(WIN_Data *win32_data)
 
 ptr WIN_LoadLibrary(const cstr lib_name)
 {
+    if(!lib_name)
+    {
+        return 0;
+    }
+
     return LoadLibraryA(lib_name);
 }
 
 ptr WIN_GetProcAddress(ptr module, const cstr proc_name)
 {
+    if(module == 0 || proc_name == 0)
+    {
+        return 0;
+    }
+
     return GetProcAddress(module, proc_name);
 }
 
@@ -318,12 +324,14 @@ b32 PL_Free(ptr mem)
 
 void WIN_SetBasePath(void)
 {
-    if(G_win32_data->base_path[0] == 0)
-    {
-        GetModuleFileNameA(0, G_win32_data->base_path, ASC_MAX_PATH);
+    Assert(G_win32_data != 0);
 
-        for(cstr cp = &G_win32_data->base_path[ASC_MAX_PATH];
-            *cp != '\\' && cp > &G_win32_data->base_path[0];
+    if(G_win32_data->win_config.base_path[0] == 0)
+    {
+        GetModuleFileNameA(0, G_win32_data->win_config.base_path, MAX_PATH_LENGTH);
+
+        for(cstr cp = &G_win32_data->win_config.base_path[MAX_PATH_LENGTH];
+            *cp != '\\' && cp > &G_win32_data->win_config.base_path[0];
             cp--)
         {
             *cp = 0;
@@ -333,17 +341,102 @@ void WIN_SetBasePath(void)
 
 cstr PL_GetBasePath(void)
 {
-    if(G_win32_data->base_path[0] == 0)
+    Assert(G_win32_data != 0);
+
+    if(G_win32_data->win_config.base_path[0] == 0)
     {
         WIN_SetBasePath();
     }
 
-    return (cstr)(&G_win32_data->base_path[0]);
+    return (cstr)(&G_win32_data->win_config.base_path[0]);
 }
 
 cstr PL_GetPrefPath(void)
 {
-    return (cstr)(&G_win32_data->pref_path[0]);
+    Assert(G_win32_data != 0);
+    return (cstr)(&G_win32_data->win_config.pref_path[0]);
+}
+
+bool PL_DoesFileExist(cstr path)
+{
+    Assert(G_win32_data != 0);
+    
+    if(!path)
+    {
+        PL_Log(LOG_DEBUG, "DoesFileExist: no path given");
+        return 0;
+    }
+
+    bool result = (WINAPI.PathFileExistsA(path)) ? 1:0;
+    if(result)
+    {
+        PL_Log2(LOG_DEBUG, "DoesFileExist [true]", path);
+    }
+    else
+    {
+        PL_Log2(LOG_DEBUG, "DoesFileExist [false]", path);
+    }
+    return result;
+}
+
+bool PL_DeleteFile(cstr path)
+{
+    if(!path)
+    {
+        PL_Log(LOG_DEBUG, "DeleteFile: no path given");
+        return 0;
+    }
+
+    bool result = (DeleteFileA(path)) ? 1:0;
+    if(result)
+    {
+        PL_Log2(LOG_DEBUG, "DeleteFile [success]", path);
+    }
+    else
+    {
+        PL_Log2(LOG_DEBUG, "DeleteFile [failed]", path);
+    }
+    return result;
+}
+
+bool PL_CreateDirectory(cstr path)
+{
+    if(!path)
+    {
+        PL_Log(LOG_DEBUG, "CreateDirectory: no path given");
+        return 0;
+    }
+
+    bool result = (CreateDirectoryA(path, 0)) ? 1:0;
+    if(result)
+    {
+        PL_Log2(LOG_DEBUG, "CreateDirectory [success]", path);
+    }
+    else
+    {
+        PL_Log2(LOG_DEBUG, "CreateDirectory [failed]", path);
+    }
+    return result;
+}
+
+bool PL_DeleteDirectory(cstr path)
+{
+    if(!path)
+    {
+        PL_Log(LOG_DEBUG, "DeleteDirectory: no path given");
+        return 0;
+    }
+
+    bool result = (RemoveDirectoryA(path)) ? 1:0;
+    if(result)
+    {
+        PL_Log2(LOG_DEBUG, "DeleteDirectory [success]", path);
+    }
+    else
+    {
+        PL_Log2(LOG_DEBUG, "DeleteDirectory [failed]", path);
+    }
+    return result;
 }
 
 /* file handle */
@@ -351,6 +444,7 @@ ptr PL_OpenFileHandleR(cstr path)
 {
     if(!path)
     {
+        PL_Log(LOG_DEBUG, "OpenFileHandleR: no path given");
         return 0;
     }
 
@@ -358,10 +452,11 @@ ptr PL_OpenFileHandleR(cstr path)
 
     if(handle == 0 || handle == ((ptr)(i64)-1))
     {
-        //TODO: error: failed to open file
+        PL_Log2(LOG_ERROR, "OpenFileHandleR: failed to open file:", path);
         return 0;
     }
 
+    PL_Log2(LOG_DEBUG, "OpenFileHandleR: file opened:", path);
     return handle;
 }
 
@@ -369,6 +464,7 @@ ptr PL_OpenFileHandleW(cstr path)
 {
     if(!path)
     {
+        PL_Log(LOG_DEBUG, "OPenFileHandleW: no path given");
         return 0;
     }
 
@@ -376,10 +472,11 @@ ptr PL_OpenFileHandleW(cstr path)
 
     if(handle == 0 || handle == ((ptr)(i64)-1))
     {
-        //TODO: error: failed to open file
+        PL_Log2(LOG_ERROR, "OpenFileHandleW: failed to open file:", path);
         return 0;
     }
 
+    PL_Log2(LOG_DEBUG, "OpenFileHandleW: file opened:", path);
     return handle;
 }
 
@@ -387,8 +484,12 @@ void PL_CloseFile(ptr handle)
 {
     if(!handle)
     {
+        PL_Log(LOG_DEBUG, "CloseFile: no handle given");
         return;
     }
+
+    //TODO: add handle to log when num->string func implemented
+    PL_Log(LOG_DEBUG, "CloseFile");
 
     CloseHandle(handle);
 }
@@ -397,6 +498,7 @@ u64 PL_GetFileSize(ptr handle)
 {
     if(!handle)
     {
+        PL_Log(LOG_DEBUG, "GetFileSize: no handle given");
         return 0;
     }
 
@@ -404,11 +506,14 @@ u64 PL_GetFileSize(ptr handle)
     b32 success = GetFileSizeEx(handle, &size);
     if(!success)
     {
-        //TODO: error: failed to get file size
+        PL_Log(LOG_ERROR, "GetFileSize: failed to get file size");
         return 0;
     }
 
     u64 result = (u64)size.QuadPart;
+
+    //TODO: add size to log when num->string func implemented
+    PL_Log(LOG_ERROR, "GetFileSize");
     return result;
 }
 
@@ -417,6 +522,7 @@ ASC_FileData *PL_FileRead(cstr path)
 {
     if(!path)
     {
+        PL_Log(LOG_DEBUG, "FileRead: no path given");
         return 0;
     }
 
@@ -425,12 +531,14 @@ ASC_FileData *PL_FileRead(cstr path)
     ptr handle = PL_OpenFileHandleR(path);
     if(!handle)
     {
+        PL_Log2(LOG_DEBUG, "FileRead: failed to get handle:", path);
         return 0;
     }
 
     file_size = PL_GetFileSize(handle);
     if(!file_size)
     {
+        PL_Log2(LOG_DEBUG, "FileRead: failed to get size:", path);
         PL_CloseFile(handle);
         return 0;
     }
@@ -438,7 +546,7 @@ ASC_FileData *PL_FileRead(cstr path)
     ASC_FileData *result = PL_Alloc0(sizeof(ASC_FileData) + file_size);
     if(!result)
     {
-        //TODO: error: malloc error
+        PL_Log2(LOG_ERROR, "FileRead: malloc error", path);
         PL_CloseFile(handle);
         return 0;
     }
@@ -450,12 +558,13 @@ ASC_FileData *PL_FileRead(cstr path)
     b32 read_result = ReadFile(handle, result->buffer, (u32)file_size, &bytes_read, 0);
     if(read_result == 0 || (u32)file_size != bytes_read)
     {
-        //TODO: error: failed to read file
+        PL_Log(LOG_ERROR, "FileRead: failed to read file");
         PL_CloseFile(handle);
         PL_Free(result);
         return 0;
     }
 
+    PL_Log2(LOG_DEBUG, "FileRead: success:", path);
     PL_CloseFile(handle);
     return result;
 }
@@ -464,12 +573,14 @@ bool PL_FileWrite(cstr path, ASC_FileData *data)
 {
     if(path == 0 || data == 0 || data->buffer == 0 || data->size == 0)
     {
+        PL_Log(LOG_DEBUG, "FileWrite: invalid parameters");
         return 0;
     }
 
     ptr handle = PL_OpenFileHandleW(path);
     if(!handle)
     {
+        PL_Log2(LOG_DEBUG, "FileWrite: failed to get handle:", path);
         return 0;
     }
 
@@ -478,11 +589,12 @@ bool PL_FileWrite(cstr path, ASC_FileData *data)
     
     if(write_result == 0 || (u32)data->size != bytes_written)
     {
-        //TODO: error: failed to write file
+        PL_Log(LOG_ERROR, "FileWrite: failed to write file");
         PL_CloseFile(handle);
         return 0;
     }
 
+    PL_Log2(LOG_DEBUG, "FileWrite: success:", path);
     PL_CloseFile(handle);
     return 1;
 }
@@ -491,10 +603,11 @@ bool PL_FileAppend(cstr path, ASC_FileData *data)
 {
     if(path == 0 || data == 0 || data->buffer == 0 || data->size == 0)
     {
+        PL_Log(LOG_DEBUG, "FileAppend: invalid parameters");
         return 0;
     }
 
-    //TODO:
+    //TODO: write function
 
     return 0;
 }
@@ -503,23 +616,67 @@ void PL_FileFree(ASC_FileData *data)
 {
     if(!data)
     {
+        PL_Log(LOG_DEBUG, "FileFree: invalid parameters");
         return;
     }
 
     data->buffer = 0;
     data->size = 0;
+
+    //TODO: put data ptr in log when int->string function implemented
+    PL_Log(LOG_DEBUG, "FileFree");
     PL_Free(data);
+}
+
+/*===================
+  WinAPI Init
+====================*/
+
+local bool _LoadWinAPI_shlwapi(void);
+
+bool WIN_WinAPIInit(void)
+{
+    Assert(G_win32_data != 0);
+
+    if(!_LoadWinAPI_shlwapi())
+    {
+        return 0;
+    }
+
+    return 1;
+}
+
+#define LOAD_WIN_FN(name) {WINAPI.##name = (pWin32_##name)WIN_GetProcAddress(lib, #name); if(!WINAPI.##name) return 0;}
+
+local bool _LoadWinAPI_shlwapi(void)
+{
+    ptr lib = WIN_LoadLibrary("shlwapi.dll");
+
+    if(!lib)
+    {
+        return 0;
+    }
+
+    LOAD_WIN_FN(PathFileExistsA);
+
+    return 1;
 }
 
 /*===================
   StdLib Init
 ====================*/
+
+#define LOAD_STD_FN(name) {name = (p##name)WIN_GetProcAddress(lib, #name ); if(!name) return 0;}
+
+local bool _InitStdLib(void);
+
 bool WIN_StdLibInit(STD_interface *stdlib_interface)
 {
+    Assert(G_win32_data != 0);
+
     stdlib_interface = PL_Alloc0(sizeof(STD_interface));
     if(!stdlib_interface)
     {
-        //TODO: error: malloc error
         return 0;
     }
     G_stdlib_interface = stdlib_interface;
@@ -532,23 +689,261 @@ bool WIN_StdLibInit(STD_interface *stdlib_interface)
     return 1;
 }
 
-#define LOAD_DLLFN(name) {name = (p##name)WIN_GetProcAddress(lib, #name ); if(!name) return 0;}
-
 local bool _InitStdLib(void)
 {
     ptr lib = WIN_LoadLibrary(ASC_STDLIB_DLL);
 
     if(!lib)
     {
-        //TODO: error: failed to load asc_stdlib.dll
         return 0;
     }
 
-    LOAD_DLLFN(STD_puts);
-    LOAD_DLLFN(STD_memcpy);
-    LOAD_DLLFN(STD_strlen);
-    LOAD_DLLFN(STD_strcpy);
-    LOAD_DLLFN(STD_strcat);
+    LOAD_STD_FN(STD_puts);
+    LOAD_STD_FN(STD_memcpy);
+    LOAD_STD_FN(STD_strlen);
+    LOAD_STD_FN(STD_strcpy);
+    LOAD_STD_FN(STD_strcat);
+
+    return 1;
+}
+
+/*===================
+   Logging
+====================*/
+
+local bool _LogFileInit(void)
+{
+    if(!PL_DoesFileExist("logs"))
+    {
+        PL_CreateDirectory("logs");
+    }
+
+    STD_strcpy(G_win32_data->logfile_path, PL_GetBasePath());
+    STD_strcat(G_win32_data->logfile_path, "logs\\");
+    //TODO: get timestamp
+    STD_strcat(G_win32_data->logfile_path, "yymmddhhmmss_");
+    STD_strcat(G_win32_data->logfile_path, "log.txt");
+
+    return 1;
+}
+
+bool PL_SetLogLevel(LOG_LEVEL console, LOG_LEVEL logfile)
+{
+    Assert(G_win32_data != 0);
+
+    if(G_win32_data->logfile_path[0] == 0)
+    {
+        if(!_LogFileInit())
+        {
+            return 0;
+        }
+    }
+
+    G_win32_data->console_loglevel = console;
+    G_win32_data->logfile_loglevel = logfile;
+
+    return 1;
+}
+
+local void _LogStringInit(LOG_LEVEL level, cstr logstring)
+{
+    //TODO: get timestamp
+    STD_strcat(logstring, "[yyyy-mm-dd hh:mm:ss]");
+
+    switch(level)
+    {
+        case LOG_FATAL:
+        {
+            STD_strcat(logstring, " [FATAL] ");
+        } break;
+        case LOG_ERROR:
+        {
+            STD_strcat(logstring, " [ERROR] ");
+        } break;
+        case LOG_WARN:
+        {
+            STD_strcat(logstring, " [WARN] ");
+        } break;
+        case LOG_INFO:
+        {
+            STD_strcat(logstring, " [INFO] ");
+        } break;
+        case LOG_DEBUG:
+        {
+            STD_strcat(logstring, " [DEBUG] ");
+        } break;
+        case LOG_NONE: break;
+    }
+}
+
+bool PL_Log(LOG_LEVEL level, cstr string)
+{
+    if(G_win32_data == 0 || 
+       STD_puts == 0 || 
+       string == 0)
+    {
+        return 0;
+    }
+
+    if(level > G_win32_data->console_loglevel &&
+       level > G_win32_data->logfile_loglevel)
+    {
+        return 1;
+    }
+
+    cstr logstring = PL_Alloc0(MAX_PATH_LENGTH);
+    if(!logstring)
+    {
+        return 0;
+    }
+
+    _LogStringInit(level, logstring);
+    STD_strcat(logstring, string);
+
+    if(level <= G_win32_data->console_loglevel)
+    {
+        STD_puts(logstring);
+    }
+
+    if(level <= G_win32_data->logfile_loglevel)
+    {
+        STD_strcat(logstring, "\n");
+        //TODO: write log file
+    }
+
+    PL_Free(logstring);
+
+    return 1;
+}
+
+bool PL_Log2(LOG_LEVEL level, cstr string1, cstr string2)
+{
+    if(G_win32_data == 0 || 
+       STD_puts == 0 ||
+       (string1 == 0 && string2 == 0))
+    {
+        return 0;
+    }
+
+    if(level > G_win32_data->console_loglevel &&
+       level > G_win32_data->logfile_loglevel)
+    {
+        return 1;
+    }
+
+    cstr logstring = PL_Alloc0(MAX_PATH_LENGTH);
+    if(!logstring)
+    {
+        return 0;
+    }
+
+    _LogStringInit(level, logstring);
+    STD_strcat(logstring, string1);
+    STD_strcat(logstring, " ");
+    STD_strcat(logstring, string2);
+
+    if(level <= G_win32_data->console_loglevel)
+    {
+        STD_puts(logstring);
+    }
+
+    if(level <= G_win32_data->logfile_loglevel)
+    {
+        STD_strcat(logstring, "\n");
+        //TODO: write log file
+    }
+
+    PL_Free(logstring);
+
+    return 1;
+}
+
+bool PL_Log3(LOG_LEVEL level, cstr string1, cstr string2, cstr string3)
+{
+    if(G_win32_data == 0 || 
+       STD_puts == 0 || 
+       (string1 == 0 && string2 == 0 && string3 == 0))
+    {
+        return 0;
+    }
+
+    if(level > G_win32_data->console_loglevel &&
+       level > G_win32_data->logfile_loglevel)
+    {
+        return 1;
+    }
+
+    cstr logstring = PL_Alloc0(MAX_PATH_LENGTH);
+    if(!logstring)
+    {
+        return 0;
+    }
+
+    _LogStringInit(level, logstring);
+    STD_strcat(logstring, string1);
+    STD_strcat(logstring, " ");
+    STD_strcat(logstring, string2);
+    STD_strcat(logstring, " ");
+    STD_strcat(logstring, string3);
+
+    if(level <= G_win32_data->console_loglevel)
+    {
+        STD_puts(logstring);
+    }
+
+    if(level <= G_win32_data->logfile_loglevel)
+    {
+        STD_strcat(logstring, "\n");
+        //TODO: write log file
+    }
+
+    PL_Free(logstring);
+
+    return 1;
+}
+
+bool PL_Log4(LOG_LEVEL level, cstr string1, cstr string2, cstr string3, cstr string4)
+{
+    if(G_win32_data == 0 || 
+       STD_puts == 0 || 
+       (string1 == 0 && string2 == 0 && string3 == 0 && string4 == 0))
+    {
+        return 0;
+    }
+
+    if(level > G_win32_data->console_loglevel &&
+       level > G_win32_data->logfile_loglevel)
+    {
+        return 1;
+    }
+
+    cstr logstring = PL_Alloc0(MAX_PATH_LENGTH);
+    if(!logstring)
+    {
+        return 0;
+    }
+
+    _LogStringInit(level, logstring);
+    STD_strcat(logstring, string1);
+    STD_strcat(logstring, " ");
+    STD_strcat(logstring, string2);
+    STD_strcat(logstring, " ");
+    STD_strcat(logstring, string3);
+    STD_strcat(logstring, " ");
+    STD_strcat(logstring, string4);
+
+    if(level <= G_win32_data->console_loglevel)
+    {
+        STD_puts(logstring);
+    }
+
+    if(level <= G_win32_data->logfile_loglevel)
+    {
+        STD_strcat(logstring, "\n");
+        //TODO: write log file
+    }
+
+    PL_Free(logstring);
 
     return 1;
 }

@@ -10,6 +10,7 @@
 @echo off
 pushd %~dp0
 setlocal EnableDelayedExpansion
+set path=%~dp0assets;%path%
 
 :: === Settings ===
 
@@ -19,7 +20,7 @@ set build_debug=1
 set build_release=1
 set cleanup_after_build=0
 
-set ascencia_exe_input_files=win32_ascencia.c win32\interface.c
+set ascencia_exe_input_files=win32_ascencia.c win32\interface.c win32\win_config.c
 set ascencia_dll_input_files=ascencia.c
 set ascencia_dll_export_funcs=placeholder
 set asc_stdlib_dll_input_files=win32\asc_stdlib.c
@@ -27,7 +28,7 @@ set asc_stdlib_dll_export_funcs=STD_puts STD_memcpy STD_strlen STD_strcpy STD_st
 
 set disable_warnings=4100 4189 4201 4820 4711 4668
 set shared_compiler_flags=-TC -MP -Oi -FC -GR- -WX -Wall -DWIN32
-set stdlib_compiler_flags=-TC -MP -Oi -FC -GR- -WX -W4 -DWIN32
+set stdlib_compiler_flags=-TC -MP -Oi -FC -GR- -WX -wd4100 -W4 -DWIN32
 
 :: Notable Warnings:
 :: 4100 : unreferenced formal parameter (ie not all params from function header are used)
@@ -354,6 +355,7 @@ if %build_debug%==1 (
     if exist build\int\ascencia-d.exe copy build\int\ascencia-d.exe build\debug\ascencia-d.exe
     if exist build\int\ascencia-d.dll copy build\int\ascencia-d.dll build\debug\ascencia-d.dll
     if exist build\int\asc_stdlib-d.dll copy build\int\asc_stdlib-d.dll build\debug\asc_stdlib-d.dll
+    rh -open build\debug\ascencia-d.exe -resource assets\ascencia.ico -mask ICONGROUP,MAINICON, -action addskip -save build\debug\ascencia-d.exe
     robocopy data build\debug /S /J /NDL /NJH /NJS /nc /ns /np
 )
 
@@ -363,6 +365,7 @@ if %build_release%==1 (
     if exist build\int\ascencia.exe copy build\int\ascencia.exe build\release\ascencia.exe
     if exist build\int\ascencia.dll copy build\int\ascencia.dll build\release\ascencia.dll
     if exist build\int\asc_stdlib.dll copy build\int\asc_stdlib.dll build\release\asc_stdlib.dll
+    rh -open build\release\ascencia.exe -resource assets\ascencia.ico -mask ICONGROUP,MAINICON, -action addskip -save build\release\ascencia.exe
     robocopy data build\release /S /J /NDL /NJH /NJS /nc /ns /np
 )
 

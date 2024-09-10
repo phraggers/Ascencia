@@ -17,20 +17,31 @@
     #define ASCENCIA_DLL "ascencia.dll"
 #endif
 
-#define ASCENCIA_STDLIB_INSTANCE
-#include "util/stdlib_interface.h"
+#include <util/stdlib_interface.h>
+#include <util/config.h>
+#include <win32/win_api.h>
+#include <util/platform.h>
 
-#define ASC_MAX_PATH 0xff
+typedef struct sWIN_WindowConfig
+{
+    irect dim;
+} WIN_WindowConfig;
 
-/* win32_data */
+typedef struct sWIN_Config
+{
+    ASC_Version version;
+    char base_path[MAX_PATH_LENGTH];
+    char pref_path[MAX_PATH_LENGTH];
+    WIN_WindowConfig window_config;
+} WIN_Config;
+
 typedef struct sWIN_Data
 {
-    bool running;
-    ptr stdin_handle;
-    ptr stdout_handle;
-    ptr stderr_handle;
-    char base_path[ASC_MAX_PATH];
-    char pref_path[ASC_MAX_PATH];
+    WIN_API win_api;
+    WIN_Config win_config;
+    LOG_LEVEL console_loglevel;
+    LOG_LEVEL logfile_loglevel;
+    char logfile_path[MAX_PATH_LENGTH];
 } WIN_Data;
 
 #ifdef ASCENCIA_WIN32_INSTANCE
@@ -38,6 +49,7 @@ WIN_Data *G_win32_data;
 #else
 extern WIN_Data *G_win32_data;
 #endif
+#define WINAPI G_win32_data->win_api
 
 #include <util/platform.h>
 
@@ -49,7 +61,13 @@ ptr WIN_GetProcAddress(ptr module, const cstr proc_name);
 /* filesystem */
 void WIN_SetBasePath(void);
 
-/* stdlib */
+/* api */
+bool WIN_WinAPIInit(void);
 bool WIN_StdLibInit(STD_interface *stdlib_interface);
+
+/* win config */
+bool WIN_ConfigInit(void);
+bool WIN_ConfigSave(cstr path);
+bool WIN_ConfigLoad(cstr path);
 
 #endif /* ASCENCIA_WIN32_SHARED_H */
