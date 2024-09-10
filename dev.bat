@@ -349,6 +349,21 @@ goto WIN32_DO_BUILD_ASCENCIA_EXE
 echo.
 echo == FINALIZE ==
 
+if not exist assets\rh.exe (
+	if not exist assets\tmp mkdir assets\tmp
+	bitsadmin.exe /transfer "ResourceHacker" https://www.angusj.com/resourcehacker/resource_hacker.zip %~dp0assets\tmp\rh.zip
+	powershell "Expand-Archive -Path """%~dp0assets\tmp\rh.zip""" -DestinationPath """%~dp0assets\tmp\rh""""
+	copy assets\tmp\rh\ResourceHacker.exe assets\rh.exe
+	del /q assets\tmp\rh\*.*
+	del /q assets\tmp\rh\help\*.*
+	rmdir assets\tmp\rh\help
+	del /q assets\tmp\rh\samples\*.*
+	rmdir assets\tmp\rh\samples
+	rmdir assets\tmp\rh\
+	del /q assets\tmp\*.*
+	rmdir assets\tmp
+)
+
 if %build_debug%==1 (
     if not exist build\debug mkdir build\debug
     del /q build\debug\*.*
