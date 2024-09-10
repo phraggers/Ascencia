@@ -9,7 +9,6 @@
 #define ASCENCIA_UTIL_PLATFORM_H
 
 #include <util/types.h>
-#include <util/stdlib_interface.h>
 
 typedef enum
 {
@@ -56,9 +55,6 @@ void PL_FileFree(ASC_FileData *data);
 
 /* logging */
 bool PL_SetLogLevel(LOG_LEVEL console, LOG_LEVEL logfile);
-bool PL_Log(LOG_LEVEL level, cstr string);
-bool PL_Log2(LOG_LEVEL level, cstr string1, cstr string2);
-bool PL_Log3(LOG_LEVEL level, cstr string1, cstr string2, cstr string3);
-bool PL_Log4(LOG_LEVEL level, cstr string1, cstr string2, cstr string3, cstr string4);
+bool PL_Log(LOG_LEVEL level, cstr string, ...);
 
 #endif /* ASCENCIA_UTIL_PLATFORM_H */

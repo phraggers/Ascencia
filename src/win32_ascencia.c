@@ -7,8 +7,6 @@
 ============================================================*/
 
 #include <util/types.h>
-#define ASCENCIA_STDLIB_INSTANCE
-#include <util/stdlib_interface.h>
 #define ASCENCIA_WIN32_INSTANCE
 #include <win32/shared.h>
 
@@ -28,16 +26,8 @@ local bool WIN_Entry(void)
         return 0;
     }
 
-    if(!WIN_StdLibInit(G_stdlib_interface))
-    {
-        return 0;
-    }
-
     WIN_SetBasePath();
-    STD_strcpy(PL_GetPrefPath(), PL_GetBasePath());
-    STD_strcat(PL_GetPrefPath(), "pref\\");
-    STD_puts(PL_GetBasePath());
-    STD_puts(PL_GetPrefPath());
+    snprintf(PL_GetPrefPath(), STRING_LEN, "%spref\\", PL_GetBasePath());
 
     #ifdef DEBUG
     if(!PL_SetLogLevel(LOG_DEBUG, LOG_WARN))
@@ -47,6 +37,10 @@ local bool WIN_Entry(void)
     {
         return 0;
     }
+
+    PL_Log(LOG_INFO, "Ascencia [%d.%d.%d.%d]", ASC_VERSION_RLS, ASC_VERSION_MAJ, ASC_VERSION_MIN, ASC_VERSION_REV);
+    PL_Log(LOG_INFO, "BasePath: %s", PL_GetBasePath());
+    PL_Log(LOG_INFO, "PrefPath: %s", PL_GetPrefPath());
 
     if(!WIN_ConfigInit())
     {

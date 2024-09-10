@@ -19,6 +19,6 @@ Find the build in build/release folder.
 ## Version History:<br/>
 
 - dev:
-    - v0.0.1 [2024-09-10]:
+    - v0.1.0:
 	    - initial win32 platform layer
 <hr/>

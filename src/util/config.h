@@ -13,8 +13,8 @@
 
 #define ASC_VERSION_RLS 0 // 0:dev 1:alpha 2:beta 3:release
 #define ASC_VERSION_MAJ 0
-#define ASC_VERSION_MIN 0
-#define ASC_VERSION_REV 1
+#define ASC_VERSION_MIN 1
+#define ASC_VERSION_REV 0
 
 typedef struct sASC_Version
 {

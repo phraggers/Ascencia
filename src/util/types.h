@@ -9,7 +9,13 @@
 #ifndef ASCENCIA_UTIL_TYPES_H
 #define ASCENCIA_UTIL_TYPES_H
 
-#define MAX_PATH_LENGTH 0xff
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
+
+#define STRING_LEN 0xff
 
 #include <stdint.h>
 #include <limits.h>

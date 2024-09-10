@@ -48,12 +48,9 @@ set cleanup_after_build=0
 set ascencia_exe_input_files=win32_ascencia.c win32\interface.c win32\win_config.c
 set ascencia_dll_input_files=ascencia.c
 set ascencia_dll_export_funcs=placeholder
-set asc_stdlib_dll_input_files=win32\asc_stdlib.c
-set asc_stdlib_dll_export_funcs=STD_puts STD_memcpy STD_strlen STD_strcpy STD_strcat
 
 set disable_warnings=4100 4189 4201 4820 4711 4668
-set shared_compiler_flags=-TC -MP -Oi -FC -GR- -WX -Wall -DWIN32
-set stdlib_compiler_flags=-TC -MP -Oi -FC -GR- -WX -wd4100 -W4 -DWIN32
+set shared_compiler_flags=-TC -MP -Oi -FC -GR- -WX -W4 -DWIN32 -D_CRT_SECURE_NO_WARNINGS
 
 :: Notable Warnings:
 :: 4100 : unreferenced formal parameter (ie not all params from function header are used)
@@ -195,20 +192,13 @@ set shared_compiler_flags=%shared_compiler_flags% %disable_warnings%
 set ascencia_dll_input_files= %ascencia_dll_input_files%
 set ascencia_dll_input_files=%ascencia_dll_input_files: = ..\..\src\%
 
-set asc_stdlib_dll_input_files= %asc_stdlib_dll_input_files%
-set asc_stdlib_dll_input_files=%asc_stdlib_dll_input_files: = ..\..\src\%
-
 set ascencia_exe_input_files= %ascencia_exe_input_files%
 set ascencia_exe_input_files=%ascencia_exe_input_files: = ..\..\src\%
 
 set ascencia_dll_export_funcs= %ascencia_dll_export_funcs%
 set ascencia_dll_export_funcs=%ascencia_dll_export_funcs: = -export:%
 
-set asc_stdlib_dll_export_funcs= %asc_stdlib_dll_export_funcs%
-set asc_stdlib_dll_export_funcs=%asc_stdlib_dll_export_funcs: = -export:%
-
 set build_ascencia_dll=1
-set build_asc_stdlib_dll=1
 set build_ascencia_exe=1
 set build_finalize=1
 if not exist build\int mkdir build\int
@@ -217,7 +207,6 @@ goto WIN32_DO_BUILD
 
 :WIN32_DO_BUILD
 if %build_ascencia_dll%==1 goto WIN32_BUILD_ASCENCIA_DLL
-if %build_asc_stdlib_dll%==1 goto WIN32_BUILD_ASC_STDLIB_DLL
 if %build_ascencia_exe%==1 goto WIN32_BUILD_ASCENCIA_EXE
 popd
 if %build_finalize%==1 goto WIN32_BUILD_FINALIZE
@@ -235,11 +224,6 @@ if %build_debug%==1 (
     ) else (
         echo build\debug\ascencia-d.dll    FAILED
     )
-    if exist build\debug\asc_stdlib-d.dll (
-        echo build\debug\asc_stdlib-d.dll  SUCCEEDED
-    ) else (
-        echo build\debug\asc_stdlib-d.dll  FAILED
-    )
 )
 echo.
 if %build_release%==1 (
@@ -252,11 +236,6 @@ if %build_release%==1 (
         echo build\release\ascencia.dll    SUCCEEDED
     ) else (
         echo build\release\ascencia.dll    FAILED
-    )
-    if exist build\release\asc_stdlib.dll (
-        echo build\release\asc_stdlib.dll  SUCCEEDED
-    ) else (
-        echo build\release\asc_stdlib.dll  FAILED
     )
 )
 goto WIN32_ARG_SELECT
@@ -293,39 +272,6 @@ if exist ascencia.dll echo ascencia.dll built
 if not exist ascencia.dll echo ascencia.dll build failed
 set build_ascencia_dll_release=0
 goto WIN32_DO_BUILD_ASCENCIA_DLL
-
-:: === ASC_STDLIB_DLL ===
-
-:WIN32_BUILD_ASC_STDLIB_DLL
-set build_asc_stdlib_dll_debug=%build_debug%
-set build_asc_stdlib_dll_release=%build_release%
-goto WIN32_DO_BUILD_ASC_STDLIB_DLL
-
-:WIN32_DO_BUILD_ASC_STDLIB_DLL
-if %build_asc_stdlib_dll_debug%==1 goto WIN32_BUILD_ASC_STDLIB_DLL_DEBUG
-if %build_asc_stdlib_dll_release%==1 goto WIN32_BUILD_ASC_STDLIB_DLL_RELEASE
-set build_asc_stdlib_dll=0
-goto WIN32_DO_BUILD
-
-:WIN32_BUILD_ASC_STDLIB_DLL_DEBUG
-echo.
-echo == ASC_STDLIB.DLL DEBUG BUILD ==
-echo building asc_stdlib-d.dll...
-cl -nologo -I..\..\src -Fe"asc_stdlib-d.dll" %stdlib_compiler_flags% -Od -Zi -LDd -DDEBUG=1 %asc_stdlib_dll_input_files% -link -debug -WX -DLL %asc_stdlib_dll_export_funcs%
-if exist asc_stdlib-d.dll echo asc_stdlib-d.dll built
-if not exist asc_stdlib-d.dll echo asc_stdlib-d.dll build failed
-set build_asc_stdlib_dll_debug=0
-goto WIN32_DO_BUILD_ASC_STDLIB_DLL
-
-:WIN32_BUILD_ASC_STDLIB_DLL_RELEASE
-echo.
-echo == ASC_STDLIB.DLL RELEASE BUILD ==
-echo building asc_stdlib.dll...
-cl -nologo -I..\..\src -Fe"asc_stdlib.dll" %stdlib_compiler_flags% -O2 -LD -DRELEASE=1 %asc_stdlib_dll_input_files% -link -release -WX -DLL %asc_stdlib_dll_export_funcs%
-if exist asc_stdlib.dll echo asc_stdlib.dll built
-if not exist asc_stdlib.dll echo asc_stdlib.dll build failed
-set build_asc_stdlib_dll_release=0
-goto WIN32_DO_BUILD_ASC_STDLIB_DLL
 
 :: === ASCENCIA_EXE ===
 
@@ -392,7 +338,6 @@ if %build_debug%==1 (
     del /q %~dp0build\debug\*.*
     if exist %~dp0build\int\ascencia-d.dll copy %~dp0build\int\ascencia-d.dll %~dp0build\debug\ascencia-d.dll
     if exist %~dp0build\int\ascencia-d.exe copy %~dp0build\int\ascencia-d.exe %~dp0build\debug\ascencia-d.exe
-    if exist %~dp0build\int\asc_stdlib-d.dll copy %~dp0build\int\asc_stdlib-d.dll %~dp0build\debug\asc_stdlib-d.dll
     rh -open %~dp0build\debug\ascencia-d.exe -resource %~dp0assets\ascencia.ico -mask ICONGROUP,MAINICON, -action addskip -save %~dp0build\debug\ascencia-d.exe
     robocopy %~dp0data %~dp0build\debug /S /J /NDL /NJH /NJS /nc /ns /np
 )
@@ -402,7 +347,6 @@ if %build_release%==1 (
     del /q %~dp0build\release\*.*
     if exist %~dp0build\int\ascencia.exe copy %~dp0build\int\ascencia.exe %~dp0build\release\ascencia.exe
     if exist %~dp0build\int\ascencia.dll copy %~dp0build\int\ascencia.dll %~dp0build\release\ascencia.dll
-    if exist %~dp0build\int\asc_stdlib.dll copy %~dp0build\int\asc_stdlib.dll %~dp0build\release\asc_stdlib.dll
     rh -open %~dp0build\release\ascencia.exe -resource %~dp0assets\ascencia.ico -mask ICONGROUP,MAINICON, -action addskip -save %~dp0build\release\ascencia.exe
     robocopy %~dp0data %~dp0build\release /S /J /NDL /NJH /NJS /nc /ns /np
 )
