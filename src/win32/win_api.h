@@ -14,13 +14,20 @@
 typedef union _LARGE_INTEGER { struct {u32 LowPart; i32 HighPart;} s; 
 struct {u32 LowPart; i32 HighPart;} u; i64 QuadPart;} LARGE_INTEGER;
 
-/* shlwapi.lib */
+/* shlwapi.dll */
 typedef b32 (*pWin32_PathFileExistsA)(cstr path);
+
+/* user32.dll */
+typedef b32 (*pWin32_SetWindowTextA)(ptr handle, cstr text);
 
 typedef struct sWIN_API
 {
-    /* shlwapi.lib */
+    /* shlwapi.dll */
     pWin32_PathFileExistsA PathFileExistsA;
+
+    /* user32.dll */
+    pWin32_SetWindowTextA SetWindowTextA;
+
 } WIN_API;
 
 #endif /* ASCENCIA_WIN32_WIN_API_H */

@@ -40,6 +40,7 @@ bool PL_DoesFileExist(cstr path);
 bool PL_DeleteFile(cstr path);
 bool PL_CreateDirectory(cstr path);
 bool PL_DeleteDirectory(cstr path);
+cstr PL_PlatformFilePath(cstr path); //returns path with platform correct slashes
 
 /* file handle */
 ptr PL_OpenFileHandleR(cstr path); //read handle

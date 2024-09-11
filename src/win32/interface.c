@@ -625,38 +625,25 @@ void PL_FileFree(ASC_FileData *data)
     PL_Free(data);
 }
 
-/*===================
-  WinAPI Init
-====================*/
-
-local bool _LoadWinAPI_shlwapi(void);
-
-bool WIN_WinAPIInit(void)
+cstr PL_PlatformFilePath(cstr path)
 {
-    Assert(G_win32_data != 0);
-
-    if(!_LoadWinAPI_shlwapi())
+    if(!path)
     {
+        PL_Log(LOG_DEBUG, "PlatformFilePath: empty parameters");
         return 0;
     }
 
-    return 1;
-}
-
-#define LOAD_WIN_FN(name) {WINAPI.##name = (pWin32_##name)WIN_GetProcAddress(lib, #name); if(!WINAPI.##name) return 0;}
-
-local bool _LoadWinAPI_shlwapi(void)
-{
-    ptr lib = WIN_LoadLibrary("shlwapi.dll");
-
-    if(!lib)
+    for(cstr char_index = path;
+        char_index < (cstr)((u64)path + (u64)STRING_LEN-1);
+        char_index++)
     {
-        return 0;
+        if(*char_index == '/')
+        {
+            *char_index = '\\';
+        }
     }
 
-    LOAD_WIN_FN(PathFileExistsA);
-
-    return 1;
+    return path;
 }
 
 /*===================

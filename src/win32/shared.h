@@ -18,6 +18,7 @@
 #include <util/config.h>
 #include <win32/win_api.h>
 #include <util/platform.h>
+#include <window/window.h>
 
 typedef struct sWIN_WindowConfig
 {
@@ -32,10 +33,18 @@ typedef struct sWIN_Config
     WIN_WindowConfig window_config;
 } WIN_Config;
 
+typedef struct sWIN_Window
+{
+    ptr handle;
+    PL_Window pl_window;
+} WIN_Window;
+
 typedef struct sWIN_Data
 {
     WIN_API win_api;
     WIN_Config win_config;
+    WIN_Window win32_window;
+
     LOG_LEVEL console_loglevel;
     LOG_LEVEL logfile_loglevel;
     char logfile_path[STRING_LEN];
@@ -65,5 +74,7 @@ bool WIN_WinAPIInit(void);
 bool WIN_ConfigInit(void);
 bool WIN_ConfigSave(cstr path);
 bool WIN_ConfigLoad(cstr path);
+
+
 
 #endif /* ASCENCIA_WIN32_SHARED_H */

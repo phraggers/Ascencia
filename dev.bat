@@ -16,21 +16,11 @@
 :: powershell (comes with Windows since Vista)
 :: bitsadmin (comes with Windows since XP)
 
-:: === RESOURCEHACKER.EXE LICENCE ===
+:: === RESOURCEHACKER.EXE NOTICE ===
 
 :: DISCLAIMER: I am NOT distributng ResourceHacker.exe with this repository,
 :: I am using this script to acquire ResourceHacker directly from the ResourceHacker website.
 :: Please see https://www.angusj.com/resourcehacker/ for more details about this freeware.
-:: ---------------------------------------------------------------------------------------------
-::This Resource HackerTM software is released as freeware provided that you agree to the following terms and conditions:
-::
-::    This software is not to be distributed via any website domain or any other media without the prior written approval of the copyright owner.
-::    This software is not to be used in any way to illegally modify software. 
-::
-::DISCLAIMER: A user of this Resource HackerTM software acknowledges that he or she is receiving this software on an "as is" basis and the user is not relying on the accuracy or functionality of the software for any purpose. The user further acknowledges that any use of this software will be at the user's own risk and the copyright owner accepts no responsibility whatsoever arising from the use or application of the software.
-::
-::The above licence terms constitute "copyright management information" within the meaning of Section 1202 of Title 17 of the United States Code and must not be altered or removed from the licensed works. Their alteration or removal from the licensed works, and the distribution of licensed works without all the above licence terms in an unaltered way, may contravene Section 1202 and give rise civil and/or criminal consequences.
-::------------------------------------------------------------------------------------------------
 
 @echo off
 pushd %~dp0
@@ -45,7 +35,7 @@ set build_debug=1
 set build_release=1
 set cleanup_after_build=0
 
-set ascencia_exe_input_files=win32_ascencia.c win32\interface.c win32\win_config.c
+set ascencia_exe_input_files=win32_ascencia.c win32\*.c
 set ascencia_dll_input_files=ascencia.c
 set ascencia_dll_export_funcs=placeholder
 
