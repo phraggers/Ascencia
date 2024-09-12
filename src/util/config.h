@@ -1,6 +1,6 @@
 
 /*============================================================
- * Project: Ascencia [SHARED]
+ * Project: Ascencia
  * File: config.h
  * Author: Phraggers
  * Date: Mon Sep 09 2024
@@ -15,6 +15,9 @@
 #define ASC_VERSION_MAJ 0
 #define ASC_VERSION_MIN 1
 #define ASC_VERSION_REV 0
+
+#define ASC_OPENGL_MAJ 4
+#define ASC_OPENGL_MIN 5
 
 typedef struct sASC_Version
 {

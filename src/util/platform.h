@@ -1,5 +1,5 @@
 /*============================================================
- * Project: Ascencia [SHARED]
+ * Project: Ascencia
  * File: platform.h
  * Author: Phraggers
  * Date: Mon Sep 09 2024

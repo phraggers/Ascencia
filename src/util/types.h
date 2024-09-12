@@ -1,6 +1,6 @@
 
 /*============================================================
- * Project: Ascencia [SHARED]
+ * Project: Ascencia
  * File: types.h
  * Author: Phraggers
  * Date: Sat Sep 07 2024

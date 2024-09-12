@@ -8,188 +8,6 @@
 #include <util/types.h>
 #include <win32/shared.h>
 
-/* WINDOWS TYPES -> MY TYPES
-ATOM        u16
-BOOL        i32
-BOOLEAN     u8
-BYTE        u8
-CCHAR       char
-CHAR        char
-COLORREF    u32
-DWORD       u32
-DWORDLONG   u64
-DWORD_PTR   u64
-DWORD32     u32
-DWORD64     u64
-FLOAT       r32
-HACCEL      ptr
-HALF_PTR    i32
-HANDLE      ptr
-HBITMAP     ptr
-HBRUSH      ptr
-HCOLORSPACE ptr
-HCONV       ptr
-HCONVLIST   ptr
-HCURSOR     ptr
-HDC         ptr
-HDDEDATA    ptr
-HDESK       ptr
-HDROP       ptr
-HDWP        ptr
-HENHMETAFILE ptr
-HFILE       i32
-HFONT       ptr
-HGDIOBJ     ptr
-HGLOBAL     ptr
-HHOOK       ptr
-HICON       ptr
-HINSTANCE   ptr
-HKEY        ptr
-HKL         ptr
-HLOCAL      ptr
-HMENU       ptr
-HMETAFILE   ptr
-HMODULE     ptr
-HMONITOR    ptr
-HPALETTE    ptr
-HPEN        ptr
-HRESULT     i32
-HRGN        ptr
-HRSRC       ptr
-HSZ         ptr
-HWINSTA     ptr
-HWND        ptr
-INT         i32
-INT_PTR     i64
-INT8        i8
-INT16       i16
-INT32       i32
-INT64       i64
-LANGID      u16
-LCID        u32
-LCTYPE      u32
-LGRPID      u32
-LONG        i32
-LONGLONG    i64
-LONG_PTR    i64
-LONG32      i32
-LONG64      i64
-LPARAM      i64
-LPBOOL      i32*
-LPBYTE      u8*
-LPCOLORREF  u32*
-LPCSTR      const cstr
-LPCTSTR     if(utf) {const wcstr} else {const cstr}
-LPCVOID     const ptr
-LPCWSTR     const wcstr
-LPDWORD     u32*
-LPHANDLE    ptr*
-LPINT       i32*
-LPLONG      int32*
-LPSTR       cstr
-LPTSTR      if(utf) {wcstr} else {cstr}
-LPVOID      ptr
-LPWORD      u16*
-LPWSTR      wcstr
-LRESULT     i64
-PBOOL       i32*
-PBOOLEAN    u8*
-PBYTE       u8*
-PCHAR       char*
-PCSTR       const cstr
-PCTSTR      if(utf) {const wcstr} else {const cstr}
-PCWSTR      const wcstr
-PDWORD      u32*
-PDWORDLONG  u64*
-PDWORD_PTR  u64*
-PDWORD32    u32*
-PDWORD64    u64*
-PFLOAT      r32*
-PHALF_PTR   i32*
-PHANDLE     ptr*
-PHKEY       ptr*
-PINT        i32*
-PINT_PTR    i32**
-PINT8       i8*
-PINT16      i16*
-PINT32      i32*
-PINT64      i64*
-PLCID       u32*
-PLONG       i32*
-PLONGLONG   i64*
-PLONG_PTR   i32**
-PLONG32     i32*
-PLONG64     i64*
-POINTER_32  i32*
-POINTER_64  i64*
-POINTER_SIGNED i32*
-POINTER_UNSIGNED ptr
-PSHORT      i16*
-PSIZE_T     u64*
-PSSIZE_T    i64*
-PSTR        cstr
-PTBYTE      if(utf) {u16*} else {u8*}
-PTCHAR      if(utf) {u16*} else {char*}
-PTSTR       if(utf) {const wcstr} else {const cstr}
-PUCHAR      u8*
-PUHALF_PTR  u32*
-PUINT       u32*
-PUINT_PTR   u32**
-PUINT8      u8*
-PUINT16     u16*
-PUINT32     u32*
-PUINT64     u64*
-PULONG      u32*
-PULONGLONG  u64*
-PULONG_PTR  u32**
-PULONG32    u32*
-PULONG64    u64*
-PUSHORT     u16*
-PVOID       ptr
-PWCHAR      wcstr
-PWORD       u16*
-PWSTR       wcstr
-QWORD       u64
-SC_HANDLE   ptr
-SC_LOCK     ptr
-SERVICE_STATUS_HANDLE ptr
-SHORT       i16
-SIZE_T      u64
-SSIZE_T     i64
-TBYTE       if(utf) {u16} else {u8}
-TCHAR       if(utf) {u16} else {char}
-UCHAR       u8
-UHALF_PTR   u32
-UINT        u32
-UINT_PTR    u64
-UINT8       u8
-UINT16      u16
-UINT32      u32
-UINT64      u64
-ULONG       u32
-ULONGLONG   u64
-ULONG_PTR   u64
-ULONG32     u32
-ULONG64     u64
-
-UNICODE_STRING 
-typedef struct sUnicodeStr 
-{
-    u16  length;
-    u16  max_length;
-    wcstr  buffer;
-} UnicodeStr;
-typedef UnicodeStr *PUNICODE_STRING;
-typedef const UnicodeStr *PCUNICODE_STRING;
-
-USHORT      u16
-USN         i64
-VOID        void
-WCHAR       u16
-WORD        u16
-WPARAM      u64
-*/
-
 /* kernel32.lib */
 extern ptr GetModuleHandleA(const cstr module_name);
 extern cstr GetCommandLineA(void);
@@ -204,7 +22,7 @@ extern ptr AddDllDirectory(cstr path);
 extern u32 GetLastError(void);
 extern ptr CreateFileA(cstr path, u32 access, u32 smode, ptr sec, u32 creation, u32 flags, ptr ftemplate);
 extern b32 CloseHandle(ptr handle);
-extern b32 GetFileSizeEx(ptr handle, LARGE_INTEGER *size);
+extern b32 GetFileSizeEx(ptr handle, Win32_LARGE_INTEGER *size);
 extern b32 ReadFile(ptr handle, ptr buffer, u32 bytes_to_read, u32 *bytes_read, ptr overlapped);
 extern b32 WriteFile(ptr handle, const ptr buffer, u32 bytes_to_write, u32 *bytes_written, ptr overlapped);
 extern b32 DeleteFileA(cstr path);
@@ -501,7 +319,7 @@ u64 PL_GetFileSize(ptr handle)
         return 0;
     }
 
-    LARGE_INTEGER size;
+    Win32_LARGE_INTEGER size;
     b32 success = GetFileSizeEx(handle, &size);
     if(!success)
     {
@@ -650,7 +468,7 @@ cstr PL_PlatformFilePath(cstr path)
    Logging
 ====================*/
 
-local bool _LogFileInit(void)
+local bool LogFileInit(void)
 {
     if(!PL_DoesFileExist("logs"))
     {
@@ -672,7 +490,7 @@ bool PL_SetLogLevel(LOG_LEVEL console, LOG_LEVEL logfile)
 
     if(G_win32_data->logfile_path[0] == 0)
     {
-        if(!_LogFileInit())
+        if(!LogFileInit())
         {
             return 0;
         }

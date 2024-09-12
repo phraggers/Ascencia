@@ -16,8 +16,8 @@
 #endif
 
 #include <util/config.h>
-#include <win32/win_api.h>
 #include <util/platform.h>
+#include <win32/win_api.h>
 #include <window/window.h>
 
 typedef struct sWIN_WindowConfig
@@ -36,6 +36,7 @@ typedef struct sWIN_Config
 typedef struct sWIN_Window
 {
     ptr handle;
+    Win32_WNDPL wndpl;
     PL_Window pl_window;
 } WIN_Window;
 
@@ -57,8 +58,6 @@ extern WIN_Data *G_win32_data;
 #endif
 #define WINAPI G_win32_data->win_api
 
-#include <util/platform.h>
-
 /* platform interface */
 bool WIN_InterfaceInit(WIN_Data *win32_data);
 ptr WIN_LoadLibrary(const cstr lib_name);
@@ -69,6 +68,7 @@ void WIN_SetBasePath(void);
 
 /* api */
 bool WIN_WinAPIInit(void);
+bool WIN_OpenGLInit(void); // TODO: AFTER hglrc init
 
 /* win config */
 bool WIN_ConfigInit(void);

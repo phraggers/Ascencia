@@ -36,10 +36,10 @@ set build_release=1
 set cleanup_after_build=0
 
 set ascencia_exe_input_files=win32_ascencia.c win32\*.c
-set ascencia_dll_input_files=ascencia.c
+set ascencia_dll_input_files=ascencia.c util\*.c
 set ascencia_dll_export_funcs=placeholder
 
-set disable_warnings=4100 4189 4201 4820 4711 4668
+set disable_warnings=4100 4189 4201 4820 4711 4668 4114
 set shared_compiler_flags=-TC -MP -Oi -FC -GR- -WX -W4 -DWIN32 -D_CRT_SECURE_NO_WARNINGS
 
 :: Notable Warnings:
@@ -50,6 +50,7 @@ set shared_compiler_flags=-TC -MP -Oi -FC -GR- -WX -W4 -DWIN32 -D_CRT_SECURE_NO_
 :: 4711 : function was selected for inlining, but inline keyword not present
 :: 4820 : alignment padding bytes were added to struct
 :: 4668 : define is not defined as preprocessor macro, replacing with 0
+:: 4114 : same type qualifier used more than once (opengl typedefs fail this)
 
 :: Notable Compiler flags:
 :: TC/TP : all source files are C / CPP
