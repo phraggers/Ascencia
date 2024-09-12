@@ -70,12 +70,12 @@ typedef char* cstr;
     // re-interpret data bits(v) as new type(t)
 #define Reinterpret(t,v) (*((const t*)(v)))
 
-typedef struct sirect
+typedef struct
 {
     int x,y,w,h;
 } irect;
 
-typedef struct sfrect
+typedef struct
 {
     r32 x,y,w,h;
 } frect;
