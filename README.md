@@ -6,14 +6,13 @@
 <hr/>
 
 ### How to build:
+Just download this repository and run build.bat.
+Find the build in build/release folder.
+
 Requirements:
 - Windows x64
 - Visual Studio Community (https://visualstudio.microsoft.com/) installed on C:\ drive
-- powershell (comes with Windows since Vista)
-- bitsadmin (comes with Windows since XP)
-
-Just download this repository and run build.bat.
-Find the build in build/release folder.
+- ResourceHacker by angusj (https://www.angusj.com/resourcehacker/) (build.bat acquires this file automatically on first run)
 <hr/>
 
 ### Version History:
