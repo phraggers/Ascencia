@@ -1,4 +1,3 @@
-
 /*============================================================
  * Project: Ascencia
  * File: win32_state.c
@@ -85,7 +84,7 @@ void Win32_SetBasePath(void)
 
     if(Win32_GetBasePath() == 0)
     {
-        G_win32_state->api.GetModuleFileNameA(0, G_win32_state->base_path, STRING_LEN);
+        WINAPI.GetModuleFileNameA(0, G_win32_state->base_path, STRING_LEN);
 
         for(cstr cp = &G_win32_state->base_path[STRING_LEN];
             *cp != '\\' && cp > &G_win32_state->base_path[0];
@@ -120,10 +119,10 @@ bool Win32_SetPrefPath(cstr path)
     }
 
     strcpy(G_win32_state->pref_path, path);
-    if(!G_win32_state->api.PathFileExistsA(Win32_GetPrefPath()))
+    if(!WINAPI.PathFileExistsA(Win32_GetPrefPath()))
     {
         PL_Log(LOG_DEBUG, "SetPrefPath: directory doesn't exist");
-        b32 result = G_win32_state->api.CreateDirectoryA(Win32_GetPrefPath(), 0);
+        b32 result = WINAPI.CreateDirectoryA(Win32_GetPrefPath(), 0);
         if(result)
         {
             PL_Log(LOG_INFO, "SetPrefPath: created pref directory: %s", Win32_GetPrefPath());

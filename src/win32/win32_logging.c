@@ -1,4 +1,3 @@
-
 /*============================================================
  * Project: Ascencia
  * File: logging.c
@@ -148,10 +147,10 @@ bool PL_SetLogFilePath(cstr path)
         return 0;
     }
 
-    if(!G_win32_state->api.PathFileExistsA(path))
+    if(!WINAPI.PathFileExistsA(path))
     {
         PL_Log(LOG_DEBUG, "SetLogFilePath: directory doesn't exist");
-        b32 result = G_win32_state->api.CreateDirectoryA(path, 0);
+        b32 result = WINAPI.CreateDirectoryA(path, 0);
         if(result)
         {
             PL_Log(LOG_INFO, "SetLogFilePath: created log directory: %s", path);
@@ -229,7 +228,7 @@ void PL_LogCleanup(void)
         return;
     }
 
-    G_win32_state->api.DeleteFileA(PL_GetLogFilePath());
+    WINAPI.DeleteFileA(PL_GetLogFilePath());
 }
 
 void PL_MsgBox(const cstr title, cstr format, ...)
@@ -245,6 +244,6 @@ void PL_MsgBox(const cstr title, cstr format, ...)
     if(!msg) return;
     vsnprintf(msg, STRING_LEN, format, args);
     va_end(args);
-    G_win32_state->api.MessageBoxA(0, msg, title, 0x00000010L);
+    WINAPI.MessageBoxA(0, msg, title, 0x00000010L);
     PL_Free(msg);
 }

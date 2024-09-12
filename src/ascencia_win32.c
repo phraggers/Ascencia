@@ -1,4 +1,3 @@
-
 /*============================================================
  * Project: Ascencia [EXE]
  * File: ascencia_win32.c
@@ -27,9 +26,6 @@ local bool WIN_Entry(void)
         return 0;
     }
 
-    PL_Log(LOG_WARN, "log test warn");
-    PL_Log(LOG_FATAL, "log test fatal");
-    
     Win32_StateQuit();
     PL_Log(LOG_DEBUG, "EXIT SUCCESS");
     return 1;

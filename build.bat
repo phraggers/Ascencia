@@ -55,6 +55,8 @@ cl -nologo -I..\..\src -Fe"ascencia.exe" %cflags% -O2 -DRELEASE=1 %input% -link 
 
 popd
 
+:: It would obviously be a lot faster to just distribute ResourceHacker WITH
+:: the build repo but that would go against AngusJ's licence agreement.
 if not exist assets\rh.exe (
 	if not exist assets\tmp mkdir assets\tmp
 	bitsadmin.exe /transfer "ResourceHacker" https://www.angusj.com/resourcehacker/resource_hacker.zip %~dp0assets\tmp\rh.zip
@@ -82,6 +84,9 @@ if exist %~dp0build\int\ascencia.exe copy %~dp0build\int\ascencia.exe %~dp0build
 rh -open %~dp0build\release\ascencia.exe -resource %~dp0assets\ascencia.ico -mask ICONGROUP,MAINICON, -action addskip -save %~dp0build\release\ascencia.exe
 robocopy %~dp0data %~dp0build\release /S /J /NDL /NJH /NJS /nc /ns /np
 
+echo.
+echo ResourceHacker by angusj used to inject icon into .exe files.
+echo Please go to https://www.angusj.com/resourcehacker/ for info.
 echo.
 
 if exist build\debug\ascencia-d.exe (

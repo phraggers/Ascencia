@@ -1,4 +1,3 @@
-
 /*============================================================
  * Project: Ascencia
  * File: win32_api.h
@@ -226,6 +225,8 @@ typedef struct
     pfn_wglMakeCurrent wglMakeCurrent;
     
 } Win32_API;
+
+#define WINAPI G_win32_state->api
 
 bool Win32_LoadAPI(void);
 
