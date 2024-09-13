@@ -11,11 +11,15 @@
 #include <util/types.h>
 #include <win32/win32_api.h>
 #include <platform/logging.h>
+#include <win32/win32_window.h>
+#include <platform/config.h>
 
 typedef struct
 {
     Win32_API api;
     PL_Logging logging;
+    PL_Config config;
+    Win32_Window window;
 
     char base_path[STRING_LEN];
     char pref_path[STRING_LEN];

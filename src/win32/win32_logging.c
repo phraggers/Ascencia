@@ -130,6 +130,25 @@ bool PL_Log(LOG_LEVEL level, cstr string, ...)
     if(level == LOG_FATAL)
     {
         PL_MsgBox("Fatal Error", logstring);
+        if(G_win32_state != 0)
+        {
+            if(strlen(G_win32_state->logging.logfile_path) > 0)
+            {
+                while(strlen(G_win32_state->logging.logfile_path) > 0 &&
+                      G_win32_state->logging.logfile_path[strlen(G_win32_state->logging.logfile_path)-1] != '_')
+                {
+                    G_win32_state->logging.logfile_path[strlen(G_win32_state->logging.logfile_path)-1] = 0;
+                }
+                strcat(G_win32_state->logging.logfile_path, "statedump.bin");
+
+                FILE *dumpfile = fopen(G_win32_state->logging.logfile_path, "wb");
+                if(dumpfile)
+                {
+                    fwrite((ptr)(&G_win32_state), 1, sizeof(Win32_State), dumpfile);
+                    fclose(dumpfile);
+                }
+            }
+        }
         exit(-1);
     }
 
@@ -170,6 +189,10 @@ bool PL_SetLogFilePath(cstr path)
     }
 
     PL_String_TimeStampNow(timestamp, "%y%m%d%H%M%S_log.txt");
+    if(path[strlen(path)-1] != '\\')
+    {
+        path[strlen(path)] = '\\';
+    }
     strcat(path, timestamp);
     PL_Free(timestamp);
     strcpy(G_win32_state->logging.logfile_path, path);
