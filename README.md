@@ -13,6 +13,7 @@ Requirements:
 - Windows x64
 - Visual Studio Community (https://visualstudio.microsoft.com/) installed on C:\ drive
 - ResourceHacker by angusj (https://www.angusj.com/resourcehacker/) (build.bat acquires this file automatically on first run)
+
 (Cross platform builds planned for much later once win32 version is up and running)
 <hr/>
 
