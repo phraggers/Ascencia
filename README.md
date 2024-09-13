@@ -1,4 +1,4 @@
-# Ascencia
+![AscenciaLogo](https://raw.githubusercontent.com/phraggers/Ascencia/master/assets/title325.png)
 - Work-in-progress RPG game
 - made in C99
 - no dependencies or libs (other than OS defaults)
