@@ -6,10 +6,10 @@
 ============================================================*/
 
 #include <util/types.h>
+#include <util/string_helpers.h>
 #include <platform/alloc.h>
-#include <win32/win32_state.h>
 #include <platform/logging.h>
-#include <platform/string_helpers.h>
+#include <win32/win32_state.h>
 
 void PL_SetConsoleLogLevel(LOG_LEVEL level)
 {

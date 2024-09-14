@@ -5,10 +5,12 @@
  * Date: Fri Sep 13 2024
 ============================================================*/
 
+#include <util/string_helpers.h>
+#include <platform/alloc.h>
 #include <platform/config.h>
 #include <win32/win32_state.h>
-#include <platform/alloc.h>
-#include <platform/string_helpers.h>
+
+#define CONFIG_FILENAME "config.asccfg"
 
 local void ConfigInit(void)
 {
@@ -18,6 +20,11 @@ local void ConfigInit(void)
     config->ascencia_version.min = ASC_VERSION_MIN;
     config->ascencia_version.rev = ASC_VERSION_REV;
     config->opengl_version = (r32)ASC_OPENGL_MAJ + ((r32)ASC_OPENGL_MIN/10.0f);
+    config->window_config.dim.w = ASC_WINDOW_WIDTH;
+    config->window_config.dim.h = ASC_WINDOW_HEIGHT;
+    config->window_config.fullscreen = ASC_WINDOW_FULLSCREEN;
+    config->window_config.vsync = ASC_WINDOW_VSYNC;
+    config->window_config.refresh_hz = ASC_WINDOW_REFRESH_HZ;
 }
 
 bool PL_ConfigInit(cstr config_path)
@@ -45,7 +52,7 @@ bool PL_ConfigInit(cstr config_path)
 bool PL_ConfigSave(void)
 {
     if((!G_win32_state) || 
-       (!strlen(G_win32_state->config.config_path)))
+       (!strlen(G_win32_state->config_path)))
     {
         PL_Log(LOG_DEBUG, "ConfigSave: invalid parameters");
         return 0;
@@ -104,7 +111,7 @@ bool PL_ConfigSave(void)
 bool PL_ConfigLoad(void)
 {
     if((!G_win32_state) || 
-       (!strlen(G_win32_state->config.config_path)))
+       (!strlen(G_win32_state->config_path)))
     {
         PL_Log(LOG_DEBUG, "ConfigLoad: invalid parameters");
         return 0;
@@ -215,12 +222,12 @@ bool PL_ConfigLoad(void)
 cstr PL_GetConfigPath(void)
 {
     if((!G_win32_state) ||
-       (strlen(G_win32_state->config.config_path) == 0))
+       (strlen(G_win32_state->config_path) == 0))
     {
         return 0;
     }
 
-    return G_win32_state->config.config_path;
+    return G_win32_state->config_path;
 }
 
 bool PL_SetConfigPath(cstr path)
@@ -231,10 +238,10 @@ bool PL_SetConfigPath(cstr path)
         return 0;
     }
 
-    if(strlen(G_win32_state->config.config_path) > 0)
+    if(strlen(G_win32_state->config_path) > 0)
     {
         PL_Log(LOG_DEBUG, "SetConfigPath: existing string found, clearing");
-        memset((ptr)G_win32_state->config.config_path, 0, STRING_LEN);
+        memset((ptr)G_win32_state->config_path, 0, STRING_LEN);
     }
 
     if(!WINAPI.PathFileExistsA(path))
@@ -252,12 +259,12 @@ bool PL_SetConfigPath(cstr path)
         }
     }
 
-    strcpy(G_win32_state->config.config_path, path);
-    if(G_win32_state->config.config_path[strlen(G_win32_state->config.config_path)-1] != '\\')
+    strcpy(G_win32_state->config_path, path);
+    if(G_win32_state->config_path[strlen(G_win32_state->config_path)-1] != '\\')
     {
-        G_win32_state->config.config_path[strlen(G_win32_state->config.config_path)] = '\\';
+        G_win32_state->config_path[strlen(G_win32_state->config_path)] = '\\';
     }
-    strcat(G_win32_state->config.config_path, "config.dat");
+    strcat(G_win32_state->config_path, CONFIG_FILENAME);
 
     if(!WINAPI.PathFileExistsA(PL_GetConfigPath()))
     {

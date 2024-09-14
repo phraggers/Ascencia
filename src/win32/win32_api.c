@@ -5,10 +5,10 @@
  * Date: Thu Sep 12 2024
 ============================================================*/
 
-#include <win32/win32_state.h>
-#include <win32/win32_api.h>
 #include <platform/alloc.h>
 #include <platform/logging.h>
+#include <win32/win32_state.h>
+#include <win32/win32_api.h>
 
 /* platform allocations (kernel32.dll) */
 extern ptr HeapAlloc(ptr heap, u32 flags, u64 bytes);

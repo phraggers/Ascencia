@@ -18,6 +18,12 @@
 #define ASC_OPENGL_MAJ 4
 #define ASC_OPENGL_MIN 5
 
+#define ASC_WINDOW_WIDTH 960
+#define ASC_WINDOW_HEIGHT 540
+#define ASC_WINDOW_FULLSCREEN 0
+#define ASC_WINDOW_VSYNC 1
+#define ASC_WINDOW_REFRESH_HZ 60
+
 typedef struct
 {
     u8 rls, maj, min, rev;
@@ -25,9 +31,17 @@ typedef struct
 
 typedef struct
 {
-    char config_path[STRING_LEN];
+    irect dim;
+    bool fullscreen;
+    bool vsync;
+    int refresh_hz;
+} PL_WindowConfig;
+
+typedef struct
+{
     PL_Version ascencia_version;
     r32 opengl_version;
+    PL_WindowConfig window_config;
 } PL_Config;
 
 bool PL_ConfigInit(cstr config_path);

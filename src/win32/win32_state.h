@@ -9,20 +9,30 @@
 #define ASCENCIA_WIN32_STATE_H
 
 #include <util/types.h>
-#include <win32/win32_api.h>
 #include <platform/logging.h>
-#include <win32/win32_window.h>
 #include <platform/config.h>
+#include <platform/window.h>
+#include <win32/win32_api.h>
+#include <win32/win32_wgl.h>
+
+typedef struct
+{
+    ptr handle;
+    PL_Window pl_window;
+    Win32_WNDPL wndpl;
+} Win32_Window;
 
 typedef struct
 {
     Win32_API api;
+    Win32_WGL wgl;
     PL_Logging logging;
     PL_Config config;
     Win32_Window window;
 
     char base_path[STRING_LEN];
     char pref_path[STRING_LEN];
+    char config_path[STRING_LEN];
 } Win32_State;
 
 #ifdef ASCENCIA_STATE_INSTANCE

@@ -5,9 +5,9 @@
  * Date: Thu Sep 12 2024
 ============================================================*/
 
-#include <win32/win32_state.h>
+#include <util/string_helpers.h>
 #include <platform/alloc.h>
-#include <platform/string_helpers.h>
+#include <win32/win32_state.h>
 
 bool Win32_StateInit(void)
 {

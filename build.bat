@@ -4,7 +4,7 @@ pushd %~dp0
 setlocal EnableDelayedExpansion
 set path=%~dp0assets;%path%
 
-set input=*.c win32\*.c platform\*.c
+set input=*.c win32\*.c util\*.c
 set dwarnings=4100 4189 4201 4820 4711 4668 4114
 set cflags=-TC -MP -Oi -FC -GR- -WX -W4 -DWIN32 -D_CRT_SECURE_NO_WARNINGS
 
