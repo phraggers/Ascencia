@@ -84,6 +84,18 @@ r32 divide(r32 n, r32 d)
     return result;
 }
 
+r64 divide64(r64 n, r64 d)
+{
+    r64 result = 0.0;
+
+    if(d != 0.0)
+    {
+        result = (r64)(n/d);
+    }
+    
+    return result;
+}
+
 r64 norm64(r64 v, r64 min, r64 max)
 {
     r64 result = ((v-min) / (max-min));

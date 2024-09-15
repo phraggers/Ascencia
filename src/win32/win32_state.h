@@ -12,24 +12,25 @@
 #include <platform/logging.h>
 #include <platform/config.h>
 #include <platform/window.h>
+#include <platform/input.h>
+#include <platform/timing.h>
 #include <win32/win32_api.h>
 #include <win32/win32_wgl.h>
+#include <win32/win32_window.h>
 
 typedef struct
 {
-    ptr handle;
-    PL_Window pl_window;
-    Win32_WNDPL wndpl;
-} Win32_Window;
-
-typedef struct
-{
-    Win32_API api;
-    Win32_WGL wgl;
     PL_Logging logging;
     PL_Config config;
-    Win32_Window window;
+    PL_Clock clock;
+    PL_Timer timer;
 
+    Win32_API api;
+    Win32_WGL wgl;
+    Win32_Window window;
+    Win32_XInput xinput;
+
+    bool running;
     char base_path[STRING_LEN];
     char pref_path[STRING_LEN];
     char config_path[STRING_LEN];

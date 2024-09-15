@@ -39,7 +39,7 @@ typedef struct
     pfn_wglSwapIntervalEXT wglSwapIntervalEXT;
 } Win32_WGL;
 
-#define WGL G_win32_state->wgl
+#define WGLAPI G_win32_state->wgl
 
 bool Win32_LoadWGL(void);
 bool Win32_LoadGL(void);

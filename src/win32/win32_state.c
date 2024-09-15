@@ -5,8 +5,8 @@
  * Date: Thu Sep 12 2024
 ============================================================*/
 
-#include <util/string_helpers.h>
 #include <platform/alloc.h>
+#include <platform/timing.h>
 #include <win32/win32_state.h>
 
 bool Win32_StateInit(void)
@@ -15,89 +15,6 @@ bool Win32_StateInit(void)
     if(!G_win32_state)
     {
         PL_Log(LOG_FATAL, "StateInit: malloc error");
-        return 0;
-    }
-
-    #ifdef DEBUG
-    PL_SetConsoleLogLevel(LOG_DEBUG);
-    PL_SetFileLogLevel(LOG_WARN);
-    #else
-    PL_SetConsoleLogLevel(LOG_NONE);
-    PL_SetFileLogLevel(LOG_ERROR);
-    #endif
-
-    switch(ASC_VERSION_RLS)
-    {
-        case 0:
-        {
-            PL_Log(LOG_INFO, "Ascencia [DEV] %d.%d.%d", ASC_VERSION_MAJ, ASC_VERSION_MIN, ASC_VERSION_REV);
-        } break;
-        case 1:
-        {
-            PL_Log(LOG_INFO, "Ascencia [ALPHA] %d.%d.%d", ASC_VERSION_MAJ, ASC_VERSION_MIN, ASC_VERSION_REV);
-        } break;
-        case 2:
-        {
-            PL_Log(LOG_INFO, "Ascencia [BETA] %d.%d.%d", ASC_VERSION_MAJ, ASC_VERSION_MIN, ASC_VERSION_REV);
-        } break;
-        case 3:
-        {
-            PL_Log(LOG_INFO, "Ascencia [RELEASE] %d.%d.%d", ASC_VERSION_MAJ, ASC_VERSION_MIN, ASC_VERSION_REV);
-        } break;
-    }
-
-    cstr logstr = (cstr)PL_Alloc0(STRING_LEN);
-    if(logstr)
-    {
-        PL_String_ShortFileSize(logstr, sizeof(Win32_State));
-        PL_Log(LOG_INFO, "StateInit: %s", logstr);
-        PL_Free(logstr);
-    }
-
-    if(!Win32_LoadAPI())
-    {
-        PL_Log(LOG_FATAL, "StateInit: Failed to load Win32 API");
-        return 0;
-    }
-
-    Win32_SetBasePath();
-
-    cstr pref_path = (cstr)PL_Alloc0(STRING_LEN);
-    if(pref_path)
-    {
-        strcpy(pref_path, Win32_GetBasePath());
-        strcat(pref_path, "pref\\");
-        Win32_SetPrefPath(pref_path);
-        PL_Free(pref_path);
-    }
-    else
-    {
-        PL_Log(LOG_FATAL, "StateInit: malloc error");
-    }
-
-    cstr logfilepath = (cstr)PL_Alloc0(STRING_LEN);
-    if(logfilepath)
-    {
-        strcpy(logfilepath, Win32_GetBasePath());
-        strcat(logfilepath, "log\\");
-
-        if(!PL_SetLogFilePath(logfilepath))
-        {
-            PL_Log(LOG_ERROR, "StateInit: failed to create log file");
-            memset(G_win32_state->logging.logfile_path, 0, STRING_LEN);
-        }
-
-        PL_Free(logfilepath);
-    }
-    else
-    {
-        PL_Log(LOG_FATAL, "StateInit: malloc error");
-        return 0;
-    }
-
-    if(!PL_ConfigInit(Win32_GetPrefPath()))
-    {
-        PL_Log(LOG_FATAL, "StateInit: config init failed");
         return 0;
     }
 
@@ -125,7 +42,7 @@ void Win32_SetBasePath(void)
         }
     }
 
-    PL_Log(LOG_INFO, "BasePath Set: %s", Win32_GetBasePath());
+    PL_Log(LOG_INFO, "BasePath set: %s", Win32_GetBasePath());
 }
 
 cstr Win32_GetBasePath(void)
@@ -164,7 +81,7 @@ bool Win32_SetPrefPath(cstr path)
         }
     }
 
-    PL_Log(LOG_DEBUG, "SetPrefPath: set %s", Win32_GetPrefPath());
+    PL_Log(LOG_INFO, "PrefPath set: %s", Win32_GetPrefPath());
     return 1;
 }
 

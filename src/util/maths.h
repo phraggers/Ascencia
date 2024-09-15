@@ -19,6 +19,7 @@ i32 trunc_i32(r32 v); // truncate r32 to i32
 i32 floor_i32(r32 v); // floor r32 to i32
 i32 ceil_i32(r32 v); // ceil r32 to i32
 r32 divide(r32 n, r32 d); // n/d, if d==0, returns 0.0f
+r64 divide64(r64 n, r64 d);
 
 r64 norm64(r64 v, r64 min, r64 max); // normalize 0.0 - 1.0 (64bit)
 r32 norm32(r32 v, r32 min, r32 max); // normalize 0.0 - 1.0 (32bit)

@@ -11,6 +11,39 @@
 #include <platform/logging.h>
 #include <win32/win32_state.h>
 
+bool PL_LogInit(void)
+{
+    #ifdef DEBUG
+    PL_SetConsoleLogLevel(LOG_DEBUG);
+    PL_SetFileLogLevel(LOG_WARN);
+    #else
+    PL_SetConsoleLogLevel(LOG_NONE);
+    PL_SetFileLogLevel(LOG_ERROR);
+    #endif
+
+    switch(ASC_VERSION_RLS)
+    {
+        case 0:
+        {
+            PL_Log(LOG_INFO, "Ascencia [DEV] %d.%d.%d", ASC_VERSION_MAJ, ASC_VERSION_MIN, ASC_VERSION_REV);
+        } break;
+        case 1:
+        {
+            PL_Log(LOG_INFO, "Ascencia [ALPHA] %d.%d.%d", ASC_VERSION_MAJ, ASC_VERSION_MIN, ASC_VERSION_REV);
+        } break;
+        case 2:
+        {
+            PL_Log(LOG_INFO, "Ascencia [BETA] %d.%d.%d", ASC_VERSION_MAJ, ASC_VERSION_MIN, ASC_VERSION_REV);
+        } break;
+        case 3:
+        {
+            PL_Log(LOG_INFO, "Ascencia [RELEASE] %d.%d.%d", ASC_VERSION_MAJ, ASC_VERSION_MIN, ASC_VERSION_REV);
+        } break;
+    }
+
+    return 1;
+}
+
 void PL_SetConsoleLogLevel(LOG_LEVEL level)
 {
     Assert(G_win32_state);

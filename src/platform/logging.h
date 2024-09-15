@@ -27,6 +27,7 @@ typedef struct
     char logfile_path[STRING_LEN];
 } PL_Logging;
 
+bool PL_LogInit(void);
 void PL_SetConsoleLogLevel(LOG_LEVEL level);
 void PL_SetFileLogLevel(LOG_LEVEL level);
 bool PL_SetLogFilePath(cstr path);

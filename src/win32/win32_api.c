@@ -32,8 +32,12 @@ extern b32 WriteFile(ptr handle, const ptr buffer, u32 bytes_to_write, u32 *byte
 extern b32 DeleteFileA(cstr path);
 extern b32 CreateDirectoryA(cstr path, ptr sec);
 extern b32 RemoveDirectoryA(cstr path);
+extern b32 QueryPerformanceFrequency(Win32_LARGE_INTEGER *frequency);
+extern b32 QueryPerformanceCounter(Win32_LARGE_INTEGER *frequency);
+extern void GetLocalTime(Win32_SYSTEMTIME *st);
 
-#define LOAD_WIN_FN(lib, name) {api->##name = (pfn_##name)api->GetProcAddress(lib, #name); if(!api->##name) {PL_Log(LOG_FATAL, "failed to load DLL FN: %s", #name); return 0;}}
+#define LOAD_KERNEL_FN(name) {api->##name = &##name; numfn++;}
+#define LOAD_WIN_FN(lib, name) {api->##name = (pfn_##name)api->GetProcAddress(lib, #name); if(!api->##name) {PL_Log(LOG_FATAL, "failed to load DLL FN: %s", #name); return 0;} else numfn++;}
 
 ptr PL_Alloc(u64 size)
 {
@@ -104,23 +108,29 @@ b32 PL_Free(ptr mem)
 bool Win32_LoadAPI(void)
 {
     Assert(G_win32_state);
-    Win32_API *api = &G_win32_state->api;
+    Win32_API *api = &WINAPI;
 
-    api->GetModuleHandleA = &GetModuleHandleA;
-    api->GetCommandLineA = &GetCommandLineA;
-    api->LoadLibraryA = &LoadLibraryA;
-    api->GetProcAddress = &GetProcAddress;
-    api->GetModuleFileNameA = &GetModuleFileNameA;
-    api->AddDllDirectory = &AddDllDirectory;
-    api->GetLastError = &GetLastError;
-    api->CreateFileA = &CreateFileA;
-    api->CloseHandle = &CloseHandle;
-    api->GetFileSizeEx = &GetFileSizeEx;
-    api->ReadFile = &ReadFile;
-    api->WriteFile = &WriteFile;
-    api->DeleteFileA = &DeleteFileA;
-    api->CreateDirectoryA = &CreateDirectoryA;
-    api->RemoveDirectoryA = &RemoveDirectoryA;
+    int numfn = 0;
+
+    LOAD_KERNEL_FN(GetModuleHandleA);
+    LOAD_KERNEL_FN(GetCommandLineA);
+    LOAD_KERNEL_FN(LoadLibraryA);
+    LOAD_KERNEL_FN(GetProcAddress);
+    LOAD_KERNEL_FN(GetModuleFileNameA);
+    LOAD_KERNEL_FN(AddDllDirectory);
+    LOAD_KERNEL_FN(GetLastError);
+    LOAD_KERNEL_FN(CreateFileA);
+    LOAD_KERNEL_FN(CloseHandle);
+    LOAD_KERNEL_FN(GetFileSizeEx);
+    LOAD_KERNEL_FN(ReadFile);
+    LOAD_KERNEL_FN(WriteFile);
+    LOAD_KERNEL_FN(DeleteFileA);
+    LOAD_KERNEL_FN(CreateDirectoryA);
+    LOAD_KERNEL_FN(RemoveDirectoryA);
+    LOAD_KERNEL_FN(QueryPerformanceCounter);
+    LOAD_KERNEL_FN(QueryPerformanceFrequency);
+    LOAD_KERNEL_FN(GetLocalTime);
+
 
     ptr lib_shlwapi = api->LoadLibraryA("shlwapi.dll");
     if(!lib_shlwapi)
@@ -186,6 +196,68 @@ bool Win32_LoadAPI(void)
     LOAD_WIN_FN(lib_opengl32, wglGetProcAddress);
     LOAD_WIN_FN(lib_opengl32, wglMakeCurrent);
 
-    PL_Log(LOG_DEBUG, "Win32 API functions loaded");
+    PL_Log(LOG_INFO, "Win32 API: %d functions loaded", numfn);
+    return 1;
+}
+
+u64 Win32_GetPerfCount(void)
+{
+    u64 result = 0;
+    Win32_LARGE_INTEGER perf;
+    QueryPerformanceCounter(&perf);
+    result = (u64)perf.QuadPart;
+    return result;
+}
+
+u32 NotLoaded_XInputGetState(u32 user_index, Win32_XINPUT_STATE *state)
+{
+    return 1167L; //ERROR_DEVICE_NOT_CONNECTED
+}
+
+u32 NotLoaded_XInputSetState(u32 user_index, Win32_XINPUT_VIBRATION *vib)
+{
+    return 1167L; //ERROR_DEVICE_NOT_CONNECTED
+}
+
+bool Win32_LoadXInput(void)
+{
+    Assert(G_win32_state);
+    Win32_XInput *api = &XINPUT_API;
+    
+    ptr xinput_dll = WINAPI.LoadLibraryA("xinput1_4.dll");
+
+    if(xinput_dll)
+    {
+        api->version = XINPUT_1_4;
+    }
+
+    else
+    {
+        xinput_dll = WINAPI.LoadLibraryA("xinput9_1_0.dll");
+
+        if(xinput_dll)
+        {
+            api->version = XINPUT_9_1_0;
+        }
+
+        else
+        {
+            xinput_dll = WINAPI.LoadLibraryA("xinput1_3.dll");
+
+            if(xinput_dll)
+            {
+                api->version = XINPUT_1_3;
+            }
+
+            else
+            {
+                PL_Log(LOG_ERROR, "LoadXInput: failed to load xinput");
+                api->XInputGetState = &NotLoaded_XInputGetState;
+                api->XInputSetState = &NotLoaded_XInputSetState;
+                return 0;
+            }
+        }
+    }
+
     return 1;
 }
