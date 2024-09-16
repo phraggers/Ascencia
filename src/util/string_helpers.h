@@ -37,4 +37,7 @@ void PL_String_ShortFileSize(cstr string, u64 size);
     %Z      timezone name abbrev */
 void PL_String_TimeStampNow(cstr buffer, cstr format);
 
+// byte buffer to hex string
+void PL_String_Hex(cstr buffer, u8 *bp, u64 size);
+
 #endif /* ASCENCIA_STRING_HELPERS_H */

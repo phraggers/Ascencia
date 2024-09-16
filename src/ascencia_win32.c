@@ -105,6 +105,8 @@ local bool Init(void)
     return 1;
 }
 
+#include <util/algorithm.h>
+
 local bool Run(void)
 {
 
@@ -118,10 +120,8 @@ local void Quit(void)
 
 local bool Entry(void)
 {
-    PL_Log(LOG_DEBUG, "WIN_ENTRY");
     if(!Init()) return 0;
     if(!Run()) return 0;
     Quit();
-    PL_Log(LOG_DEBUG, "EXIT SUCCESS");
     return 1;
 }

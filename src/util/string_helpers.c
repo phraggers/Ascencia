@@ -45,3 +45,21 @@ void PL_String_TimeStampNow(cstr buffer, cstr format)
     tm_info = localtime(&time_now);
     strftime(buffer, STRING_LEN, format, tm_info);
 }
+
+void PL_String_Hex(cstr buffer, u8 *bp, u64 size)
+{
+    const cstr hex = "0123456789abcdef";
+    cstr cp = buffer;
+
+    for(int byte_index = 0;
+        byte_index < size-1; 
+        ++byte_index)
+    {
+        *cp++ = hex[(*bp>>4)&0xF];
+        *cp++ = hex[(*bp++)&0xF];
+    }
+
+    *cp++ = hex[(*bp>>4)&0xF];
+    *cp++ = hex[(*bp)&0xF];
+    *cp = 0;
+}

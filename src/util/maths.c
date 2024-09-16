@@ -152,20 +152,6 @@ i32 clamp_max_i32(i32 v, i32 max)
     return result;
 }
 
-u32 rotl(u32 v, i32 s)
-{
-    s &= 31;
-    u32 result = ((v<<s) | (v>>(32-s)));
-    return result;
-}
-
-u32 rotr(u32 v, i32 s)
-{
-    s &= 31;
-    u32 result = ((v>>s) | (v<<(32-s)));
-    return result;
-}
-
 r32 lerp(r32 a, r32 b, r32 t)
 {
     r32 result = ((1.0f-t) *a) + (t*b);
@@ -193,6 +179,12 @@ r32 square(r32 v)
 r32 pow32(r32 v, r32 s)
 {
     r32 result = (r32)powf(v,s);
+    return result;
+}
+
+r64 pow64(r64 v, r64 s)
+{
+    r64 result = (r64)pow(v,s);
     return result;
 }
 

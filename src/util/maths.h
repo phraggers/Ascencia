@@ -33,9 +33,6 @@ i32 clamp_i32(i32 v, i32 min, i32 max);
 i32 clamp_min_i32(i32 v, i32 min);
 i32 clamp_max_i32(i32 v, i32 max);
 
-u32 rotl(u32 v, i32 s); // rotate bits left (s times)
-u32 rotr(u32 v, i32 s); // rotate bits right (s times)
-
 r32 lerp(r32 a, r32 b, r32 t); // linear interpolation
 r32 qlerp(r32 a, r32 b, r32 t); // quick lerp (fewer CPU cycles but less precise)
 
@@ -47,6 +44,7 @@ r32 tau32(void); // returns 32bit 2*pi
 r32 square_root(r32 v);
 r32 square(r32 v); // v*v
 r32 pow32(r32 v, r32 s); // v^s
+r64 pow64(r64 v, r64 s);
 r32 sin32(r32 a);
 r32 cos32(r32 a);
 r32 atan32(r32 y, r32 x);

@@ -39,9 +39,15 @@ typedef struct
 
 typedef struct
 {
+    r32 master_volume;
+} PL_AudioConfig;
+
+typedef struct
+{
     PL_Version ascencia_version;
     r32 opengl_version;
     PL_WindowConfig window_config;
+    PL_AudioConfig audio_config;
 } PL_Config;
 
 bool PL_ConfigInit(cstr config_path);
