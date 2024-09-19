@@ -49,4 +49,11 @@ r32 sin32(r32 a);
 r32 cos32(r32 a);
 r32 atan32(r32 y, r32 x);
 
+r32 rad32(r32 deg); // degrees to radians
+r64 rad64(r64 deg);
+r32 deg32(r32 rad); // radians to degrees
+r64 deg64(r64 rad);
+
+bool equaleps(r32 a, r32 b, r32 e);
+
 #endif /* ASCENCIA_UTIL_MATHS_H */

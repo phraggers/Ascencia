@@ -11,73 +11,468 @@
 
 // ------ v2 ------ //
 
-// constructors
+/* === v2 constructors === */
+
 v2 v2i(i32 a, i32 b)
 {
     v2 result = {(r32)a, (r32)b};
     return result;
 }
+
 v2 v2u(u32 a, u32 b)
 {
     v2 result = {(r32)a, (r32)b};
     return result;    
 }
+
 v2 v2r(r32 a, r32 b)
 {
     v2 result = {a, b};
     return result;    
 }
 
-// maths operators
-v2 v2add(v2 a, v2 b)
+/* === v2 operators === */
+
+v2 v2add(v2 a, r32 v)
 {
-    v2 result = {a.i[0]+b.i[0], a.i[1]+b.i[1]};
+    v2 result = 
+    {
+        a.i[0]+v, 
+        a.i[1]+v
+    };
     return result;
 }
-v2 v2sub(v2 a, v2 b)
+
+v2 v2sub(v2 a, r32 v)
 {
-    v2 result = {a.i[0]-b.i[0], a.i[1]-b.i[1]};
+    v2 result = 
+    {
+        a.i[0]-v, 
+        a.i[1]-v
+    };
     return result;
 }
+
 v2 v2mul(v2 a, r32 v)
 {
-    v2 result = {a.i[0]*v, a.i[1]*v};
+    v2 result = 
+    {
+        a.i[0]*v, 
+        a.i[1]*v
+    };
     return result;
 }
+
 v2 v2div(v2 a, r32 v)
 {
-    v2 result = {divide(a.i[0],v), divide(a.i[1],v)};
-    return result;    
+    v2 result = 
+    {
+        divide(a.i[0],v), 
+        divide(a.i[1],v)
+    };
+    return result; 
 }
+
+/* === v2/v2 operators === */
+
+v2 v2addv(v2 a, v2 b)
+{
+    v2 result = 
+    {
+        a.i[0]+b.i[0], 
+        a.i[1]+b.i[1]
+    };
+    return result;
+}
+
+v2 v2subv(v2 a, v2 b)
+{
+    v2 result = 
+    {
+        a.i[0]-b.i[0], 
+        a.i[1]-b.i[1]
+    };
+    return result;
+}
+
+v2 v2mulv(v2 a, v2 b)
+{
+    v2 result = 
+    {
+        a.i[0]*b.i[0], 
+        a.i[1]*b.i[1]
+    };
+    return result;
+}
+
+v2 v2divv(v2 a, v2 b)
+{
+    v2 result = 
+    {
+        divide(a.i[0], b.i[0]),
+        divide(a.i[1], b.i[1])
+    };
+    return result;
+}
+
+/* === v2 functions === */
+
+bool v2zero(v2 a)
+{
+    bool result = 
+    (
+        ((!a.i[0]) && (!a.i[1])) ? 1:0
+    );
+    return result;
+}
+
+bool v2one(v2 a)
+{
+    bool result = 
+    (
+        ((a.i[0]==1.0f) && (a.i[1]==1.0f)) ? 1:0
+    );
+    return result;
+}
+
+v2 v2sign(v2 a)
+{
+    v2 result = 
+    {
+        (a.i[0]>=0.0f) ? 1:-1, 
+        (a.i[1]>=0.0f) ? 1:-1
+    };
+    return result;
+}
+
+v2 v2invert(v2 a)
+{
+    v2 result = 
+    {
+        a.i[0]=-a.i[0], 
+        a.i[1]=-a.i[1]
+    };
+    return result;
+}
+
 v2 v2perp(v2 a)
 {
-    v2 result = {-a.y, a.x};
+    v2 result = 
+    {
+        -a.y, 
+         a.x
+    };
     return result;
 }
-v2 v2hadamard(v2 a, v2 b)
+
+v2 v2tangent(v2 a)
 {
-    v2 result = {a.i[0]*b.i[0], a.i[1]*b.i[1]};
+    v2 result = 
+    {
+         a.y, 
+        -a.x
+    };
     return result;
 }
-r32 v2dot(v2 a, v2 b)
+
+v2 v2rotate(v2 a, r32 r)
 {
-    r32 result = (a.i[0]*b.i[0]) + (a.i[1]*b.i[1]);
-    return result;
+    r32 cs = cos32(r);
+    r32 sn = sin32(r);
+
+    v2 result =
+    {
+        a.i[0] * cs - a.i[1] * sn,
+        a.i[0] * sn + a.i[1] * cs
+    };
+
+	return result;
 }
+
 r32 v2lengthsq(v2 a)
 {
     r32 result = v2dot(a,a);
     return result;
 }
+
 r32 v2length(v2 a)
 {
     r32 result = square_root(v2lengthsq(a));
     return result;
 }
 
+v2 v2abs(v2 a)
+{
+    v2 result = 
+    {
+        absolute(a.i[0]), 
+        absolute(a.i[1])
+    };
+    return result;
+}
+
+v2 v2clamp(v2 a, r32 min, r32 max)
+{
+    v2 result = 
+    {
+        clamp(a.i[0], min, max),
+        clamp(a.i[1], min, max)
+    };
+    return result;
+}
+
+v2 v2clamp_min(v2 a, r32 min)
+{
+    v2 result = 
+    {
+        clamp_min(a.i[0], min),
+        clamp_min(a.i[1], min)
+    };
+    return result;   
+}
+
+v2 v2clamp_max(v2 a, r32 max)
+{
+    v2 result = 
+    {
+        clamp_max(a.i[0], max),
+        clamp_max(a.i[1], max)
+    };
+    return result;  
+}
+
+v2 v2floor(v2 a)
+{
+    v2 result =
+    {
+        (r32)floor_i32(a.i[0]),
+        (r32)floor_i32(a.i[1])
+    };
+    return result;
+}
+
+v2 v2ceil(v2 a)
+{
+    v2 result =
+    {
+        (r32)ceil_i32(a.i[0]),
+        (r32)ceil_i32(a.i[1])
+    };
+    return result;
+}
+
+v2 v2round(v2 a)
+{
+    v2 result =
+    {
+        (r32)round_i32(a.i[0]),
+        (r32)round_i32(a.i[1])
+    };
+    return result;
+}
+
+v2 v2norm(v2 a)
+{
+	r32 l = square_root(v2dot(a,a));
+    v2 result =
+    {
+        divide(a.i[0], l),
+        divide(a.i[1], l)
+    };
+	return result;
+}
+
+r32 v2angle(v2 a)
+{
+    r32 result = atan32(a.i[1], a.i[0]);
+	return result;
+}
+
+/* === v2/v2 functions === */
+
+v2 v2clampv(v2 a, v2 min, v2 max)
+{
+    v2 result =
+    {
+        clamp(a.i[0], min.i[0], max.i[0]),
+        clamp(a.i[1], min.i[1], max.i[1])
+    };
+    return result;
+}
+
+v2 v2clampv_min(v2 a, v2 min)
+{
+    v2 result =
+    {
+        clamp_min(a.i[0], min.i[0]),
+        clamp_min(a.i[1], min.i[1])
+    };
+    return result;
+}
+
+v2 v2clampv_max(v2 a, v2 max)
+{
+    v2 result =
+    {
+        clamp_max(a.i[0], max.i[0]),
+        clamp_max(a.i[1], max.i[1])
+    };
+    return result;
+}
+
+bool v2less(v2 a, v2 b)
+{
+    bool result = 
+    (
+        ((a.i[0]+a.i[1]) < (b.i[0]+b.i[1])) ? 1:0
+    );
+    return result;
+}
+
+bool v2greater(v2 a, v2 b)
+{
+    bool result = 
+    (
+        ((a.i[0]+a.i[1]) > (b.i[0]+b.i[1])) ? 1:0
+    );
+    return result;
+}
+
+bool v2equal(v2 a, v2 b)
+{
+    bool result = 
+    (
+        ((a.i[0]==b.i[0]) && (a.i[1]==b.i[1])) ? 1:0
+    );
+    return result;
+}
+
+r32 v2dot(v2 a, v2 b)
+{
+    r32 result = 
+    (
+        (a.i[0]*b.i[0]) + (a.i[1]*b.i[1])
+    );
+    return result;
+}
+
+v2 v2snap(v2 a, v2 b)
+{
+    v2 result = 
+    {
+        (divide(a.i[0],b.i[0]) * a.i[0]), 
+        (divide(a.i[1],b.i[1]) * a.i[1])
+    };
+    return result;
+}
+
+v2 v2max(v2 a, v2 b)
+{
+    v2 result = 
+    {
+        ((a.i[0]>b.i[0]) ? a.i[0] : b.i[0]), 
+        ((a.i[1]>b.i[1]) ? a.i[1] : b.i[1])
+    };
+    return result;
+}
+
+v2 v2min(v2 a, v2 b)
+{
+    v2 result = 
+    {
+        ((a.i[0]<b.i[0])?a.i[0]:b.i[0]), 
+        ((a.i[1]<b.i[1])?a.i[1]:b.i[1])
+    };
+    return result;
+}
+
+v2 v2project(v2 a, v2 b)
+{
+    r32 d = v2dot(b, b);
+    r32 s = divide(v2dot(a, b), d);
+
+    v2 result =
+    {
+        b.i[0] * s,
+        b.i[1] * s
+    };
+
+	return result;
+}
+
+v2 v2slide(v2 a, v2 n)
+{
+    r32 d = v2dot(a, n);
+    
+    v2 result =
+    {
+        a.i[0] - n.i[0] * d,
+        a.i[1] - n.i[1] * d
+    };
+
+	return result;
+}
+
+v2 v2reflect(v2 a, v2 n)
+{
+    r32 d = 2.0f * v2dot(a, n);
+
+    v2 result =
+    {
+        n.i[0] * d - a.i[0],
+        n.i[1] * d - a.i[1]
+    };
+
+	return result;
+}
+
+v2 v2lerp(v2 a, v2 b, r32 v)
+{
+    v2 result =
+    {
+        a.i[0] + (b.i[0] - a.i[0]) * v,
+        a.i[1] + (b.i[1] - a.i[1]) * v
+    };
+
+	return result;
+}
+
+v2 v2bez3(v2 a, v2 b, v2 c, r32 v)
+{
+    v2 result = v2lerp(v2lerp(a, b, v), v2lerp(b, c, v), v);
+	return result;
+}
+
+v2 v2bez4(v2 a, v2 b, v2 c, v2 d, r32 v)
+{
+    v2 t1 = v2lerp(v2lerp(a, b, v), v2lerp(b, c, v), v);
+    v2 t2 = v2lerp(v2lerp(b, c, v), v2lerp(c, d, v), v);
+    v2 result = v2lerp(t1, t2, v);
+	return result;
+}
+
+r32 v2distance(v2 a, v2 b)
+{
+    r32 result = square_root((a.i[0]-b.i[0]) * (a.i[0]-b.i[0]) + (a.i[1]-b.i[1]) * (a.i[1]-b.i[1]));
+    return result;
+}
+
+r32 v2distancesq(v2 a, v2 b)
+{
+    r32 result = (a.i[0]-b.i[0]) * (a.i[0]-b.i[0]) + (a.i[1]-b.i[1]) * (a.i[1]-b.i[1]);
+    return result;
+}
+
+bool v2linear_independent(v2 a, v2 b)
+{
+    bool result = (a.i[0] * b.i[1] - b.i[0] * a.i[1]) != 0;
+    return result;
+}
+
 // ------ v3 ------ //
 
-// constructors
+/* === v2 constructors === */
+
 v3 v3i(i32 a, i32 b, i32 c)
 {
     v3 result = {(r32)a, (r32)b, (r32)c};
@@ -94,51 +489,348 @@ v3 v3r(r32 a, r32 b, r32 c)
     return result;    
 }
 
-// maths operators
-v3 v3add(v3 a, v3 b)
+/* === v3 operators === */
+
+v3 v3add(v3 a, r32 v)
 {
-    v3 result = {a.i[0]+b.i[0], a.i[1]+b.i[1], a.i[2]+b.i[2]};
+    v3 result = 
+    {
+        a.i[0]+v, 
+        a.i[1]+v,
+        a.i[2]+v
+    };
     return result;
 }
-v3 v3sub(v3 a, v3 b)
+
+v3 v3sub(v3 a, r32 v)
 {
-    v3 result = {a.i[0]-b.i[0], a.i[1]-b.i[1], a.i[2]-b.i[2]};
+    v3 result = 
+    {
+        a.i[0]-v, 
+        a.i[1]-v,
+        a.i[2]-v
+    };
     return result;
 }
+
 v3 v3mul(v3 a, r32 v)
 {
-    v3 result = {a.i[0]*v, a.i[1]*v, a.i[2]*v};
+    v3 result = 
+    {
+        a.i[0]*v, 
+        a.i[1]*v,
+        a.i[2]*v
+    };
     return result;
 }
+
 v3 v3div(v3 a, r32 v)
 {
-    v3 result = {divide(a.i[0],v), divide(a.i[1],v), divide(a.i[2],v)};
-    return result;    
+    v3 result = 
+    {
+        divide(a.i[0],v), 
+        divide(a.i[1],v),
+        divide(a.i[2],v)
+    };
+    return result; 
 }
-v3 v3hadamard(v3 a, v3 b)
+
+/* === v3/v3 operators === */
+
+v3 v3addv(v3 a, v3 b)
 {
-    v3 result = {a.i[0]*b.i[0], a.i[1]*b.i[1], a.i[2]*b.i[2]};
+    v3 result = 
+    {
+        a.i[0]+b.i[0], 
+        a.i[1]+b.i[1],
+        a.i[2]+b.i[2]
+    };
     return result;
 }
-r32 v3dot(v3 a, v3 b)
+
+v3 v3subv(v3 a, v3 b)
 {
-    r32 result = (a.i[0]*b.i[0]) + (a.i[1]*b.i[1]) + (a.i[2]*b.i[2]);
+    v3 result = 
+    {
+        a.i[0]-b.i[0], 
+        a.i[1]-b.i[1],
+        a.i[2]-b.i[2]
+    };
     return result;
 }
+
+v3 v3mulv(v3 a, v3 b)
+{
+    v3 result = 
+    {
+        a.i[0]*b.i[0], 
+        a.i[1]*b.i[1],
+        a.i[2]*b.i[2]
+    };
+    return result;
+}
+
+v3 v3divv(v3 a, v3 b)
+{
+    v3 result = 
+    {
+        divide(a.i[0], b.i[0]), 
+        divide(a.i[1], b.i[1]),
+        divide(a.i[2], b.i[2])
+    };
+    return result;
+}
+
+/* === v3 functions === */
+
+bool v3zero(v3 a)
+{
+    bool result = 
+    (
+        ((!a.i[0]) && (!a.i[1]) && (!a.i[2])) ? 1:0
+    );
+    return result;
+}
+
+bool v3one(v3 a)
+{
+    bool result = 
+    (
+        ((a.i[0]==1.0f) && (a.i[1]==1.0f) && (a.i[2]==1.0f)) ? 1:0
+    );
+    return result;
+}
+
+v3 v3sign(v3 a)
+{
+    v3 result = 
+    {
+        (a.i[0]>=0.0f) ? 1:-1, 
+        (a.i[1]>=0.0f) ? 1:-1,
+        (a.i[2]>=0.0f) ? 1:-1
+    };
+    return result;
+}
+
+v3 v3invert(v3 a)
+{
+    v3 result = 
+    {
+        a.i[0]=-a.i[0], 
+        a.i[1]=-a.i[1],
+        a.i[2]=-a.i[2]
+    };
+    return result;
+}
+
 r32 v3lengthsq(v3 a)
 {
     r32 result = v3dot(a,a);
     return result;
 }
+
 r32 v3length(v3 a)
 {
     r32 result = square_root(v3lengthsq(a));
     return result;
 }
 
+v3 v3abs(v3 a)
+{
+    v3 result = 
+    {
+        absolute(a.i[0]), 
+        absolute(a.i[1]),
+        absolute(a.i[2])
+    };
+    return result;
+}
+
+v3 v3clamp(v3 a, r32 min, r32 max)
+{
+    v3 result = 
+    {
+        clamp(a.i[0], min, max),
+        clamp(a.i[1], min, max),
+        clamp(a.i[2], min, max)
+    };
+    return result;
+}
+
+v3 v3clamp_min(v3 a, r32 min)
+{
+    v3 result = 
+    {
+        clamp_min(a.i[0], min),
+        clamp_min(a.i[1], min),
+        clamp_min(a.i[2], min)
+    };
+    return result;   
+}
+
+v3 v3clamp_max(v3 a, r32 max)
+{
+    v3 result = 
+    {
+        clamp_max(a.i[0], max),
+        clamp_max(a.i[1], max),
+        clamp_max(a.i[2], max)
+    };
+    return result;  
+}
+
+v3 v3floor(v3 a)
+{
+    v3 result =
+    {
+        (r32)floor_i32(a.i[0]),
+        (r32)floor_i32(a.i[1]),
+        (r32)floor_i32(a.i[2])
+    };
+    return result;
+}
+
+v3 v3ceil(v3 a)
+{
+    v3 result =
+    {
+        (r32)ceil_i32(a.i[0]),
+        (r32)ceil_i32(a.i[1]),
+        (r32)ceil_i32(a.i[2])
+    };
+    return result;
+}
+
+v3 v3round(v3 a)
+{
+    v3 result =
+    {
+        (r32)round_i32(a.i[0]),
+        (r32)round_i32(a.i[1]),
+        (r32)round_i32(a.i[2])
+    };
+    return result;
+}
+
+/* === v3/v3 functions === */
+
+v3 v3clampv(v3 a, v3 min, v3 max)
+{
+    v3 result =
+    {
+        clamp(a.i[0], min.i[0], max.i[0]),
+        clamp(a.i[1], min.i[1], max.i[1]),
+        clamp(a.i[2], min.i[2], max.i[2])
+    };
+    return result;
+}
+
+v3 v3clampv_min(v3 a, v3 min)
+{
+    v3 result =
+    {
+        clamp_min(a.i[0], min.i[0]),
+        clamp_min(a.i[1], min.i[1]),
+        clamp_min(a.i[2], min.i[2])
+    };
+    return result;
+}
+
+v3 v3clampv_max(v3 a, v3 max)
+{
+    v3 result =
+    {
+        clamp_max(a.i[0], max.i[0]),
+        clamp_max(a.i[1], max.i[1]),
+        clamp_max(a.i[2], max.i[2])
+    };
+    return result;
+}
+
+bool v3less(v3 a, v3 b)
+{
+    bool result = 
+    (
+        ((a.i[0]+a.i[1]+a.i[2]) < (b.i[0]+b.i[1]+b.i[2])) ? 1:0
+    );
+    return result;
+}
+
+bool v3greater(v3 a, v3 b)
+{
+    bool result = 
+    (
+        ((a.i[0]+a.i[1]+a.i[2]) > (b.i[0]+b.i[1]+b.i[2])) ? 1:0
+    );
+    return result;
+}
+
+bool v3equal(v3 a, v3 b)
+{
+    bool result = 
+    (
+        ((a.i[0]==b.i[0]) && (a.i[1]==b.i[1]) && (a.i[2]==b.i[2])) ? 1:0
+    );
+    return result;
+}
+
+r32 v3dot(v3 a, v3 b)
+{
+    r32 result = 
+    (
+        (a.i[0]*b.i[0]) + (a.i[1]*b.i[1]) + (a.i[2]*b.i[2])
+    );
+    return result;
+}
+
+v3 v3snap(v3 a, v3 b)
+{
+    v3 result = 
+    {
+        (divide(a.i[0],b.i[0]) * a.i[0]), 
+        (divide(a.i[1],b.i[1]) * a.i[1]),
+        (divide(a.i[2],b.i[2]) * a.i[2])
+    };
+    return result;
+}
+
+v3 v3max(v3 a, v3 b)
+{
+    v3 result = 
+    {
+        ((a.i[0]>b.i[0]) ? a.i[0] : b.i[0]), 
+        ((a.i[1]>b.i[1]) ? a.i[1] : b.i[1]),
+        ((a.i[2]>b.i[2]) ? a.i[2] : b.i[2])
+    };
+    return result;
+}
+
+v3 v3min(v3 a, v3 b)
+{
+    v3 result = 
+    {
+        ((a.i[0]<b.i[0])?a.i[0]:b.i[0]), 
+        ((a.i[1]<b.i[1])?a.i[1]:b.i[1]),
+        ((a.i[2]<b.i[2])?a.i[2]:b.i[2])
+    };
+    return result;
+}
+
+v3 v3cross(v3 a, v3 b)
+{
+	v3 result =
+    {
+        a.i[1] * b.i[2] - a.i[2] * b.i[1],
+        a.i[2] * b.i[0] - a.i[0] * b.i[2],
+        a.i[0] * b.i[1] - a.i[1] * b.i[0]
+    };
+	return result;
+}
+
 // ------ v4 ------ //
 
-// constructors
+/* === v4 constructors === */
+
 v4 v4i(i32 a, i32 b, i32 c, i32 d)
 {
     v4 result = {(r32)a, (r32)b, (r32)c, (r32)d};
@@ -155,44 +847,352 @@ v4 v4r(r32 a, r32 b, r32 c, r32 d)
     return result;    
 }
 
-// maths operators
-v4 v4add(v4 a, v4 b)
+/* === v4 operators === */
+
+v4 v4add(v4 a, r32 v)
 {
-    v4 result = {a.i[0]+b.i[0], a.i[1]+b.i[1], a.i[2]+b.i[2], a.i[3]+b.i[3]};
+    v4 result = 
+    {
+        a.i[0]+v, 
+        a.i[1]+v,
+        a.i[2]+v,
+        a.i[3]+v
+    };
     return result;
 }
-v4 v4sub(v4 a, v4 b)
+
+v4 v4sub(v4 a, r32 v)
 {
-    v4 result = {a.i[0]-b.i[0], a.i[1]-b.i[1], a.i[2]-b.i[2], a.i[3]+b.i[3]};
+    v4 result = 
+    {
+        a.i[0]-v, 
+        a.i[1]-v,
+        a.i[2]-v,
+        a.i[3]-v
+    };
     return result;
 }
+
 v4 v4mul(v4 a, r32 v)
 {
-    v4 result = {a.i[0]*v, a.i[1]*v, a.i[2]*v, a.i[3]*v};
+    v4 result = 
+    {
+        a.i[0]*v, 
+        a.i[1]*v,
+        a.i[2]*v,
+        a.i[3]*v
+    };
     return result;
 }
+
 v4 v4div(v4 a, r32 v)
 {
-    v4 result = {divide(a.i[0],v), divide(a.i[1],v), divide(a.i[2],v), divide(a.i[3],v)};
-    return result;    
+    v4 result = 
+    {
+        divide(a.i[0],v), 
+        divide(a.i[1],v),
+        divide(a.i[2],v),
+        divide(a.i[3],v)
+    };
+    return result; 
 }
-v4 v4hadamard(v4 a, v4 b)
+
+/* === v4/v4 operators === */
+
+v4 v4addv(v4 a, v4 b)
 {
-    v4 result = {a.i[0]*b.i[0], a.i[1]*b.i[1], a.i[2]*b.i[2]};
+    v4 result = 
+    {
+        a.i[0]+b.i[0], 
+        a.i[1]+b.i[1],
+        a.i[2]+b.i[2],
+        a.i[3]+b.i[3]
+    };
     return result;
 }
-r32 v4dot(v4 a, v4 b)
+
+v4 v4subv(v4 a, v4 b)
 {
-    r32 result = (a.i[0]*b.i[0]) + (a.i[1]*b.i[1]) + (a.i[2]*b.i[2]);
+    v4 result = 
+    {
+        a.i[0]-b.i[0], 
+        a.i[1]-b.i[1],
+        a.i[2]-b.i[2],
+        a.i[3]-b.i[3]
+    };
     return result;
 }
+
+v4 v4mulv(v4 a, v4 b)
+{
+    v4 result = 
+    {
+        a.i[0]*b.i[0], 
+        a.i[1]*b.i[1],
+        a.i[2]*b.i[2],
+        a.i[3]*b.i[3]
+    };
+    return result;
+}
+
+v4 v4divv(v4 a, v4 b)
+{
+    v4 result = 
+    {
+        divide(a.i[0], b.i[0]), 
+        divide(a.i[1], b.i[1]),
+        divide(a.i[2], b.i[2]),
+        divide(a.i[3], b.i[3])
+    };
+    return result;
+}
+
+/* === v4 functions === */
+
+bool v4zero(v4 a)
+{
+    bool result = 
+    (
+        ((!a.i[0]) && (!a.i[1]) && (!a.i[2]) && (!a.i[3])) ? 1:0
+    );
+    return result;
+}
+
+bool v4one(v4 a)
+{
+    bool result = 
+    (
+        ((a.i[0]==1.0f) && (a.i[1]==1.0f) && (a.i[2]==1.0f) && (a.i[3]==1.0f)) ? 1:0
+    );
+    return result;
+}
+
+v4 v4sign(v4 a)
+{
+    v4 result = 
+    {
+        (a.i[0]>=0.0f) ? 1:-1, 
+        (a.i[1]>=0.0f) ? 1:-1,
+        (a.i[2]>=0.0f) ? 1:-1,
+        (a.i[3]>=0.0f) ? 1:-1
+    };
+    return result;
+}
+
+v4 v4invert(v4 a)
+{
+    v4 result = 
+    {
+        a.i[0]=-a.i[0], 
+        a.i[1]=-a.i[1],
+        a.i[2]=-a.i[2],
+        a.i[3]=-a.i[3]
+    };
+    return result;
+}
+
 r32 v4lengthsq(v4 a)
 {
     r32 result = v4dot(a,a);
     return result;
 }
+
 r32 v4length(v4 a)
 {
     r32 result = square_root(v4lengthsq(a));
+    return result;
+}
+
+v4 v4abs(v4 a)
+{
+    v4 result = 
+    {
+        absolute(a.i[0]), 
+        absolute(a.i[1]),
+        absolute(a.i[2]),
+        absolute(a.i[3])
+    };
+    return result;
+}
+
+v4 v4clamp(v4 a, r32 min, r32 max)
+{
+    v4 result = 
+    {
+        clamp(a.i[0], min, max),
+        clamp(a.i[1], min, max),
+        clamp(a.i[2], min, max),
+        clamp(a.i[3], min, max)
+    };
+    return result;
+}
+
+v4 v4clamp_min(v4 a, r32 min)
+{
+    v4 result = 
+    {
+        clamp_min(a.i[0], min),
+        clamp_min(a.i[1], min),
+        clamp_min(a.i[2], min),
+        clamp_min(a.i[3], min)
+    };
+    return result;   
+}
+
+v4 v4clamp_max(v4 a, r32 max)
+{
+    v4 result = 
+    {
+        clamp_max(a.i[0], max),
+        clamp_max(a.i[1], max),
+        clamp_max(a.i[2], max),
+        clamp_max(a.i[3], max)
+    };
+    return result;  
+}
+
+v4 v4floor(v4 a)
+{
+    v4 result =
+    {
+        (r32)floor_i32(a.i[0]),
+        (r32)floor_i32(a.i[1]),
+        (r32)floor_i32(a.i[2]),
+        (r32)floor_i32(a.i[3])
+    };
+    return result;
+}
+
+v4 v4ceil(v4 a)
+{
+    v4 result =
+    {
+        (r32)ceil_i32(a.i[0]),
+        (r32)ceil_i32(a.i[1]),
+        (r32)ceil_i32(a.i[2]),
+        (r32)ceil_i32(a.i[3])
+    };
+    return result;
+}
+
+v4 v4round(v4 a)
+{
+    v4 result =
+    {
+        (r32)round_i32(a.i[0]),
+        (r32)round_i32(a.i[1]),
+        (r32)round_i32(a.i[2]),
+        (r32)round_i32(a.i[3])
+    };
+    return result;
+}
+
+/* === v4/v4 functions === */
+
+v4 v4clampv(v4 a, v4 min, v4 max)
+{
+    v4 result =
+    {
+        clamp(a.i[0], min.i[0], max.i[0]),
+        clamp(a.i[1], min.i[1], max.i[1]),
+        clamp(a.i[2], min.i[2], max.i[2]),
+        clamp(a.i[3], min.i[3], max.i[3])
+    };
+    return result;
+}
+
+v4 v4clampv_min(v4 a, v4 min)
+{
+    v4 result =
+    {
+        clamp_min(a.i[0], min.i[0]),
+        clamp_min(a.i[1], min.i[1]),
+        clamp_min(a.i[2], min.i[2]),
+        clamp_min(a.i[3], min.i[3])
+    };
+    return result;
+}
+
+v4 v4clampv_max(v4 a, v4 max)
+{
+    v4 result =
+    {
+        clamp_max(a.i[0], max.i[0]),
+        clamp_max(a.i[1], max.i[1]),
+        clamp_max(a.i[2], max.i[2]),
+        clamp_max(a.i[3], max.i[3])
+    };
+    return result;
+}
+
+bool v4less(v4 a, v4 b)
+{
+    bool result = 
+    (
+        ((a.i[0]+a.i[1]+a.i[2]+a.i[3]) < (b.i[0]+b.i[1]+b.i[2]+b.i[3])) ? 1:0
+    );
+    return result;
+}
+
+bool v4greater(v4 a, v4 b)
+{
+    bool result = 
+    (
+        ((a.i[0]+a.i[1]+a.i[2]+a.i[3]) > (b.i[0]+b.i[1]+b.i[2]+b.i[3])) ? 1:0
+    );
+    return result;
+}
+
+bool v4equal(v4 a, v4 b)
+{
+    bool result = 
+    (
+        ((a.i[0]==b.i[0]) && (a.i[1]==b.i[1]) && (a.i[2]==b.i[2]) && (a.i[3]==b.i[3])) ? 1:0
+    );
+    return result;
+}
+
+r32 v4dot(v4 a, v4 b)
+{
+    r32 result = 
+    (
+        (a.i[0]*b.i[0]) + (a.i[1]*b.i[1]) + (a.i[2]*b.i[2]) + (a.i[3]*b.i[3])
+    );
+    return result;
+}
+
+v4 v4snap(v4 a, v4 b)
+{
+    v4 result = 
+    {
+        (divide(a.i[0],b.i[0]) * a.i[0]), 
+        (divide(a.i[1],b.i[1]) * a.i[1]),
+        (divide(a.i[2],b.i[2]) * a.i[2]),
+        (divide(a.i[3],b.i[3]) * a.i[3])
+    };
+    return result;
+}
+
+v4 v4max(v4 a, v4 b)
+{
+    v4 result = 
+    {
+        ((a.i[0]>b.i[0]) ? a.i[0] : b.i[0]), 
+        ((a.i[1]>b.i[1]) ? a.i[1] : b.i[1]),
+        ((a.i[2]>b.i[2]) ? a.i[2] : b.i[2]),
+        ((a.i[3]>b.i[3]) ? a.i[3] : b.i[3])
+    };
+    return result;
+}
+
+v4 v4min(v4 a, v4 b)
+{
+    v4 result = 
+    {
+        ((a.i[0]<b.i[0])?a.i[0]:b.i[0]), 
+        ((a.i[1]<b.i[1])?a.i[1]:b.i[1]),
+        ((a.i[2]<b.i[2])?a.i[2]:b.i[2]),
+        ((a.i[3]<b.i[3])?a.i[3]:b.i[3])
+    };
     return result;
 }

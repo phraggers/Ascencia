@@ -229,3 +229,42 @@ r32 atan32(r32 y, r32 x)
     r32 result = (r32)atan2f(y,x);
     return result;
 }
+
+r32 rad32(r32 deg)
+{
+    r32 result = (deg * pi32()) / 180.0f;
+    return result;
+}
+
+r64 rad64(r64 deg)
+{
+    r64 result = (deg * pi64()) / 180.0;
+    return result;
+}
+
+r32 deg32(r32 rad)
+{
+    r32 result = (rad * 180.0f) / pi32();
+    return result;
+}
+
+r64 deg64(r64 rad)
+{
+    r64 result = (rad * 180.0) / pi64();
+    return result;
+}
+
+bool equaleps(r32 a, r32 b, r32 e)
+{
+	if (a == b) 
+    {
+		return 1;
+	}
+
+    if (asbolute(a-b) <= e) 
+    {
+		return 1;
+	}
+    
+	return 0;
+}
