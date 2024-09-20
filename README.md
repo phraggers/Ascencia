@@ -10,7 +10,7 @@
 
 Music:
 
-Sample Music Playlist [Youtube Playlist](https://www.youtube.com/watch?v=VPxGp1Hez1c&list=PLn6lleGn2j_0ufVMa55d1kJoaGlfpMJDl&pp=gAQBiAQB).
+[![Sample Music Playlist](https://img.youtube.com/vi/VPxGp1Hez1c/0.jpg)](https://www.youtube.com/watch?v=VPxGp1Hez1c&list=PLn6lleGn2j_0ufVMa55d1kJoaGlfpMJDl&pp=gAQBiAQB)
 
 <hr/>
 
