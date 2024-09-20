@@ -3,8 +3,8 @@
 - made in C99
 - no runtime dependencies or libs (other than platform layer basics)
 - easy to build, easy to run
-
 <hr/>
+
 ### Contents
 - [Media](#media)
 - [Build Instructions](#how-to-build)
