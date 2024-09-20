@@ -22,7 +22,7 @@ __Linux/Macos:__
 Download repository, run 'make'
 
 Requirements:
-- Linux (updated at least within the last 10 years)
+- Linux or MacOS (updated at least within the last 10 years)
 - GNU Compiler Collection (gcc, make)
 <hr/>
 
