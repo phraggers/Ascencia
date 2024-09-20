@@ -41,7 +41,7 @@ Requirements:
 - GNU Compiler Collection (gcc, make)
 <hr/>
 
-### Version History:
+### Version History
 
 - dev:
     - v0.1.0:
