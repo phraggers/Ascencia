@@ -5,13 +5,13 @@
 - easy to build, easy to run
 <hr/>
 
-### Contents
+### Contents:
 - [Media](#media)
 - [Build Instructions](#how-to-build)
-- [Version History](version-history)
+- [Version History](#version-history)
 <hr/>
 
-### Media
+### Media:
 
 Sample Music Playlist:
 
@@ -41,7 +41,7 @@ Requirements:
 - GNU Compiler Collection (gcc, make)
 <hr/>
 
-### Version History
+### Version History:
 
 - dev:
     - v0.1.0:
