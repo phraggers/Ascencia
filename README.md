@@ -8,6 +8,10 @@
 
 (Screenshots or videos will go here when there is something to show)
 
+Music:
+
+Sample Music Playlist [Youtube Playlist](https://www.youtube.com/watch?v=VPxGp1Hez1c&list=PLn6lleGn2j_0ufVMa55d1kJoaGlfpMJDl&pp=gAQBiAQB).
+
 <hr/>
 
 ### How to build:
