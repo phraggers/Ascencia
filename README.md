@@ -5,6 +5,13 @@
 - easy to build, easy to run
 
 <hr/>
+### Contents
+- [Media](#media)
+- [Build Instructions](#how-to-build)
+- [Version History](version-history)
+<hr/>
+
+### Media
 
 Sample Music Playlist:
 
