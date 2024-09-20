@@ -261,3 +261,94 @@ bool Win32_LoadXInput(void)
 
     return 1;
 }
+
+int NotLoaded_XAudio2Create(IXAudio2 **ppXAudio2, u32 Flags, u32 XAudio2Processor)
+{
+    return ((int)0x88960003); //XAUDIO2_E_XAPO_CREATION_FAILED
+}
+
+int NotLoaded_XAudio2CreateWithVersionInfo(IXAudio2** ppXAudio2, u32 Flags, u32 XAudio2Processor, u32 ntddiVersion)
+{
+    return ((int)0x88960003); //XAUDIO2_E_XAPO_CREATION_FAILED
+}
+
+int Intercept_XAudio2Create(IXAudio2 **ppXAudio2, u32 Flags, u32 XAudio2Processor)
+{
+    const u32 ntddi[] =
+    {
+        0x06010000, 0x06020000, 0x06030000,
+        0x0A000000, 0x0A000000, 0x0A000001,
+        0x0A000002, 0x0A000003, 0x0A000004,
+        0x0A000005, 0x0A000006, 0x0A000007,
+        0x0A000008, 0x0A000009, 0x0A00000A,
+        0x0A00000B, 0x0A00000C
+    };
+    
+    for(int i=ArrayCount(ntddi)-1; i>=0; i--)
+    {
+        if(XAUDIO_API.XAudio2CreateWithVersionInfo(ppXAudio2, Flags, XAudio2Processor, ntddi[i]) == 0)
+        {
+            return 0;
+        }
+    }
+
+    return XAUDIO_API.XAudio2CreateInternal(ppXAudio2, Flags, XAudio2Processor);
+}
+
+bool Win32_LoadXAudio(void)
+{
+    Assert(G_win32_state);
+    Win32_XAudio *api = &XAUDIO_API;
+    api->version = XAUDIO_NOT_LOADED;
+    ptr xaudio_dll = WINAPI.LoadLibraryA("xaudio2_9.dll");
+    
+    if(xaudio_dll)
+    {
+        api->version = XAUDIO_2_9;
+    }
+    
+    else
+    {
+        xaudio_dll = LoadLibraryA("xaudio2_9d.dll");
+        
+        if(xaudio_dll)
+        {
+            api->version = XAUDIO_2_9D;
+        }
+        
+        else
+        {
+            xaudio_dll = LoadLibraryA("xaudio2_8.dll");
+            
+            if(xaudio_dll)
+            {
+                api->version = XAUDIO_2_8;
+            }
+            
+            else
+            {
+                xaudio_dll = LoadLibraryA("xaudio2_7.dll");
+                
+                if(xaudio_dll)
+                {
+                    api->version = XAUDIO_2_7;
+                }
+                
+                else
+                {
+                    //NOTE: if xaudio doesnt load, audio just wont play
+                    api->version = XAUDIO_NOT_LOADED;
+                    PL_Log(LOG_ERROR, "LoadXAudio: failed to load xaudio");
+                    XAUDIO_API.XAudio2Create = &NotLoaded_XAudio2Create;
+                    return 0;
+                }
+            }
+        }
+    }
+
+    XAUDIO_API.XAudio2Create = &Intercept_XAudio2Create;
+    XAUDIO_API.XAudio2CreateInternal = (pfn_XAudio2Create)WINAPI.GetProcAddress(xaudio_dll, "XAudio2Create");
+    XAUDIO_API.XAudio2CreateWithVersionInfo = (pfn_XAudio2CreateWithVersionInfo)WINAPI.GetProcAddress(xaudio_dll, "XAudio2CreateWithVersionInfo");
+
+    return 1;
+}

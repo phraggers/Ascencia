@@ -261,7 +261,7 @@ bool equaleps(r32 a, r32 b, r32 e)
 		return 1;
 	}
 
-    if (asbolute(a-b) <= e) 
+    if (absolute(a-b) <= e) 
     {
 		return 1;
 	}

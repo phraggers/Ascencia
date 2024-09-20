@@ -33,42 +33,42 @@ v2 v2r(r32 a, r32 b)
 
 /* === v2 operators === */
 
-v2 v2add(v2 a, r32 v)
+v2 v2addf(v2 v, r32 f)
 {
     v2 result = 
     {
-        a.i[0]+v, 
-        a.i[1]+v
+        v.i[0]+f, 
+        v.i[1]+f
     };
     return result;
 }
 
-v2 v2sub(v2 a, r32 v)
+v2 v2subf(v2 v, r32 f)
 {
     v2 result = 
     {
-        a.i[0]-v, 
-        a.i[1]-v
+        v.i[0]-f, 
+        v.i[1]-f
     };
     return result;
 }
 
-v2 v2mul(v2 a, r32 v)
+v2 v2mulf(v2 v, r32 f)
 {
     v2 result = 
     {
-        a.i[0]*v, 
-        a.i[1]*v
+        v.i[0]*f, 
+        v.i[1]*f
     };
     return result;
 }
 
-v2 v2div(v2 a, r32 v)
+v2 v2divf(v2 v, r32 f)
 {
     v2 result = 
     {
-        divide(a.i[0],v), 
-        divide(a.i[1],v)
+        divide(v.i[0],f), 
+        divide(v.i[1],f)
     };
     return result; 
 }
@@ -117,205 +117,215 @@ v2 v2divv(v2 a, v2 b)
 
 /* === v2 functions === */
 
-bool v2zero(v2 a)
+bool v2zero(v2 v)
 {
     bool result = 
     (
-        ((!a.i[0]) && (!a.i[1])) ? 1:0
+        ((!v.i[0]) && (!v.i[1])) ? 1:0
     );
     return result;
 }
 
-bool v2one(v2 a)
+bool v2one(v2 v)
 {
     bool result = 
     (
-        ((a.i[0]==1.0f) && (a.i[1]==1.0f)) ? 1:0
+        ((v.i[0]==1.0f) && (v.i[1]==1.0f)) ? 1:0
     );
     return result;
 }
 
-v2 v2sign(v2 a)
+v2 v2sign(v2 v)
 {
     v2 result = 
     {
-        (a.i[0]>=0.0f) ? 1:-1, 
-        (a.i[1]>=0.0f) ? 1:-1
+        (v.i[0]>=0.0f) ? 1.0f:-1.0f,
+        (v.i[1]>=0.0f) ? 1.0f:-1.0f
     };
     return result;
 }
 
-v2 v2invert(v2 a)
+v2 v2invert(v2 v)
 {
     v2 result = 
     {
-        a.i[0]=-a.i[0], 
-        a.i[1]=-a.i[1]
+        v.i[0] = -v.i[0], 
+        v.i[1] = -v.i[1]
     };
     return result;
 }
 
-v2 v2perp(v2 a)
+v2 v2perp(v2 v)
 {
     v2 result = 
     {
-        -a.y, 
-         a.x
+        -v.y, 
+         v.x
     };
     return result;
 }
 
-v2 v2tangent(v2 a)
+v2 v2tangent(v2 v)
 {
     v2 result = 
     {
-         a.y, 
-        -a.x
+         v.y, 
+        -v.x
     };
     return result;
 }
 
-v2 v2rotate(v2 a, r32 r)
+v2 v2rotate(v2 v, r32 r)
 {
     r32 cs = cos32(r);
     r32 sn = sin32(r);
 
     v2 result =
     {
-        a.i[0] * cs - a.i[1] * sn,
-        a.i[0] * sn + a.i[1] * cs
+        v.i[0] * cs - v.i[1] * sn,
+        v.i[0] * sn + v.i[1] * cs
     };
 
 	return result;
 }
 
-r32 v2lengthsq(v2 a)
+r32 v2lengthsq(v2 v)
 {
-    r32 result = v2dot(a,a);
+    r32 result = v2dot(v,v);
     return result;
 }
 
-r32 v2length(v2 a)
+r32 v2length(v2 v)
 {
-    r32 result = square_root(v2lengthsq(a));
+    r32 result = square_root(v2lengthsq(v));
     return result;
 }
 
-v2 v2abs(v2 a)
+v2 v2abs(v2 v)
 {
     v2 result = 
     {
-        absolute(a.i[0]), 
-        absolute(a.i[1])
+        absolute(v.i[0]),
+        absolute(v.i[1])
     };
     return result;
 }
 
-v2 v2clamp(v2 a, r32 min, r32 max)
+v2 v2clampf(v2 v, r32 min, r32 max)
 {
     v2 result = 
     {
-        clamp(a.i[0], min, max),
-        clamp(a.i[1], min, max)
+        clamp(v.i[0], min, max),
+        clamp(v.i[1], min, max)
     };
     return result;
 }
 
-v2 v2clamp_min(v2 a, r32 min)
+v2 v2clampfmin(v2 v, r32 min)
 {
     v2 result = 
     {
-        clamp_min(a.i[0], min),
-        clamp_min(a.i[1], min)
+        clamp_min(v.i[0], min),
+        clamp_min(v.i[1], min)
     };
     return result;   
 }
 
-v2 v2clamp_max(v2 a, r32 max)
+v2 v2clampfmax(v2 v, r32 max)
 {
     v2 result = 
     {
-        clamp_max(a.i[0], max),
-        clamp_max(a.i[1], max)
+        clamp_max(v.i[0], max),
+        clamp_max(v.i[1], max)
     };
     return result;  
 }
 
-v2 v2floor(v2 a)
+v2 v2floor(v2 v)
 {
     v2 result =
     {
-        (r32)floor_i32(a.i[0]),
-        (r32)floor_i32(a.i[1])
+        (r32)floor_i32(v.i[0]),
+        (r32)floor_i32(v.i[1])
     };
     return result;
 }
 
-v2 v2ceil(v2 a)
+v2 v2ceil(v2 v)
 {
     v2 result =
     {
-        (r32)ceil_i32(a.i[0]),
-        (r32)ceil_i32(a.i[1])
+        (r32)ceil_i32(v.i[0]),
+        (r32)ceil_i32(v.i[1])
     };
     return result;
 }
 
-v2 v2round(v2 a)
+v2 v2round(v2 v)
 {
     v2 result =
     {
-        (r32)round_i32(a.i[0]),
-        (r32)round_i32(a.i[1])
+        (r32)round_i32(v.i[0]),
+        (r32)round_i32(v.i[1])
     };
     return result;
 }
 
-v2 v2norm(v2 a)
+v2 v2norm(v2 v)
 {
-	r32 l = square_root(v2dot(a,a));
+	r32 len = square_root(v2dot(v,v));
     v2 result =
     {
-        divide(a.i[0], l),
-        divide(a.i[1], l)
+        divide(v.i[0], len),
+        divide(v.i[1], len)
     };
 	return result;
 }
 
-r32 v2angle(v2 a)
+r32 v2angle(v2 v)
 {
-    r32 result = atan32(a.i[1], a.i[0]);
+    r32 result = atan32(v.i[1], v.i[0]);
+	return result;
+}
+
+v2 v2snapf(v2 v, r32 f)
+{
+    v2 result =
+    {
+        (r32)floor_i32(divide(v.i[0], f) * f),
+        (r32)floor_i32(divide(v.i[1], f) * f)
+    };
 	return result;
 }
 
 /* === v2/v2 functions === */
 
-v2 v2clampv(v2 a, v2 min, v2 max)
+v2 v2clampv(v2 v, v2 minv, v2 maxv)
 {
     v2 result =
     {
-        clamp(a.i[0], min.i[0], max.i[0]),
-        clamp(a.i[1], min.i[1], max.i[1])
+        clamp(v.i[0], minv.i[0], maxv.i[0]),
+        clamp(v.i[1], minv.i[1], maxv.i[1])
     };
     return result;
 }
 
-v2 v2clampv_min(v2 a, v2 min)
+v2 v2clampvmin(v2 v, v2 minv)
 {
     v2 result =
     {
-        clamp_min(a.i[0], min.i[0]),
-        clamp_min(a.i[1], min.i[1])
+        clamp_min(v.i[0], minv.i[0]),
+        clamp_min(v.i[1], minv.i[1])
     };
     return result;
 }
 
-v2 v2clampv_max(v2 a, v2 max)
+v2 v2clampvmax(v2 v, v2 maxv)
 {
     v2 result =
     {
-        clamp_max(a.i[0], max.i[0]),
-        clamp_max(a.i[1], max.i[1])
+        clamp_max(v.i[0], maxv.i[0]),
+        clamp_max(v.i[1], maxv.i[1])
     };
     return result;
 }
@@ -356,7 +366,7 @@ r32 v2dot(v2 a, v2 b)
     return result;
 }
 
-v2 v2snap(v2 a, v2 b)
+v2 v2snapv(v2 a, v2 b)
 {
     v2 result = 
     {
@@ -400,54 +410,54 @@ v2 v2project(v2 a, v2 b)
 	return result;
 }
 
-v2 v2slide(v2 a, v2 n)
+v2 v2slide(v2 v, v2 vn)
 {
-    r32 d = v2dot(a, n);
+    r32 d = v2dot(v, vn);
     
     v2 result =
     {
-        a.i[0] - n.i[0] * d,
-        a.i[1] - n.i[1] * d
+        v.i[0] - vn.i[0] * d,
+        v.i[1] - vn.i[1] * d
     };
 
 	return result;
 }
 
-v2 v2reflect(v2 a, v2 n)
+v2 v2reflect(v2 v, v2 vn)
 {
-    r32 d = 2.0f * v2dot(a, n);
+    r32 d = 2.0f * v2dot(v, vn);
 
     v2 result =
     {
-        n.i[0] * d - a.i[0],
-        n.i[1] * d - a.i[1]
+        vn.i[0] * d - v.i[0],
+        vn.i[1] * d - v.i[1]
     };
 
 	return result;
 }
 
-v2 v2lerp(v2 a, v2 b, r32 v)
+v2 v2lerpf(v2 a, v2 b, r32 f)
 {
     v2 result =
     {
-        a.i[0] + (b.i[0] - a.i[0]) * v,
-        a.i[1] + (b.i[1] - a.i[1]) * v
+        a.i[0] + (b.i[0] - a.i[0]) * f,
+        a.i[1] + (b.i[1] - a.i[1]) * f
     };
 
 	return result;
 }
 
-v2 v2bez3(v2 a, v2 b, v2 c, r32 v)
+v2 v2bez3(v2 a, v2 b, v2 c, r32 f)
 {
-    v2 result = v2lerp(v2lerp(a, b, v), v2lerp(b, c, v), v);
+    v2 result = v2lerpf(v2lerpf(a, b, f), v2lerpf(b, c, f), f);
 	return result;
 }
 
-v2 v2bez4(v2 a, v2 b, v2 c, v2 d, r32 v)
+v2 v2bez4(v2 a, v2 b, v2 c, v2 d, r32 f)
 {
-    v2 t1 = v2lerp(v2lerp(a, b, v), v2lerp(b, c, v), v);
-    v2 t2 = v2lerp(v2lerp(b, c, v), v2lerp(c, d, v), v);
-    v2 result = v2lerp(t1, t2, v);
+    v2 t1 = v2lerpf(v2lerpf(a, b, f), v2lerpf(b, c, f), f);
+    v2 t2 = v2lerpf(v2lerpf(b, c, f), v2lerpf(c, d, f), f);
+    v2 result = v2lerpf(t1, t2, f);
 	return result;
 }
 
@@ -491,46 +501,46 @@ v3 v3r(r32 a, r32 b, r32 c)
 
 /* === v3 operators === */
 
-v3 v3add(v3 a, r32 v)
+v3 v3addf(v3 v, r32 f)
 {
     v3 result = 
     {
-        a.i[0]+v, 
-        a.i[1]+v,
-        a.i[2]+v
+        v.i[0]+f, 
+        v.i[1]+f,
+        v.i[2]+f
     };
     return result;
 }
 
-v3 v3sub(v3 a, r32 v)
+v3 v3subf(v3 v, r32 f)
 {
     v3 result = 
     {
-        a.i[0]-v, 
-        a.i[1]-v,
-        a.i[2]-v
+        v.i[0]-f, 
+        v.i[1]-f,
+        v.i[2]-f
     };
     return result;
 }
 
-v3 v3mul(v3 a, r32 v)
+v3 v3mulf(v3 v, r32 f)
 {
     v3 result = 
     {
-        a.i[0]*v, 
-        a.i[1]*v,
-        a.i[2]*v
+        v.i[0]*f, 
+        v.i[1]*f,
+        v.i[2]*f
     };
     return result;
 }
 
-v3 v3div(v3 a, r32 v)
+v3 v3divf(v3 v, r32 f)
 {
     v3 result = 
     {
-        divide(a.i[0],v), 
-        divide(a.i[1],v),
-        divide(a.i[2],v)
+        divide(v.i[0],f), 
+        divide(v.i[1],f),
+        divide(v.i[2],f)
     };
     return result; 
 }
@@ -583,131 +593,131 @@ v3 v3divv(v3 a, v3 b)
 
 /* === v3 functions === */
 
-bool v3zero(v3 a)
+bool v3zero(v3 v)
 {
     bool result = 
     (
-        ((!a.i[0]) && (!a.i[1]) && (!a.i[2])) ? 1:0
+        ((!v.i[0]) && (!v.i[1]) && (!v.i[2])) ? 1:0
     );
     return result;
 }
 
-bool v3one(v3 a)
+bool v3one(v3 v)
 {
     bool result = 
     (
-        ((a.i[0]==1.0f) && (a.i[1]==1.0f) && (a.i[2]==1.0f)) ? 1:0
+        ((v.i[0]==1.0f) && (v.i[1]==1.0f) && (v.i[2]==1.0f)) ? 1:0
     );
     return result;
 }
 
-v3 v3sign(v3 a)
+v3 v3sign(v3 v)
 {
     v3 result = 
     {
-        (a.i[0]>=0.0f) ? 1:-1, 
-        (a.i[1]>=0.0f) ? 1:-1,
-        (a.i[2]>=0.0f) ? 1:-1
+        (v.i[0]>=0.0f) ? 1.0f:-1.0f, 
+        (v.i[1]>=0.0f) ? 1.0f:-1.0f,
+        (v.i[2]>=0.0f) ? 1.0f:-1.0f
     };
     return result;
 }
 
-v3 v3invert(v3 a)
+v3 v3invert(v3 v)
 {
     v3 result = 
     {
-        a.i[0]=-a.i[0], 
-        a.i[1]=-a.i[1],
-        a.i[2]=-a.i[2]
+        v.i[0] = -v.i[0],
+        v.i[1] = -v.i[1],
+        v.i[2] = -v.i[2]
     };
     return result;
 }
 
-r32 v3lengthsq(v3 a)
+r32 v3lengthsq(v3 v)
 {
-    r32 result = v3dot(a,a);
+    r32 result = v3dot(v,v);
     return result;
 }
 
-r32 v3length(v3 a)
+r32 v3length(v3 v)
 {
-    r32 result = square_root(v3lengthsq(a));
+    r32 result = square_root(v3lengthsq(v));
     return result;
 }
 
-v3 v3abs(v3 a)
+v3 v3abs(v3 v)
 {
     v3 result = 
     {
-        absolute(a.i[0]), 
-        absolute(a.i[1]),
-        absolute(a.i[2])
+        absolute(v.i[0]),
+        absolute(v.i[1]),
+        absolute(v.i[2])
     };
     return result;
 }
 
-v3 v3clamp(v3 a, r32 min, r32 max)
+v3 v3clampf(v3 v, r32 min, r32 max)
 {
     v3 result = 
     {
-        clamp(a.i[0], min, max),
-        clamp(a.i[1], min, max),
-        clamp(a.i[2], min, max)
+        clamp(v.i[0], min, max),
+        clamp(v.i[1], min, max),
+        clamp(v.i[2], min, max)
     };
     return result;
 }
 
-v3 v3clamp_min(v3 a, r32 min)
+v3 v3clampfmin(v3 v, r32 min)
 {
     v3 result = 
     {
-        clamp_min(a.i[0], min),
-        clamp_min(a.i[1], min),
-        clamp_min(a.i[2], min)
+        clamp_min(v.i[0], min),
+        clamp_min(v.i[1], min),
+        clamp_min(v.i[2], min)
     };
     return result;   
 }
 
-v3 v3clamp_max(v3 a, r32 max)
+v3 v3clampfmax(v3 v, r32 max)
 {
     v3 result = 
     {
-        clamp_max(a.i[0], max),
-        clamp_max(a.i[1], max),
-        clamp_max(a.i[2], max)
+        clamp_max(v.i[0], max),
+        clamp_max(v.i[1], max),
+        clamp_max(v.i[2], max)
     };
     return result;  
 }
 
-v3 v3floor(v3 a)
+v3 v3floor(v3 v)
 {
     v3 result =
     {
-        (r32)floor_i32(a.i[0]),
-        (r32)floor_i32(a.i[1]),
-        (r32)floor_i32(a.i[2])
+        (r32)floor_i32(v.i[0]),
+        (r32)floor_i32(v.i[1]),
+        (r32)floor_i32(v.i[2])
     };
     return result;
 }
 
-v3 v3ceil(v3 a)
+v3 v3ceil(v3 v)
 {
     v3 result =
     {
-        (r32)ceil_i32(a.i[0]),
-        (r32)ceil_i32(a.i[1]),
-        (r32)ceil_i32(a.i[2])
+        (r32)ceil_i32(v.i[0]),
+        (r32)ceil_i32(v.i[1]),
+        (r32)ceil_i32(v.i[2])
     };
     return result;
 }
 
-v3 v3round(v3 a)
+v3 v3round(v3 v)
 {
     v3 result =
     {
-        (r32)round_i32(a.i[0]),
-        (r32)round_i32(a.i[1]),
-        (r32)round_i32(a.i[2])
+        (r32)round_i32(v.i[0]),
+        (r32)round_i32(v.i[1]),
+        (r32)round_i32(v.i[2])
     };
     return result;
 }
@@ -725,7 +735,7 @@ v3 v3clampv(v3 a, v3 min, v3 max)
     return result;
 }
 
-v3 v3clampv_min(v3 a, v3 min)
+v3 v3clampvmin(v3 a, v3 min)
 {
     v3 result =
     {
@@ -736,7 +746,7 @@ v3 v3clampv_min(v3 a, v3 min)
     return result;
 }
 
-v3 v3clampv_max(v3 a, v3 max)
+v3 v3clampvmax(v3 a, v3 max)
 {
     v3 result =
     {
@@ -783,7 +793,7 @@ r32 v3dot(v3 a, v3 b)
     return result;
 }
 
-v3 v3snap(v3 a, v3 b)
+v3 v3snapv(v3 a, v3 b)
 {
     v3 result = 
     {
@@ -849,50 +859,50 @@ v4 v4r(r32 a, r32 b, r32 c, r32 d)
 
 /* === v4 operators === */
 
-v4 v4add(v4 a, r32 v)
+v4 v4addf(v4 v, r32 f)
 {
     v4 result = 
     {
-        a.i[0]+v, 
-        a.i[1]+v,
-        a.i[2]+v,
-        a.i[3]+v
+        v.i[0]+f, 
+        v.i[1]+f,
+        v.i[2]+f,
+        v.i[3]+f
     };
     return result;
 }
 
-v4 v4sub(v4 a, r32 v)
+v4 v4subf(v4 v, r32 f)
 {
     v4 result = 
     {
-        a.i[0]-v, 
-        a.i[1]-v,
-        a.i[2]-v,
-        a.i[3]-v
+        v.i[0]-f, 
+        v.i[1]-f,
+        v.i[2]-f,
+        v.i[3]-f
     };
     return result;
 }
 
-v4 v4mul(v4 a, r32 v)
+v4 v4mulf(v4 v, r32 f)
 {
     v4 result = 
     {
-        a.i[0]*v, 
-        a.i[1]*v,
-        a.i[2]*v,
-        a.i[3]*v
+        v.i[0]*f, 
+        v.i[1]*f,
+        v.i[2]*f,
+        v.i[3]*f
     };
     return result;
 }
 
-v4 v4div(v4 a, r32 v)
+v4 v4divf(v4 v, r32 f)
 {
     v4 result = 
     {
-        divide(a.i[0],v), 
-        divide(a.i[1],v),
-        divide(a.i[2],v),
-        divide(a.i[3],v)
+        divide(v.i[0],f), 
+        divide(v.i[1],f),
+        divide(v.i[2],f),
+        divide(v.i[3],f)
     };
     return result; 
 }
@@ -949,178 +959,178 @@ v4 v4divv(v4 a, v4 b)
 
 /* === v4 functions === */
 
-bool v4zero(v4 a)
+bool v4zero(v4 v)
 {
     bool result = 
     (
-        ((!a.i[0]) && (!a.i[1]) && (!a.i[2]) && (!a.i[3])) ? 1:0
+        ((!v.i[0]) && (!v.i[1]) && (!v.i[2]) && (!v.i[3])) ? 1:0
     );
     return result;
 }
 
-bool v4one(v4 a)
+bool v4one(v4 v)
 {
     bool result = 
     (
-        ((a.i[0]==1.0f) && (a.i[1]==1.0f) && (a.i[2]==1.0f) && (a.i[3]==1.0f)) ? 1:0
+        ((v.i[0]==1.0f) && (v.i[1]==1.0f) && (v.i[2]==1.0f) && (v.i[3]==1.0f)) ? 1:0
     );
     return result;
 }
 
-v4 v4sign(v4 a)
+v4 v4sign(v4 v)
 {
     v4 result = 
     {
-        (a.i[0]>=0.0f) ? 1:-1, 
-        (a.i[1]>=0.0f) ? 1:-1,
-        (a.i[2]>=0.0f) ? 1:-1,
-        (a.i[3]>=0.0f) ? 1:-1
+        (v.i[0]>=0.0f) ? 1.0f:-1.0f, 
+        (v.i[1]>=0.0f) ? 1.0f:-1.0f,
+        (v.i[2]>=0.0f) ? 1.0f:-1.0f,
+        (v.i[3]>=0.0f) ? 1.0f:-1.0f
     };
     return result;
 }
 
-v4 v4invert(v4 a)
+v4 v4invert(v4 v)
 {
     v4 result = 
     {
-        a.i[0]=-a.i[0], 
-        a.i[1]=-a.i[1],
-        a.i[2]=-a.i[2],
-        a.i[3]=-a.i[3]
+        v.i[0]=-v.i[0], 
+        v.i[1]=-v.i[1],
+        v.i[2]=-v.i[2],
+        v.i[3]=-v.i[3]
     };
     return result;
 }
 
-r32 v4lengthsq(v4 a)
+r32 v4lengthsq(v4 v)
 {
-    r32 result = v4dot(a,a);
+    r32 result = v4dot(v,v);
     return result;
 }
 
-r32 v4length(v4 a)
+r32 v4length(v4 v)
 {
-    r32 result = square_root(v4lengthsq(a));
+    r32 result = square_root(v4lengthsq(v));
     return result;
 }
 
-v4 v4abs(v4 a)
+v4 v4abs(v4 v)
 {
     v4 result = 
     {
-        absolute(a.i[0]), 
-        absolute(a.i[1]),
-        absolute(a.i[2]),
-        absolute(a.i[3])
+        absolute(v.i[0]), 
+        absolute(v.i[1]),
+        absolute(v.i[2]),
+        absolute(v.i[3])
     };
     return result;
 }
 
-v4 v4clamp(v4 a, r32 min, r32 max)
+v4 v4clampf(v4 v, r32 min, r32 max)
 {
     v4 result = 
     {
-        clamp(a.i[0], min, max),
-        clamp(a.i[1], min, max),
-        clamp(a.i[2], min, max),
-        clamp(a.i[3], min, max)
+        clamp(v.i[0], min, max),
+        clamp(v.i[1], min, max),
+        clamp(v.i[2], min, max),
+        clamp(v.i[3], min, max)
     };
     return result;
 }
 
-v4 v4clamp_min(v4 a, r32 min)
+v4 v4clampfmin(v4 v, r32 min)
 {
     v4 result = 
     {
-        clamp_min(a.i[0], min),
-        clamp_min(a.i[1], min),
-        clamp_min(a.i[2], min),
-        clamp_min(a.i[3], min)
+        clamp_min(v.i[0], min),
+        clamp_min(v.i[1], min),
+        clamp_min(v.i[2], min),
+        clamp_min(v.i[3], min)
     };
     return result;   
 }
 
-v4 v4clamp_max(v4 a, r32 max)
+v4 v4clampfmax(v4 v, r32 max)
 {
     v4 result = 
     {
-        clamp_max(a.i[0], max),
-        clamp_max(a.i[1], max),
-        clamp_max(a.i[2], max),
-        clamp_max(a.i[3], max)
+        clamp_max(v.i[0], max),
+        clamp_max(v.i[1], max),
+        clamp_max(v.i[2], max),
+        clamp_max(v.i[3], max)
     };
     return result;  
 }
 
-v4 v4floor(v4 a)
+v4 v4floor(v4 v)
 {
     v4 result =
     {
-        (r32)floor_i32(a.i[0]),
-        (r32)floor_i32(a.i[1]),
-        (r32)floor_i32(a.i[2]),
-        (r32)floor_i32(a.i[3])
+        (r32)floor_i32(v.i[0]),
+        (r32)floor_i32(v.i[1]),
+        (r32)floor_i32(v.i[2]),
+        (r32)floor_i32(v.i[3])
     };
     return result;
 }
 
-v4 v4ceil(v4 a)
+v4 v4ceil(v4 v)
 {
     v4 result =
     {
-        (r32)ceil_i32(a.i[0]),
-        (r32)ceil_i32(a.i[1]),
-        (r32)ceil_i32(a.i[2]),
-        (r32)ceil_i32(a.i[3])
+        (r32)ceil_i32(v.i[0]),
+        (r32)ceil_i32(v.i[1]),
+        (r32)ceil_i32(v.i[2]),
+        (r32)ceil_i32(v.i[3])
     };
     return result;
 }
 
-v4 v4round(v4 a)
+v4 v4round(v4 v)
 {
     v4 result =
     {
-        (r32)round_i32(a.i[0]),
-        (r32)round_i32(a.i[1]),
-        (r32)round_i32(a.i[2]),
-        (r32)round_i32(a.i[3])
+        (r32)round_i32(v.i[0]),
+        (r32)round_i32(v.i[1]),
+        (r32)round_i32(v.i[2]),
+        (r32)round_i32(v.i[3])
     };
     return result;
 }
 
 /* === v4/v4 functions === */
 
-v4 v4clampv(v4 a, v4 min, v4 max)
+v4 v4clampv(v4 v, v4 minv, v4 maxv)
 {
     v4 result =
     {
-        clamp(a.i[0], min.i[0], max.i[0]),
-        clamp(a.i[1], min.i[1], max.i[1]),
-        clamp(a.i[2], min.i[2], max.i[2]),
-        clamp(a.i[3], min.i[3], max.i[3])
+        clamp(v.i[0], minv.i[0], maxv.i[0]),
+        clamp(v.i[1], minv.i[1], maxv.i[1]),
+        clamp(v.i[2], minv.i[2], maxv.i[2]),
+        clamp(v.i[3], minv.i[3], maxv.i[3])
     };
     return result;
 }
 
-v4 v4clampv_min(v4 a, v4 min)
+v4 v4clampvmin(v4 v, v4 minv)
 {
     v4 result =
     {
-        clamp_min(a.i[0], min.i[0]),
-        clamp_min(a.i[1], min.i[1]),
-        clamp_min(a.i[2], min.i[2]),
-        clamp_min(a.i[3], min.i[3])
+        clamp_min(v.i[0], minv.i[0]),
+        clamp_min(v.i[1], minv.i[1]),
+        clamp_min(v.i[2], minv.i[2]),
+        clamp_min(v.i[3], minv.i[3])
     };
     return result;
 }
 
-v4 v4clampv_max(v4 a, v4 max)
+v4 v4clampvmax(v4 v, v4 maxv)
 {
     v4 result =
     {
-        clamp_max(a.i[0], max.i[0]),
-        clamp_max(a.i[1], max.i[1]),
-        clamp_max(a.i[2], max.i[2]),
-        clamp_max(a.i[3], max.i[3])
+        clamp_max(v.i[0], maxv.i[0]),
+        clamp_max(v.i[1], maxv.i[1]),
+        clamp_max(v.i[2], maxv.i[2]),
+        clamp_max(v.i[3], maxv.i[3])
     };
     return result;
 }
@@ -1161,7 +1171,7 @@ r32 v4dot(v4 a, v4 b)
     return result;
 }
 
-v4 v4snap(v4 a, v4 b)
+v4 v4snapv(v4 a, v4 b)
 {
     v4 result = 
     {

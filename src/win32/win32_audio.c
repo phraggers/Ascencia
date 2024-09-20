@@ -75,31 +75,3 @@ float XAudio2CutoffFrequencyToOnePoleCoefficient(float CutoffFrequency, u32 Samp
     }
     return ( 1.0f - powf(1.0f - 2.0f * CutoffFrequency / (float)SampleRate, 2.0f) );
 }
-
-int Win32_XAudio2CreateWithVersionInfo(IXAudio2** ppXAudio2, u32 Flags, u32 XAudio2Processor, u32 ntddiVersion);
-
-int XAudio2Create(IXAudio2** ppXAudio2, u32 Flags, u32 XAudio2Processor)
-{
-    typedef int(*XAudio2CreateWithVersionInfoFunc)(IXAudio2**, u32, u32, u32);
-    typedef int(*XAudio2CreateInfoFunc)(IXAudio2**, u32, u32);
-    static int s_dllInstance = 0;
-    static XAudio2CreateWithVersionInfoFunc s_pfnAudio2CreateWithVersion = 0;
-    static XAudio2CreateInfoFunc s_pfnAudio2Create = 0;
-
-    if (s_dllInstance == 0)
-    {
-        s_dllInstance = WINAPI.LoadLibraryA(XAUDIO2_DLL);
-
-        s_pfnAudio2CreateWithVersion = (XAudio2CreateWithVersionInfoFunc)(void*)GetProcAddress(s_dllInstance, "XAudio2CreateWithVersionInfo");
-        if (s_pfnAudio2CreateWithVersion == 0)
-        {
-            s_pfnAudio2Create = (XAudio2CreateInfoFunc)(void*)GetProcAddress(s_dllInstance, "XAudio2Create");
-        }
-    }
-
-    if (s_pfnAudio2CreateWithVersion != 0)
-    {
-        return (*s_pfnAudio2CreateWithVersion)(ppXAudio2, Flags, XAudio2Processor, 0x0A00000C);
-    }
-    return (*s_pfnAudio2Create)(ppXAudio2, Flags, XAudio2Processor);
-}

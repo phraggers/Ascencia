@@ -29,6 +29,7 @@ typedef struct
     Win32_WGL wgl;
     Win32_Window window;
     Win32_XInput xinput;
+    Win32_XAudio xaudio;
 
     bool running;
     char base_path[STRING_LEN];

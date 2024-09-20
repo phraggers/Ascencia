@@ -299,11 +299,6 @@ bool Win32_LoadXInput(void);
 
 /* === XAUDIO2 === */
 
-typedef struct IUnknown IUnknown;
-
-extern const Win32_GUID Win32_IID_IXAudio2 = {0x2B02E3CF, 0x2E0B, 0x4ec3, 0xBE, 0x45, 0x1B, 0x2A, 0x3F, 0xE7, 0x21, 0x0D};
-extern const Win32_GUID Win32_IID_IXAudio2Extension = {0x84ac29bb, 0xd619, 0x44d2, 0xb1, 0x97, 0xe4, 0xac, 0xf7, 0xdf, 0x3e, 0xd6};
-
 #define XAUDIO2_MAX_BUFFER_BYTES                        0x80000000
 #define XAUDIO2_MAX_QUEUED_BUFFERS                      64
 #define XAUDIO2_MAX_AUDIO_CHANNELS                      64
@@ -366,6 +361,11 @@ typedef struct
     u16 d3;
     u8 d4[8];
 } Win32_GUID;
+
+//typedef struct IUnknown IUnknown;
+
+//extern const Win32_GUID Win32_IID_IXAudio2 = {0x2B02E3CF, 0x2E0B, 0x4ec3, 0xBE, 0x45, 0x1B, 0x2A, 0x3F, 0xE7, 0x21, 0x0D};
+//extern const Win32_GUID Win32_IID_IXAudio2Extension = {0x84ac29bb, 0xd619, 0x44d2, 0xb1, 0x97, 0xe4, 0xac, 0xf7, 0xdf, 0x3e, 0xd6};
 
 typedef struct
 {
@@ -430,7 +430,7 @@ typedef struct
 
 typedef struct
 {
-    IUnknown* pEffect;
+    ptr pEffect;
     b32 InitialState;
     u32 OutputChannels;
 } Win32_XAUDIO2_EFFECT_DESCRIPTOR;
@@ -550,7 +550,7 @@ int (*SetChannelVolumes)(IXAudio2Voice *This, u32 Channels, const float* pVolume
 void (*GetChannelVolumes)(IXAudio2Voice *This, u32 Channels, float* pVolumes); \
 int (*SetOutputMatrix)(IXAudio2Voice *This, IXAudio2Voice* pDestinationVoice, u32 SourceChannels, u32 DestinationChannels, const float* pLevelMatrix, u32 OperationSet); \
 void (*GetOutputMatrix)(IXAudio2Voice * This, IXAudio2Voice* pDestinationVoice, u32 SourceChannels, u32 DestinationChannels, float* pLevelMatrix); \
-void (*DestroyVoice)(IXAudio2Voice *This);
+void (*DestroyVoice)(IXAudio2Voice *This)
 
 typedef struct IXAudio2Voice { struct IXAudio2VoiceVtbl * lpVtbl; } IXAudio2Voice; typedef struct IXAudio2VoiceVtbl IXAudio2VoiceVtbl; 
 struct IXAudio2VoiceVtbl
@@ -735,6 +735,7 @@ typedef enum
 } Win32_XAUDIO_VERSION;
 
 typedef int (*pfn_XAudio2Create)(IXAudio2 **ppXAudio2, u32 Flags, u32 XAudio2Processor);
+typedef int (*pfn_XAudio2CreateWithVersionInfo)(IXAudio2** ppXAudio2, u32 Flags, u32 XAudio2Processor, u32 ntddiVersion);
 
 typedef struct
 {
@@ -747,6 +748,12 @@ typedef struct
     Win32_XAUDIO2_BUFFER buffer_header;
     
     pfn_XAudio2Create XAudio2Create;
+    pfn_XAudio2Create XAudio2CreateInternal;
+    pfn_XAudio2CreateWithVersionInfo XAudio2CreateWithVersionInfo;
 } Win32_XAudio;
+
+#define XAUDIO_API G_win32_state->xaudio
+
+bool Win32_LoadXAudio(void);
 
 #endif /* ASCENCIA_WIN32_API_H */
