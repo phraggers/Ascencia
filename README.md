@@ -6,7 +6,8 @@
 <hr/>
 
 ### How to build:
-- Windows:
+
+__Windows:__
 
 Just download this repository and run build.bat.
 Find the build in build/release folder.
@@ -16,7 +17,8 @@ Requirements:
 - Visual Studio Community (https://visualstudio.microsoft.com/) installed on C:\ drive
 - ResourceHacker by angusj (https://www.angusj.com/resourcehacker/) (build.bat acquires this file automatically on first run)
 <hr/>
-- Linux/Macos:
+
+__Linux/Macos:__
 
 Download repository, run 'make'
 <hr/>
