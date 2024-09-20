@@ -1,7 +1,7 @@
 ![AscenciaLogo](https://raw.githubusercontent.com/phraggers/Ascencia/master/assets/title325.png)
-- Work-in-progress RPG game
+- Work-in-progress RPG
 - made in C99
-- no dependencies or libs (other than OS defaults)
+- no runtime dependencies or libs (other than platform layer basics)
 - easy to build, easy to run
 
 <hr/>
