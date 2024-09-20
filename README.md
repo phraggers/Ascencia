@@ -3,6 +3,11 @@
 - made in C99
 - no dependencies or libs (other than OS defaults)
 - easy to build, easy to run
+
+<hr/>
+
+(Screenshots or videos will go here when there is something to show)
+
 <hr/>
 
 ### How to build:

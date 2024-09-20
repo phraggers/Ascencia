@@ -340,6 +340,8 @@ bool Win32_LoadXAudio(void)
                     api->version = XAUDIO_NOT_LOADED;
                     PL_Log(LOG_ERROR, "LoadXAudio: failed to load xaudio");
                     XAUDIO_API.XAudio2Create = &NotLoaded_XAudio2Create;
+                    XAUDIO_API.XAudio2CreateInternal = &NotLoaded_XAudio2Create;
+                    XAUDIO_API.XAudio2CreateWithVersionInfo = &NotLoaded_XAudio2CreateWithVersionInfo;
                     return 0;
                 }
             }
