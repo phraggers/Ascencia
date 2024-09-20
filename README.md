@@ -19,7 +19,8 @@ Requirements:
 
 __Linux/Macos:__
 
-Download repository, run 'make'
+Download repository, cd into the downloaded directory and run 'make'.
+Find the build in build folder.
 
 Requirements:
 - Linux or MacOS (updated at least within the last 10 years)
