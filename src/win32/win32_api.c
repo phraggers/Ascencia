@@ -37,7 +37,7 @@ extern b32 QueryPerformanceCounter(Win32_LARGE_INTEGER *frequency);
 extern void GetLocalTime(Win32_SYSTEMTIME *st);
 
 #define LOAD_KERNEL_FN(name) {api->##name = &##name; numfn++;}
-#define LOAD_WIN_FN(lib, name) {api->##name = (pfn_##name)api->GetProcAddress(lib, #name); if(!api->##name) {PL_Log(LOG_FATAL, "failed to load DLL FN: %s", #name); return 0;} else numfn++;}
+#define LOAD_WIN_FN(lib, name) {api->##name = (pfn_##name)WINAPI.GetProcAddress(lib, #name); if(!api->##name) {PL_Log(LOG_FATAL, "failed to load DLL FN: %s", #name); return 0;} else numfn++;}
 
 ptr PL_Alloc(u64 size)
 {
@@ -223,6 +223,13 @@ bool Win32_LoadXInput(void)
 {
     Assert(G_win32_state);
     Win32_XInput *api = &XINPUT_API;
+    int numfn = 0;
+
+    if(XINPUT_API.version != XINPUT_NOT_LOADED)
+    {
+        PL_Log(LOG_ERROR, "LoadXInput: already loaded");
+        return 0;
+    }
     
     ptr xinput_dll = WINAPI.LoadLibraryA("xinput1_4.dll");
 
@@ -259,7 +266,42 @@ bool Win32_LoadXInput(void)
         }
     }
 
-    return 1;
+    api->XInputGetState = (pfn_XInputGetState)WINAPI.GetProcAddress(xinput_dll, "XInputGetState");
+    api->XInputSetState = (pfn_XInputSetState)WINAPI.GetProcAddress(xinput_dll, "XInputSetState");
+
+    bool result = 1;
+
+    if(!api->XInputGetState)
+    {
+        PL_Log(LOG_ERROR, "LoadXInput: failed to load function XInputGetState");
+        api->XInputGetState = &NotLoaded_XInputGetState;
+        result = 0;
+    }
+    else numfn++;
+
+    if(!api->XInputSetState)
+    {
+        PL_Log(LOG_ERROR, "LoadXInput: failed to load function XInputSetState");
+        api->XInputSetState = &NotLoaded_XInputSetState;
+        result = 0;
+    }
+    else numfn++;
+
+    switch(api->version)
+    {
+        case XINPUT_NOT_LOADED: return 0;
+        case XINPUT_1_4:
+        PL_Log(LOG_INFO, "LoadXInput: XINPUT 1.4: Loaded %d functions", numfn);
+        break;
+        case XINPUT_9_1_0:
+        PL_Log(LOG_INFO, "LoadXInput: XINPUT 9.1.0: Loaded %d functions", numfn);
+        break;
+        case XINPUT_1_3:
+        PL_Log(LOG_INFO, "LoadXInput: XINPUT 1.3: Loaded %d functions", numfn);
+        break;
+    }
+
+    return result;
 }
 
 int NotLoaded_XAudio2Create(IXAudio2 **ppXAudio2, u32 Flags, u32 XAudio2Processor)
@@ -299,6 +341,13 @@ bool Win32_LoadXAudio(void)
 {
     Assert(G_win32_state);
     Win32_XAudio *api = &XAUDIO_API;
+    int numfn = 0;
+
+    if(XAUDIO_API.version != XAUDIO_NOT_LOADED)
+    {
+        PL_Log(LOG_ERROR, "LoadXAudio: already loaded");
+        return 0;
+    }
     api->version = XAUDIO_NOT_LOADED;
     ptr xaudio_dll = WINAPI.LoadLibraryA("xaudio2_9.dll");
     
@@ -352,5 +401,41 @@ bool Win32_LoadXAudio(void)
     XAUDIO_API.XAudio2CreateInternal = (pfn_XAudio2Create)WINAPI.GetProcAddress(xaudio_dll, "XAudio2Create");
     XAUDIO_API.XAudio2CreateWithVersionInfo = (pfn_XAudio2CreateWithVersionInfo)WINAPI.GetProcAddress(xaudio_dll, "XAudio2CreateWithVersionInfo");
 
-    return 1;
+    bool result = 1;
+
+    if(!XAUDIO_API.XAudio2CreateInternal)
+    {
+        PL_Log(LOG_ERROR, "LoadXAudio: failed to load function XAudio2Create");
+        XAUDIO_API.XAudio2Create = &NotLoaded_XAudio2Create;
+        XAUDIO_API.XAudio2CreateInternal = &NotLoaded_XAudio2Create;
+        result = 0;
+    }
+    else numfn++;
+
+    if(!XAUDIO_API.XAudio2CreateWithVersionInfo)
+    {
+        PL_Log(LOG_ERROR, "LoadXAudio: failed to load function XAudio2CreateWithVersionInfo");
+        XAUDIO_API.XAudio2CreateWithVersionInfo = &NotLoaded_XAudio2CreateWithVersionInfo;
+        result = 0;
+    }
+    else numfn++;
+
+    switch(api->version)
+    {
+        case XAUDIO_NOT_LOADED: return 0;
+        case XAUDIO_2_9:
+        PL_Log(LOG_INFO, "LoadXAudio: XAUDIO 2.9: Loaded %d functions", numfn);
+        break;
+        case XAUDIO_2_9D:
+        PL_Log(LOG_INFO, "LoadXAudio: XAUDIO 2.9d: Loaded %d functions", numfn);
+        break;
+        case XAUDIO_2_8:
+        PL_Log(LOG_INFO, "LoadXAudio: XAUDIO 2.8: Loaded %d functions", numfn);
+        break;
+        case XAUDIO_2_7:
+        PL_Log(LOG_INFO, "LoadXAudio: XAUDIO 2.7: Loaded %d functions", numfn);
+        break;
+    }
+
+    return result;
 }

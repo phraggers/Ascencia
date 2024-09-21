@@ -71,7 +71,6 @@ bool Win32_LoadGL(void)
 
     if(glversion >= 1.0)
     {
-        PL_Log(LOG_DEBUG, "LoadGL: loading OpenGL 1.0");
         LOAD_GL_FN(glCullFace);
         LOAD_GL_FN(glFrontFace);
         LOAD_GL_FN(glHint);
@@ -835,6 +834,6 @@ bool Win32_LoadGL(void)
         LOAD_GL_FN(glTextureBarrier);
     }
 
-    PL_Log(LOG_INFO, "LoadGL: %d functions loaded", numfn);
+    PL_Log(LOG_INFO, "LoadGL: OpenGL %d.%d: %d functions loaded", ASC_OPENGL_MAJ, ASC_OPENGL_MIN, numfn);
     return 1;
 }

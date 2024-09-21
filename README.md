@@ -31,14 +31,21 @@ Requirements:
 - Visual Studio Community (https://visualstudio.microsoft.com/) installed on C:\ drive
 - ResourceHacker by angusj (https://www.angusj.com/resourcehacker/) (build.bat acquires this file automatically on first run)
 
-__Linux/Macos:__
+__Linux:__
 
 Download repository, cd into the downloaded directory and run 'make'.
 Find the build in build folder.
 
 Requirements:
-- Linux or MacOS (updated at least within the last 10 years)
+- Linux (updated at least within the last 10 years)
 - GNU Compiler Collection (gcc, make)
+
+__MacOS:__
+
+Apple hates games development and killed OpenGL on MacOS. Sorry.
+
+Requirements:
+- Use any other platform
 <hr/>
 
 ### Version History:

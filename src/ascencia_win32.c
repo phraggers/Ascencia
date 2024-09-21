@@ -95,6 +95,16 @@ local bool Init(void)
     PL_UpdateTimer();
     PL_UpdateClock();
 
+    if(!Win32_LoadXInput())
+    {
+        PL_Log(LOG_ERROR, "Init: failed to load XInput");
+    }
+
+    if(!Win32_LoadXAudio())
+    {
+        PL_Log(LOG_ERROR, "Init: failed to load XAudio2");
+    }
+
     if(!Win32_CreateWindow())
     {
         PL_Log(LOG_FATAL, "Init: CreateWindow failed");
