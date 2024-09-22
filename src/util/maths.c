@@ -80,7 +80,7 @@ r32 divide(r32 n, r32 d)
     {
         result = (r32)(n/d);
     }
-    
+
     return result;
 }
 
@@ -92,19 +92,19 @@ r64 divide64(r64 n, r64 d)
     {
         result = (r64)(n/d);
     }
-    
+
     return result;
 }
 
 r64 norm64(r64 v, r64 min, r64 max)
 {
-    r64 result = ((v-min) / (max-min));
+    r64 result = divide64((v-min), (max-min));
     return result;
 }
 
 r32 norm32(r32 v, r32 min, r32 max)
 {
-    r32 result = ((v-min) / (max-min));
+    r32 result = divide((v-min), (max-min));
     return result;
 }
 
@@ -256,15 +256,15 @@ r64 deg64(r64 rad)
 
 bool equaleps(r32 a, r32 b, r32 e)
 {
-	if (a == b) 
+	if (a == b)
     {
 		return 1;
 	}
 
-    if (absolute(a-b) <= e) 
+    if (absolute(a-b) <= e)
     {
 		return 1;
 	}
-    
+
 	return 0;
 }

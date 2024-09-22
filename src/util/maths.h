@@ -18,7 +18,7 @@ u32 round_u32(r32 v); // round r32 to nearest u32
 i32 trunc_i32(r32 v); // truncate r32 to i32
 i32 floor_i32(r32 v); // floor r32 to i32
 i32 ceil_i32(r32 v); // ceil r32 to i32
-r32 divide(r32 n, r32 d); // n/d, if d==0, returns 0.0f
+r32 divide(r32 n, r32 d); // safe divide n/d, if d==0, returns 0.0f
 r64 divide64(r64 n, r64 d);
 
 r64 norm64(r64 v, r64 min, r64 max); // normalize 0.0 - 1.0 (64bit)
@@ -54,6 +54,6 @@ r64 rad64(r64 deg);
 r32 deg32(r32 rad); // radians to degrees
 r64 deg64(r64 rad);
 
-bool equaleps(r32 a, r32 b, r32 e);
+bool equaleps(r32 a, r32 b, r32 e); // floats equal within range
 
 #endif /* ASCENCIA_UTIL_MATHS_H */

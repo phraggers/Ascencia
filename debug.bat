@@ -4,6 +4,7 @@ pushd %~dp0
 setlocal EnableDelayedExpansion
 
 where /q cl.exe || goto WIN32_SET_VCVARS
+goto WIN32_RUN_DEBUG
 
 :WIN32_SET_VCVARS
 echo == Loading vcvarsall.bat x64 ==
