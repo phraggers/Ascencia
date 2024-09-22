@@ -236,12 +236,7 @@ u64 PL_GetFileSize(ptr handle)
     u64 result = (u64)size.QuadPart;
 
     #ifdef DEBUG
-    cstr sizestr = PL_Alloc0(STRING_LEN);
-    if(!sizestr)
-    {
-        PL_Log(LOG_FATAL, "GetFileSize: malloc error");
-        return 0;
-    }
+    cstr sizestr = PL_String_New();
     PL_String_ShortFileSize(sizestr, result);
     PL_Log(LOG_DEBUG, "GetFileSize: 0x%I64x : %s", handle, sizestr);
     PL_Free(sizestr);
@@ -292,13 +287,7 @@ PL_FileData *PL_FileRead(cstr path)
 
     if(read_result == 0 || (u32)file_size != bytes_read)
     {
-        cstr sizestr = PL_Alloc0(STRING_LEN);
-        if(!sizestr)
-        {
-            PL_Log(LOG_FATAL, "FileRead malloc error");
-            return 0;
-        }
-
+        cstr sizestr = PL_String_New();
         PL_String_ShortFileSize(sizestr, bytes_read);
         PL_Log(LOG_ERROR, "FileRead: failed to read file: 0x%I64x : read %s", handle, sizestr);
         PL_CloseFile(handle);
@@ -338,13 +327,7 @@ bool PL_FileWrite(cstr path, PL_FileData *data)
     {
         PL_CloseFile(handle);
 
-        cstr sizestr = PL_Alloc0(STRING_LEN);
-        if(!sizestr)
-        {
-            PL_Log(LOG_FATAL, "FileRead malloc error");
-            return 0;
-        }
-
+        cstr sizestr = PL_String_New();
         PL_String_ShortFileSize(sizestr, bytes_written);
         PL_Log(LOG_ERROR, "FileWrite: failed to write file: %s: read %s", path, sizestr);
         PL_Free(sizestr);
@@ -379,20 +362,9 @@ bool PL_FileAppend(cstr path, PL_FileData *data)
     u64 bytes_written = (u64)fwrite(data->buffer, 1, data->size, outfile);
     fclose(outfile);
 
-    cstr size1 = PL_Alloc0(STRING_LEN);
-    if(!size1)
-    {
-        PL_Log(LOG_FATAL, "FileAppend: malloc error");
-        return 0;
-    }
+    cstr size1 = PL_String_New();
     PL_String_ShortFileSize(size1, bytes_written);
-
-    cstr size2 = PL_Alloc0(STRING_LEN);
-    if(!size2)
-    {
-        PL_Log(LOG_FATAL, "FileAppend: malloc error");
-        return 0;
-    }
+    cstr size2 = PL_String_New();
     PL_String_ShortFileSize(size2, data->size);
 
     if(bytes_written != data->size)
@@ -419,22 +391,14 @@ void PL_FileFree(PL_FileData *data)
     }
 
     #ifdef DEBUG
-    cstr sizestr = PL_Alloc0(STRING_LEN);
-    if(!sizestr)
-    {
-        PL_Log(LOG_FATAL, "FileFree: malloc error");
-        return;
-    }
+    cstr sizestr = PL_String_New();
     PL_String_ShortFileSize(sizestr, data->size);
+    PL_Log(LOG_DEBUG, "FileFree: 0x%I64x : %s", data, sizestr);
+    PL_Free(sizestr);
     #endif
 
     data->buffer = 0;
     data->size = 0;
-
-    #ifdef DEBUG
-    PL_Log(LOG_DEBUG, "FileFree: 0x%I64x : %s", data, sizestr);
-    PL_Free(sizestr);
-    #endif
 
     PL_Free(data);
 }

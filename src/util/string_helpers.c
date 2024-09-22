@@ -6,7 +6,20 @@
 ============================================================*/
 
 #include <util/string_helpers.h>
+#include <platform/alloc.h>
+#include <platform/logging.h>
 #include <time.h>
+
+cstr PL_String_New(void)
+{
+    cstr result = PL_Alloc0(STRING_LEN);
+    if(!result)
+    {
+        PL_Log(LOG_FATAL, "malloc error");
+        exit(-1);
+    }
+    return result;
+}
 
 // print string as smallest name (eg size = 1024 + 512 = "1.5 KB")
 void PL_String_ShortFileSize(cstr string, u64 size)
@@ -62,4 +75,12 @@ void PL_String_Hex(cstr buffer, u8 *bp, u64 size)
     *cp++ = hex[(*bp>>4)&0xF];
     *cp++ = hex[(*bp)&0xF];
     *cp = 0;
+}
+
+void PL_String_Format(cstr buffer, cstr fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buffer, STRING_LEN, fmt, args);
+    va_end(args);
 }

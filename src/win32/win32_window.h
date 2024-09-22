@@ -27,7 +27,7 @@ typedef struct
 } Win32_Window;
 
 /* input */
-PL_KEYCODE Win32_Keycode(u32 key, i64 lparam);
+PL_KEYCODE Win32_Keycode(u64 key, i64 lparam);
 void Win32_ProcessXInputButton(Win32_XINPUT_GAMEPAD *xpad, PL_Gamepad *gamepad, u16 xbutton, PL_GAMEPADBTNCODE button_code, r64 dt);
 void Win32_ProcessInput(r64 dt);
 void Win32_UpdateInput(void);

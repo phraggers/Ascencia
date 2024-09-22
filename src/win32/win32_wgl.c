@@ -48,7 +48,7 @@ bool Win32_LoadWGL(void)
     LOAD_WGL_FN(wglCreateContextAttribsARB);
     LOAD_WGL_FN(wglSwapIntervalEXT);
 
-    PL_Log(LOG_INFO, "LoadWGL: %d functions loaded", numfn);
+    PL_Log(LOG_INFO, "LoadWGL: Loaded %d functions", numfn);
     return 1;
 }
 
@@ -834,6 +834,6 @@ bool Win32_LoadGL(void)
         LOAD_GL_FN(glTextureBarrier);
     }
 
-    PL_Log(LOG_INFO, "LoadGL: OpenGL %d.%d: %d functions loaded", ASC_OPENGL_MAJ, ASC_OPENGL_MIN, numfn);
+    PL_Log(LOG_INFO, "LoadGL: OpenGL %d.%d: Loaded %d functions", ASC_OPENGL_MAJ, ASC_OPENGL_MIN, numfn);
     return 1;
 }

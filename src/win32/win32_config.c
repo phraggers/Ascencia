@@ -66,20 +66,10 @@ bool PL_ConfigSave(void)
 
         if(sizeof(PL_Config) != bytes_written)
         {
-            cstr size1 = PL_Alloc0(STRING_LEN);
-            if(!size1)
-            {
-                PL_Log(LOG_FATAL, "ConfigSave: malloc error");
-                return 0;
-            }
+            cstr size1 = PL_String_New();
             PL_String_ShortFileSize(size1, sizeof(PL_Config));
 
-            cstr size2 = PL_Alloc0(STRING_LEN);
-            if(!size2)
-            {
-                PL_Log(LOG_FATAL, "ConfigSave: malloc error");
-                return 0;
-            }
+            cstr size2 = PL_String_New();
             PL_String_ShortFileSize(size2, bytes_written);
 
             PL_Log(LOG_ERROR, "ConfigSave: bytes written mis-match writing %s (expected %s : wrote %s)", PL_GetConfigPath(), size1, size2);
@@ -89,15 +79,10 @@ bool PL_ConfigSave(void)
         }
         else
         {
-            cstr size = PL_Alloc0(STRING_LEN);
-            if(!size)
-            {
-                PL_Log(LOG_FATAL, "ConfigSave: malloc error");
-                return 0;
-            }
+            cstr size = PL_String_New();
             PL_String_ShortFileSize(size, bytes_written);
-
             PL_Log(LOG_INFO, "ConfigSave: saved %s (%s)", PL_GetConfigPath(), size);
+            PL_Free(size);
             return 1;
         }
     }
@@ -126,20 +111,10 @@ bool PL_ConfigLoad(void)
 
         if(size != sizeof(PL_Config))
         {
-            cstr size1 = PL_Alloc0(STRING_LEN);
-            if(!size1)
-            {
-                PL_Log(LOG_FATAL, "ConfigLoad: malloc error");
-                return 0;
-            }
+            cstr size1 = PL_String_New();
             PL_String_ShortFileSize(size1, sizeof(PL_Config));
 
-            cstr size2 = PL_Alloc0(STRING_LEN);
-            if(!size2)
-            {
-                PL_Log(LOG_FATAL, "ConfigLoad: malloc error");
-                return 0;
-            }
+            cstr size2 = PL_String_New();
             PL_String_ShortFileSize(size2, size);
 
             PL_Log(LOG_ERROR, "ConfigLoad: config file size mis-match: %s (expected %s, read %s)", PL_GetConfigPath(), size1, size2);
@@ -165,20 +140,10 @@ bool PL_ConfigLoad(void)
         {
             PL_Free(loaded_config);
 
-            cstr size1 = PL_Alloc0(STRING_LEN);
-            if(!size1)
-            {
-                PL_Log(LOG_FATAL, "ConfigLoad: malloc error");
-                return 0;
-            }
+            cstr size1 = PL_String_New();
             PL_String_ShortFileSize(size1, bytes_read);
 
-            cstr size2 = PL_Alloc0(STRING_LEN);
-            if(!size2)
-            {
-                PL_Log(LOG_FATAL, "ConfigLoad: malloc error");
-                return 0;
-            }
+            cstr size2 = PL_String_New();
             PL_String_ShortFileSize(size2, sizeof(PL_Config));
 
             PL_Log(LOG_ERROR, "ConfigLoad: failed to read config file: %s (read %s, expected %s)", PL_GetConfigPath(), size1, size2);
@@ -200,14 +165,8 @@ bool PL_ConfigLoad(void)
         memcpy((ptr)(&G_win32_state->config), (ptr)(loaded_config), sizeof(PL_Config));
         PL_Free(loaded_config);
 
-        cstr sizestr = PL_Alloc0(STRING_LEN);
-        if(!sizestr)
-        {
-            PL_Log(LOG_FATAL, "ConfigLoad: malloc error");
-            return 0;
-        }
+        cstr sizestr = PL_String_New();
         PL_String_ShortFileSize(sizestr, sizeof(PL_Config));
-
         PL_Log(LOG_INFO, "ConfigLoad: loaded config: %s (%s)", PL_GetConfigPath(), sizestr);
         PL_Free(sizestr);
         return 1;

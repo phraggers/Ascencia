@@ -11,14 +11,39 @@
 #include <platform/logging.h>
 #include <win32/win32_state.h>
 
+typedef struct
+{
+    char logstring[STRING_LEN];
+    char timestamp[STRING_LEN];
+    char fstring[STRING_LEN];
+    char filetimestamp[STRING_LEN];
+    char msgboxstring[STRING_LEN];
+} LogState;
+global LogState *G_logstate;
+
+#define G_logstring G_logstate->logstring
+#define G_timestamp G_logstate->timestamp
+#define G_fstring G_logstate->fstring
+#define G_filetimestamp G_logstate->filetimestamp
+#define G_msgboxstring G_logstate->msgboxstring
+
+local void LogInit(void)
+{
+    G_logstate = (LogState*)PL_Alloc0(sizeof(LogState));
+    if(!G_logstate)
+    {
+        exit(-1);
+    }
+}
+
 bool PL_LogInit(void)
 {
     #ifdef DEBUG
     PL_SetConsoleLogLevel(LOG_DEBUG);
-    PL_SetFileLogLevel(LOG_WARN);
+    PL_SetFileLogLevel(LOG_INFO);
     #else
     PL_SetConsoleLogLevel(LOG_NONE);
-    PL_SetFileLogLevel(LOG_ERROR);
+    PL_SetFileLogLevel(LOG_INFO);
     #endif
 
     switch(ASC_VERSION_RLS)
@@ -74,87 +99,74 @@ void PL_SetFileLogLevel(LOG_LEVEL level)
 
 bool PL_Log(LOG_LEVEL level, cstr string, ...)
 {
+    if(!G_logstate)
+    {
+        LogInit();
+    }
+
     #ifdef RELEASE
     if(level == LOG_DEBUG) return 1;
     #endif
 
-    cstr logstring = PL_Alloc0(STRING_LEN);
-    if(!logstring)
-    {
-        return 0;
-    }
-
-    cstr timestamp = PL_Alloc0(STRING_LEN);
-    if(!timestamp)
-    {
-        return 0;
-    }
+    memset(G_logstring, 0, STRING_LEN);
+    memset(G_timestamp, 0, STRING_LEN);
+    memset(G_fstring, 0, STRING_LEN);
     
-    PL_String_TimeStampNow(timestamp, "[%X]");
-    strcat(logstring, timestamp);
-    PL_Free(timestamp);
+    PL_String_TimeStampNow(G_timestamp, "[%X]");
+    strcat(G_logstring, G_timestamp);
 
     switch(level)
     {
         case LOG_FATAL:
         {
-            strcat(logstring, " [FATAL] ");
+            strcat(G_logstring, " [FATAL] ");
         } break;
         case LOG_ERROR:
         {
-            strcat(logstring, " [ERROR] ");
+            strcat(G_logstring, " [ERROR] ");
         } break;
         case LOG_WARN:
         {
-            strcat(logstring, " [WARN_] ");
+            strcat(G_logstring, " [WARN_] ");
         } break;
         case LOG_INFO:
         {
-            strcat(logstring, " [INFO_] ");
+            strcat(G_logstring, " [INFO_] ");
         } break;
         case LOG_DEBUG:
         {
-            strcat(logstring, " [DEBUG] ");
+            strcat(G_logstring, " [DEBUG] ");
         } break;
         case LOG_NONE: break;
     }
 
-    cstr fstring = PL_Alloc0(STRING_LEN);
-    if(!fstring)
-    {
-        PL_Free(logstring);
-        return 0;
-    }
-
     va_list args;
     va_start(args, string);
-    vsnprintf(fstring, STRING_LEN, string, args);
+    vsnprintf(G_fstring, STRING_LEN, string, args);
     va_end(args);
-    snprintf(logstring+strlen(logstring), STRING_LEN, fstring);
-    PL_Free(fstring);
+    snprintf(G_logstring+strlen(G_logstring), STRING_LEN, G_fstring);
     
     if(!G_win32_state)
     {
-        // before state init, just puts(), free and return
-        puts(logstring);
-        PL_Free(logstring);
+        // before state init, just puts() and return
+        puts(G_logstring);
         return 1;
     }
 
     if(level <= G_win32_state->logging.console_loglevel)
     {
-        puts(logstring);
+        puts(G_logstring);
     }
 
     if(level <= G_win32_state->logging.logfile_loglevel)
     {
-        strcat(logstring, "\n");
+        strcat(G_logstring, "\n");
         if(G_win32_state->logging.logfile_path[0] != 0)
         {
             FILE *logfile = fopen(G_win32_state->logging.logfile_path, "ab");
             if(logfile)
             {
-                fwrite(logstring, 1, strlen(logstring), logfile);
+                fwrite(G_logstring, 1, strlen(G_logstring), logfile);
                 fclose(logfile);
             }
         }
@@ -162,7 +174,7 @@ bool PL_Log(LOG_LEVEL level, cstr string, ...)
 
     if(level == LOG_FATAL)
     {
-        PL_MsgBox("Fatal Error", logstring);
+        PL_MsgBox("Fatal Error", G_logstring);
         if(G_win32_state != 0)
         {
             if(strlen(G_win32_state->logging.logfile_path) > 0)
@@ -184,8 +196,6 @@ bool PL_Log(LOG_LEVEL level, cstr string, ...)
         }
         exit(-1);
     }
-
-    PL_Free(logstring);
 
     return 1;
 }
@@ -214,38 +224,24 @@ bool PL_SetLogFilePath(cstr path)
         }
     }
 
-    cstr timestamp = (cstr)PL_Alloc0(STRING_LEN);
-    if(!timestamp)
-    {
-        PL_Log(LOG_FATAL, "SetLogFilePath: malloc error");
-        return 0;
-    }
+    memset(G_filetimestamp, 0, STRING_LEN);
 
-    PL_String_TimeStampNow(timestamp, "%y%m%d%H%M%S_log.txt");
+    PL_String_TimeStampNow(G_filetimestamp, "%y%m%d%H%M%S_log.txt");
     if(path[strlen(path)-1] != '\\')
     {
         path[strlen(path)] = '\\';
     }
-    strcat(path, timestamp);
-    PL_Free(timestamp);
+    strcat(path, G_filetimestamp);
     strcpy(G_win32_state->logging.logfile_path, path);
 
     FILE *logfile = fopen(path, "wb");
     if(logfile)
     {
-        cstr logfile_header = (cstr)PL_Alloc0(STRING_LEN);
-        if(logfile_header)
-        {
-            strcpy(logfile_header, " === ASCENCIA LOG FILE === \n\n");
-            fwrite(logfile_header, 1, strlen(logfile_header), logfile);
-            fclose(logfile);
-            PL_Free(logfile_header);
-        }
-        else
-        {
-            PL_Log(LOG_FATAL, "SetLogFilePath: malloc error");
-            return 0;
-        }
+        cstr logfile_header = PL_String_New();
+        strcpy(logfile_header, " === ASCENCIA LOG FILE === \n\n");
+        fwrite(logfile_header, 1, strlen(logfile_header), logfile);
+        fclose(logfile);
+        PL_Free(logfile_header);
     }
     else
     {
@@ -296,10 +292,8 @@ void PL_MsgBox(const cstr title, cstr format, ...)
 
     va_list args;
     va_start(args, format);
-    cstr msg = PL_Alloc0(STRING_LEN);
-    if(!msg) return;
-    vsnprintf(msg, STRING_LEN, format, args);
+    memset(G_msgboxstring, 0, STRING_LEN);
+    vsnprintf(G_msgboxstring, STRING_LEN, format, args);
     va_end(args);
-    WINAPI.MessageBoxA(0, msg, title, 0x00000010L);
-    PL_Free(msg);
+    WINAPI.MessageBoxA(0, G_msgboxstring, title, 0x00000010L);
 }

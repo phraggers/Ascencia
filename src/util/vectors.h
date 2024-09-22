@@ -43,8 +43,8 @@
     bool v2one(v2 v);
     v2 v2sign(v2 v);
     v2 v2invert(v2 v);
-    v2 v2perp(v2 v);
-    v2 v2tangent(v2 v);
+    v2 v2perpl(v2 v); // left hand perpendicular
+    v2 v2perpr(v2 v); // right hand perpendicular
     v2 v2rotate(v2 v, r32 r);
     r32 v2lengthsq(v2 v);
     r32 v2length(v2 v);

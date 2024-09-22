@@ -15,70 +15,133 @@
 typedef enum
 {
     KEY_NONE = 0,
-    
-    KEY_ESC, // escape
-    KEY_PRTSC, // print screen
-    KEY_SCRLK, // scroll lock
-    KEY_PAUSE, // pause
-    KEY_NUM, // num lock
-    KEY_INS, // insert
-    KEY_DEL, // delete
-    KEY_HOME, // home
-    KEY_END, // end
-    KEY_PGUP, // page up
-    KEY_PGDN, // page down
-        
-    KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6,
-    KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12,
-        
-    KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT,
-        
-    KEY_CAPS, KEY_BACKSPACE, 
-    KEY_LSHIFT, KEY_RSHIFT, KEY_LCTRL, KEY_RCTRL,
-    KEY_LALT, KEY_RALT,
-    KEY_LWIN, // left windows key
-    KEY_RWIN, // right windows key
-    KEY_MENU, // key usually right of RALT or RWIN
-    // usually same as right-click contextual menu at mouse pos 0,0
-        
-    KEY_TAB = '\t',         KEY_TILDE = '`', 
-    KEY_MINUS = '-',        KEY_EQUALS = '=',
-    KEY_RETURN = '\n',      KEY_SPACE = ' ', 
-    KEY_LBRACKET = '[',     KEY_RBRACKET = ']',
-    KEY_SEMICOLON = ';',    KEY_APOSTROPHE = '\'', 
-    KEY_BACKSLASH = '\\',   KEY_COMMA = ',', 
-    KEY_PERIOD = '.',       KEY_SLASH = '/',
-        
-    KEY_A = 'a', KEY_B = 'b', KEY_C = 'c', KEY_D = 'd', 
-    KEY_E = 'e', KEY_F = 'f', KEY_G = 'g', KEY_H = 'h', 
-    KEY_I = 'i', KEY_J = 'j', KEY_K = 'k', KEY_L = 'l', 
-    KEY_M = 'm', KEY_N = 'n', KEY_O = 'o', KEY_P = 'p', 
-    KEY_Q = 'q', KEY_R = 'r', KEY_S = 's', KEY_T = 't',
-    KEY_U = 'u', KEY_V = 'v', KEY_W = 'w', KEY_X = 'x', 
-    KEY_Y = 'y', KEY_Z = 'z',
-        
-    KEY_1 = '1', KEY_2 = '2', KEY_3 = '3', KEY_4 = '4',
-    KEY_5 = '5', KEY_6 = '6', KEY_7 = '7', KEY_8 = '8',
-    KEY_9 = '9', KEY_0 = '0',
-    
-    KEY_KP_SLASH, // keypad /
-    KEY_KP_MULTIPLY,  // keypad *
-    KEY_KP_MINUS, // keypad -
-    KEY_KP_PLUS, // keypad +
-    KEY_KP_RETURN,
-    KEY_KP_PERIOD,
-    
-    KEY_KP_0, KEY_KP_1, KEY_KP_2, KEY_KP_3, KEY_KP_4, 
-    KEY_KP_5, KEY_KP_6, KEY_KP_7, KEY_KP_8, KEY_KP_9,
-    
-    // media keys
-    KEY_M_MUTE, KEY_M_VOLDOWN, KEY_M_VOLUP,
-    KEY_M_PLAYPAUSE, KEY_M_STOP,
-    KEY_M_PREV, KEY_M_NEXT,
-    
+
+    KEY_ESC = 1,
+    KEY_PRTSC = 2,
+    KEY_SCRLK = 3,
+    KEY_PAUSE = 4,
+    KEY_NUM = 5,
+    KEY_INS = 6,
+    KEY_DEL = 7,
+    KEY_HOME = 8,
+    KEY_TAB = '\t', //9
+    KEY_RETURN = '\n', //10
+    KEY_END = 11,
+    KEY_PGUP = 12,
+    KEY_PGDN = 13,
+    KEY_F1 = 14,
+    KEY_F2 = 15,
+    KEY_F3 = 16,
+    KEY_F4 = 17,
+    KEY_F5 = 18,
+    KEY_F6 = 19,
+    KEY_F7 = 20,
+    KEY_F8 = 21,
+    KEY_F9 = 22,
+    KEY_F10 = 23,
+    KEY_F11 = 24,
+    KEY_F12 = 25,
+    KEY_UP = 26,
+    KEY_DOWN = 27,
+    KEY_LEFT = 28,
+    KEY_RIGHT = 29,
+    KEY_CAPS = 30,
+    KEY_BACKSPACE = 31,
+    KEY_SPACE = ' ', //32
+    KEY_LSHIFT = 33,
+    KEY_RSHIFT = 34,
+    KEY_LCTRL = 35,
+    KEY_RCTRL = 36,
+    KEY_LALT = 37,
+    KEY_RALT = 38,
+    KEY_APOSTROPHE = '\'', //39
+    KEY_LWIN = 40,
+    KEY_RWIN = 41,
+    KEY_MENU = 42,
+    KEY_KP_SLASH = 43,
+    KEY_COMMA = ',', //44
+    KEY_MINUS = '-', //45
+    KEY_PERIOD = '.', //46
+    KEY_SLASH = '/', //47
+    KEY_0 = '0', //48
+    KEY_1 = '1', //49
+    KEY_2 = '2', //50
+    KEY_3 = '3', //51
+    KEY_4 = '4', //52
+    KEY_5 = '5', //53
+    KEY_6 = '6', //54
+    KEY_7 = '7', //55
+    KEY_8 = '8', //56
+    KEY_9 = '9', //57
+    KEY_KP_MULTIPLY = 58,
+    KEY_SEMICOLON = ';', //59
+    KEY_KP_MINUS = 60,
+    KEY_EQUALS = '=', //61
+    KEY_KP_PLUS = 62,
+    KEY_KP_RETURN = 63,
+    KEY_KP_PERIOD = 64,
+    KEY_KP_0 = 65,
+    KEY_KP_1 = 66,
+    KEY_KP_2 = 67,
+    KEY_KP_3 = 68,
+    KEY_KP_4 = 69,
+    KEY_KP_5 = 70,
+    KEY_KP_6 = 71,
+    KEY_KP_7 = 72,
+    KEY_KP_8 = 73,
+    KEY_KP_9 = 74,
+    KEY_M_MUTE = 75,
+    KEY_M_VOLDOWN = 76,
+    KEY_M_VOLUP = 77,
+    KEY_M_PLAYPAUSE = 78,
+    KEY_M_STOP = 79,
+    KEY_M_PREV = 80,
+    KEY_M_NEXT = 81,
+    KEY_UNUSED82 = 82,
+    KEY_UNUSED83 = 83,
+    KEY_UNUSED84 = 84,
+    KEY_UNUSED85 = 85,
+    KEY_UNUSED86 = 86,
+    KEY_UNUSED87 = 87,
+    KEY_UNUSED88 = 88,
+    KEY_UNUSED89 = 89,
+    KEY_UNUSED90 = 90,
+    KEY_LBRACKET = '[', //91
+    KEY_BACKSLASH = '\\', //92
+    KEY_RBRACKET = ']', //93
+    KEY_UNUSED94 = 94,
+    KEY_UNUSED95 = 95,
+    KEY_TILDE = '`', //96
+    KEY_A = 'a', //97
+    KEY_B = 'b', //98
+    KEY_C = 'c', //99
+    KEY_D = 'd', //100
+    KEY_E = 'e', //101
+    KEY_F = 'f', //102
+    KEY_G = 'g', //103
+    KEY_H = 'h', //104
+    KEY_I = 'i', //105
+    KEY_J = 'j', //106
+    KEY_K = 'k', //107
+    KEY_L = 'l', //108
+    KEY_M = 'm', //109
+    KEY_N = 'n', //110
+    KEY_O = 'o', //111
+    KEY_P = 'p', //112
+    KEY_Q = 'q', //113
+    KEY_R = 'r', //114
+    KEY_S = 's', //115
+    KEY_T = 't', //116
+    KEY_U = 'u', //117
+    KEY_V = 'v', //118
+    KEY_W = 'w', //119
+    KEY_X = 'x', //120
+    KEY_Y = 'y', //121
+    KEY_Z = 'z', //122
+
     //not implemented: browser keys, applaunch keys
-    
-    KEY_MAX
+
+    KEY_MAX = 123
 } PL_KEYCODE;
 
 typedef enum
@@ -90,7 +153,7 @@ typedef enum
     MB_MIDDLE,
     MB_X1,
     MB_X2,
-    
+
     MB_MAX
 } PL_MOUSEBTNCODE;
 
@@ -112,7 +175,7 @@ typedef enum
     GP_RSHOULDER,
     GP_LSTICK, //L3
     GP_RSTICK, //R3
-        
+
     GP_MAX
 } PL_GAMEPADBTNCODE;
 

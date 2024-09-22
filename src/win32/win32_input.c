@@ -59,8 +59,10 @@ PL_ButtonState* PL_GetKeyState(PL_KEYCODE key)
     return result;
 }
 
-PL_KEYCODE Win32_Keycode(u32 key, i64 lparam)
+PL_KEYCODE Win32_Keycode(u64 key, i64 lparam)
 {
+    int extended = (lparam & 0x01000000) != 0;
+
     switch(key)
     {
         case 0x1b: return KEY_ESC;
@@ -92,18 +94,12 @@ PL_KEYCODE Win32_Keycode(u32 key, i64 lparam)
         case 0x28: return KEY_DOWN;
         case 0x25: return KEY_LEFT;
         case 0x27: return KEY_RIGHT;
-
-        /* NOTE:
-        VK_L* & VK_R* - left and right Alt, Ctrl and Shift virtual keys.
-        Used only as parameters to GetAsyncKeyState() and GetKeyState().
-        No other API or message will distinguish left and right keys in this way.*/
         
         case 0x14: return KEY_CAPS;
         case 0x08: return KEY_BACKSPACE;
-        case 0xa0: return KEY_LSHIFT;
-        case 0xa1: return KEY_RSHIFT;
-        case 0xa2: return KEY_LCTRL;
-        case 0xa3: return KEY_RCTRL;
+        case 0x10: return (extended ? KEY_RSHIFT : KEY_LSHIFT);
+        case 0x11: return (extended ? KEY_RCTRL : KEY_LCTRL);
+        case 0x12: return (extended ? KEY_RALT : KEY_LALT);
         case 0x5b: return KEY_LWIN;
         case 0x5c: return KEY_RWIN;
         case 0x5d: return KEY_MENU;
@@ -125,6 +121,7 @@ PL_KEYCODE Win32_Keycode(u32 key, i64 lparam)
         case 0xba: return KEY_SEMICOLON;
         case 0xde: return KEY_APOSTROPHE;
         case 0xdc: return KEY_BACKSLASH;
+        case 0xe2: return KEY_BACKSLASH; // OEM102 (UK layout)
         case 0xbc: return KEY_COMMA;
         case 0xbe: return KEY_PERIOD;
         case 0xbf: return KEY_SLASH;
@@ -191,8 +188,13 @@ PL_KEYCODE Win32_Keycode(u32 key, i64 lparam)
         case 0xb2: return KEY_M_STOP;
         case 0xb1: return KEY_M_PREV;
         case 0xb0: return KEY_M_NEXT;
+
         
-        default: return KEY_NONE;
+        default: 
+        {
+            PL_Log(LOG_DEBUG, "KEY: Unhandled keycode: %u", (u32)key);
+            return KEY_NONE;
+        }
     }
 }
 

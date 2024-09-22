@@ -49,45 +49,33 @@ set cflags=%cflags% %dwarnings%
 set input= %input%
 set input=%input: = ..\..\src\%
 
-cl -nologo -I..\..\src -Fe"ascencia-d.exe" %cflags% -Od -Zi -DDEBUG=1 %input% -link -debug -subsystem:console kernel32.lib
+copy %~dp0src\win32\resource.rc %~dp0build\int\resource.rc
+copy %~dp0src\win32\resource.h %~dp0build\int\resource.h
+copy %~dp0assets\asc256.ico %~dp0build\int\asc256.ico
+copy %~dp0assets\asc64.ico %~dp0build\int\asc64.ico
+copy %~dp0assets\asc48.ico %~dp0build\int\asc48.ico
+copy %~dp0assets\asc40.ico %~dp0build\int\asc40.ico
+copy %~dp0assets\asc32.ico %~dp0build\int\asc32.ico
+copy %~dp0assets\asc24.ico %~dp0build\int\asc24.ico
+copy %~dp0assets\asc20.ico %~dp0build\int\asc20.ico
+copy %~dp0assets\asc16.ico %~dp0build\int\asc16.ico
+rc resource.rc
 
-cl -nologo -I..\..\src -Fe"ascencia.exe" %cflags% -O2 -DRELEASE=1 %input% -link -release -subsystem:windows kernel32.lib
+cl -I..\..\src -Fe"ascencia-d.exe" %cflags% -Od -Zi -DDEBUG=1 %input% -link -debug -subsystem:console kernel32.lib resource.res
+
+cl -I..\..\src -Fe"ascencia.exe" %cflags% -O2 -DRELEASE=1 %input% -link -release -subsystem:windows kernel32.lib resource.res
 
 popd
-
-:: It would obviously be a lot faster to just distribute ResourceHacker WITH
-:: the build repo but that would go against AngusJ's licence agreement.
-if not exist assets\rh.exe (
-	if not exist assets\tmp mkdir assets\tmp
-	bitsadmin.exe /transfer "ResourceHacker" https://www.angusj.com/resourcehacker/resource_hacker.zip %~dp0assets\tmp\rh.zip
-	powershell "Expand-Archive -Path """%~dp0assets\tmp\rh.zip""" -DestinationPath """%~dp0assets\tmp\rh""""
-	copy assets\tmp\rh\ResourceHacker.exe assets\rh.exe
-	del /q assets\tmp\rh\*.*
-	del /q assets\tmp\rh\help\*.*
-	rmdir assets\tmp\rh\help
-	del /q assets\tmp\rh\samples\*.*
-	rmdir assets\tmp\rh\samples
-	rmdir assets\tmp\rh\
-	del /q assets\tmp\*.*
-	rmdir assets\tmp
-)
 
 if not exist %~dp0build\debug mkdir %~dp0build\debug
 del /q %~dp0build\debug\*.*
 if exist %~dp0build\int\ascencia-d.exe copy %~dp0build\int\ascencia-d.exe %~dp0build\debug\ascencia-d.exe
-rh -open %~dp0build\debug\ascencia-d.exe -resource %~dp0assets\ascencia.ico -mask ICONGROUP,MAINICON, -action addskip -save %~dp0build\debug\ascencia-d.exe
 robocopy %~dp0data %~dp0build\debug /S /J /NDL /NJH /NJS /nc /ns /np
 
 if not exist %~dp0build\release mkdir %~dp0build\release
 del /q %~dp0build\release\*.*
 if exist %~dp0build\int\ascencia.exe copy %~dp0build\int\ascencia.exe %~dp0build\release\ascencia.exe
-rh -open %~dp0build\release\ascencia.exe -resource %~dp0assets\ascencia.ico -mask ICONGROUP,MAINICON, -action addskip -save %~dp0build\release\ascencia.exe
 robocopy %~dp0data %~dp0build\release /S /J /NDL /NJH /NJS /nc /ns /np
-
-echo.
-echo ResourceHacker by angusj used to inject icon into .exe files.
-echo Please go to https://www.angusj.com/resourcehacker/ for info.
-echo.
 
 if exist build\debug\ascencia-d.exe (
     echo build\debug\ascencia-d.exe    SUCCEEDED

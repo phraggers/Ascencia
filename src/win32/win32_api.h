@@ -168,6 +168,7 @@ typedef ptr (*pfn_MonitorFromWindow)(ptr hwnd, u32 flags);
 typedef b32 (*pfn_GetMonitorInfoA)(ptr monitor, Win32_MONITORINFO *mi);
 typedef b32 (*pfn_GetClientRect)(ptr hwnd, Win32_RECT *rect);
 typedef b32 (*pfn_GetWindowRect)(ptr hwnd, Win32_RECT *rect);
+typedef ptr (*pfn_LoadImageA)(ptr hinstance, cstr image_name, u32 type, int cx, int cy, u32 flags);
 
  /* gdi32.dll */
  typedef int (*pfn_ChoosePixelFormat)(ptr hdc, const Win32_PFD *ppfd);
@@ -230,6 +231,7 @@ typedef struct
     pfn_GetMonitorInfoA GetMonitorInfoA;
     pfn_GetClientRect GetClientRect;
     pfn_GetWindowRect GetWindowRect;
+    pfn_LoadImageA LoadImageA;
     
     /* gdi32.dll */
     pfn_ChoosePixelFormat ChoosePixelFormat;

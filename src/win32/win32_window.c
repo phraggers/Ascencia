@@ -6,12 +6,15 @@
 ============================================================*/
 
 #include <util/maths.h>
+#include <util/string_helpers.h>
+#include <platform/alloc.h>
 #include <platform/window.h>
 #include <platform/opengl.h>
 #include <platform/input.h>
 #include <platform/config.h>
 #include <win32/win32_state.h>
 #include <win32/win32_api.h>
+#include <win32/resource.h>
 
 local void FullscreenToggle(void);
 
@@ -40,6 +43,7 @@ bool PL_SetWindowTitle(cstr title)
 
     memset(PL_GetWindowTitle(), 0, STRING_LEN);
     strcpy(PL_GetWindowTitle(), title);
+    WINAPI.SetWindowTextA(G_win32_state->window.handle, PL_GetWindowTitle());
     return 1;
 }
 
@@ -265,29 +269,21 @@ i64 Win32_WndProc(ptr handle, u32 msg, u64 wparam, i64 lparam)
                 }
             }
             
-            PL_KEYCODE key = Win32_Keycode((u32)wparam, lparam);
-            PL_GetKeyState(key)->is_down = 1;
+            PL_KEYCODE key = Win32_Keycode(wparam, lparam);
+            if(key)
+            {
+                PL_GetKeyState(key)->is_down = 1;
+            }
         } break;
 
         case 0x0101: //WM_KEYUP
         case 0x0105: //WM_SYSKEYUP
         {
-            //TODO: fix this. currently, if holding ALT, when another keyup
-            // happens, the game will treat this as ALT key up followed by
-            // another ALT keydown next frame, rather than ALT staying down.
-
-            if(PL_GetKeyState(KEY_RALT)->is_down)
+            PL_KEYCODE key = Win32_Keycode(wparam, lparam);
+            if(key)
             {
-                PL_GetKeyState(KEY_RALT)->is_down = 0;
+                PL_GetKeyState(key)->is_down = 0;
             }
-
-            if(PL_GetKeyState(KEY_LALT)->is_down)
-            {
-                PL_GetKeyState(KEY_LALT)->is_down = 0;
-            }
-
-            PL_KEYCODE key = Win32_Keycode((u32)wparam, lparam);
-            PL_GetKeyState(key)->is_down = 0;
         } break;
 
         case 0x200: //WM_MOUSEMOVE
@@ -598,9 +594,48 @@ bool Win32_CreateWindow(void)
         PL_Log(LOG_ERROR, "CreateWindow: Failed to load OpenGL functions");
         return 0;
     }
+
+    //re-set vsync to config state
+    PL_GetWindow()->config->vsync = !PL_GetWindow()->config->vsync;
+    PL_SetWindowVSync(!PL_GetWindow()->config->vsync);
     
-    PL_SetWindowVSync(PL_GetWindow()->config->vsync);
+    // clear window to start draw
     Win32_UpdateWindow();
+
+    //title
+    cstr window_title = PL_String_New();
+
+    switch(G_win32_state->config.ascencia_version.rls)
+    {
+        case 0:
+        {
+            PL_String_Format(window_title, "Ascencia DEV[%d.%d.%d]", G_win32_state->config.ascencia_version.maj, G_win32_state->config.ascencia_version.min, G_win32_state->config.ascencia_version.rev);
+        } break;
+        case 1:
+        {
+            PL_String_Format(window_title, "Ascencia ALPHA[%d.%d.%d]", G_win32_state->config.ascencia_version.maj, G_win32_state->config.ascencia_version.min, G_win32_state->config.ascencia_version.rev);
+        } break;
+        case 2:
+        {
+            PL_String_Format(window_title, "Ascencia BETA[%d.%d.%d]", G_win32_state->config.ascencia_version.maj, G_win32_state->config.ascencia_version.min, G_win32_state->config.ascencia_version.rev);
+        } break;
+        default:
+        {
+            PL_String_Format(window_title, "Ascencia [%d.%d.%d]", G_win32_state->config.ascencia_version.maj, G_win32_state->config.ascencia_version.min, G_win32_state->config.ascencia_version.rev);
+        } break;
+    }
     
+    PL_SetWindowTitle(window_title);
+    PL_Free(window_title);
+
+    ptr icon256 = WINAPI.LoadImageA(WINAPI.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON256)))), 1, 0, 0, 0);
+    ptr icon64 = WINAPI.LoadImageA(WINAPI.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON64)))), 1, 0, 0, 0);
+    ptr icon48 = WINAPI.LoadImageA(WINAPI.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON48)))), 1, 0, 0, 0);
+    ptr icon40 = WINAPI.LoadImageA(WINAPI.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON40)))), 1, 0, 0, 0);
+    ptr icon32 = WINAPI.LoadImageA(WINAPI.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON32)))), 1, 0, 0, 0);
+    ptr icon24 = WINAPI.LoadImageA(WINAPI.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON24)))), 1, 0, 0, 0);
+    ptr icon20 = WINAPI.LoadImageA(WINAPI.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON20)))), 1, 0, 0, 0);
+    ptr icon16 = WINAPI.LoadImageA(WINAPI.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON16)))), 1, 0, 0, 0);
+
     return 1;
 }

@@ -185,6 +185,7 @@ bool Win32_LoadAPI(void)
     LOAD_WIN_FN(lib_user32, GetMonitorInfoA);
     LOAD_WIN_FN(lib_user32, GetClientRect);
     LOAD_WIN_FN(lib_user32, GetWindowRect);
+    LOAD_WIN_FN(lib_user32, LoadImageA);
 
     LOAD_WIN_FN(lib_gdi32, ChoosePixelFormat);
     LOAD_WIN_FN(lib_gdi32, DescribePixelFormat);

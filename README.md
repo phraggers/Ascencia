@@ -29,7 +29,6 @@ Find the build in build/release folder.
 Requirements:
 - Windows x64
 - Visual Studio Community (https://visualstudio.microsoft.com/) installed on C:\ drive
-- ResourceHacker by angusj (https://www.angusj.com/resourcehacker/) (build.bat acquires this file automatically on first run)
 
 __Linux:__
 

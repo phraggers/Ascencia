@@ -10,6 +10,9 @@
 
 #include <util/types.h>
 
+// alloc default string, exit fatal on malloc error
+cstr PL_String_New(void);
+
 // print string as smallest name (eg size = 1024 + 512 = "1.5 KB")
 void PL_String_ShortFileSize(cstr string, u64 size);
 
@@ -39,5 +42,8 @@ void PL_String_TimeStampNow(cstr buffer, cstr format);
 
 // byte buffer to hex string
 void PL_String_Hex(cstr buffer, u8 *bp, u64 size);
+
+// format string
+void PL_String_Format(cstr buffer, cstr fmt, ...);
 
 #endif /* ASCENCIA_STRING_HELPERS_H */

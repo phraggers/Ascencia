@@ -155,7 +155,7 @@ v2 v2invert(v2 v)
     return result;
 }
 
-v2 v2perp(v2 v)
+v2 v2perpl(v2 v)
 {
     v2 result = 
     {
@@ -165,7 +165,7 @@ v2 v2perp(v2 v)
     return result;
 }
 
-v2 v2tangent(v2 v)
+v2 v2perpr(v2 v)
 {
     v2 result = 
     {
