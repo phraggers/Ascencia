@@ -68,6 +68,12 @@ local bool Init(void)
         return 0;
     }
 
+    if(!PL_KeybindsInit(Win32_GetPrefPath()))
+    {
+        PL_Log(LOG_FATAL, "Init: keybinds init failed");
+        return 0;
+    }
+
     PL_UpdateTimer();
     PL_UpdateClock();
 
@@ -100,6 +106,7 @@ local bool Run(void)
         PL_UpdateClock();
         PL_UpdateTimer();
         //Win32_AudioFrame();
+        PL_ProcessKeybinds();
         //PL_Frame();
         Win32_UpdateWindow();
         Win32_UpdateInput();

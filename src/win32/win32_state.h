@@ -14,6 +14,7 @@
 #include <platform/window.h>
 #include <platform/input.h>
 #include <platform/timing.h>
+#include <platform/keybinds.h>
 #include <win32/win32_api.h>
 #include <win32/win32_wgl.h>
 #include <win32/win32_window.h>
@@ -24,6 +25,7 @@ typedef struct
     PL_Config config;
     PL_Clock clock;
     PL_Timer timer;
+    PL_Keybindings keybinds;
 
     Win32_API api;
     Win32_WGL wgl;
@@ -35,6 +37,7 @@ typedef struct
     char base_path[STRING_LEN];
     char pref_path[STRING_LEN];
     char config_path[STRING_LEN];
+    char keybinds_path[STRING_LEN];
 } Win32_State;
 
 #ifdef ASCENCIA_STATE_INSTANCE
