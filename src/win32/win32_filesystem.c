@@ -25,13 +25,13 @@ bool PL_DoesFileExist(cstr path)
     if((!path) || 
        (!strlen(path)) ||
        (!G_win32_state) || 
-       (!WINAPI.PathFileExistsA))
+       (!WIN_API.PathFileExistsA))
     {
         PL_Log(LOG_DEBUG, "DoesFileExist: invalid parameters");
         return 0;
     }
 
-    b32 result = WINAPI.PathFileExistsA(path);
+    b32 result = WIN_API.PathFileExistsA(path);
 
     if(result)
     {
@@ -50,13 +50,13 @@ bool PL_DeleteFile(cstr path)
     if((!path) || 
        (!strlen(path)) ||
        (!G_win32_state) || 
-       (!WINAPI.DeleteFileA))
+       (!WIN_API.DeleteFileA))
     {
         PL_Log(LOG_DEBUG, "DeleteFile: invalid parameters");
         return 0;
     }
 
-    bool result = (WINAPI.DeleteFileA(path)) ? 1:0;
+    bool result = (WIN_API.DeleteFileA(path)) ? 1:0;
     if(result)
     {
         PL_Log(LOG_INFO, "DeleteFile: %s : success", path);
@@ -74,13 +74,13 @@ bool PL_CreateDirectory(cstr path)
     if((!path) || 
        (!strlen(path)) ||
        (!G_win32_state) || 
-       (!WINAPI.CreateDirectoryA))
+       (!WIN_API.CreateDirectoryA))
     {
         PL_Log(LOG_DEBUG, "CreateDirectory: invalid parameters");
         return 0;
     }
 
-    bool result = (WINAPI.CreateDirectoryA(path, 0)) ? 1:0;
+    bool result = (WIN_API.CreateDirectoryA(path, 0)) ? 1:0;
     if(result)
     {
         PL_Log(LOG_INFO, "CreateDirectory: %s: success", path);
@@ -98,13 +98,13 @@ bool PL_DeleteDirectory(cstr path)
     if((!path) || 
        (!strlen(path)) ||
        (!G_win32_state) || 
-       (!WINAPI.RemoveDirectoryA))
+       (!WIN_API.RemoveDirectoryA))
     {
         PL_Log(LOG_DEBUG, "CreateDirectory: invalid parameters");
         return 0;
     }
 
-    bool result = (WINAPI.RemoveDirectoryA(path)) ? 1:0;
+    bool result = (WIN_API.RemoveDirectoryA(path)) ? 1:0;
     if(result)
     {
         PL_Log(LOG_INFO, "DeleteDirectory: %s: success", path);
@@ -162,13 +162,13 @@ ptr PL_OpenFileHandleR(cstr path)
     if((!path) || 
        (!strlen(path)) ||
        (!G_win32_state) || 
-       (!WINAPI.CreateFileA))
+       (!WIN_API.CreateFileA))
     {
         PL_Log(LOG_DEBUG, "OpenFileHandleR: invalid parameters");
         return 0;
     }
 
-    ptr handle = WINAPI.CreateFileA(path, 0x80000000L, 1, 0, 3, 0, 0);
+    ptr handle = WIN_API.CreateFileA(path, 0x80000000L, 1, 0, 3, 0, 0);
 
     if(handle == 0 || handle == ((ptr)(i64)-1))
     {
@@ -185,13 +185,13 @@ ptr PL_OpenFileHandleW(cstr path)
     if((!path) || 
        (!strlen(path)) ||
        (!G_win32_state) || 
-       (!WINAPI.CreateFileA))
+       (!WIN_API.CreateFileA))
     {
         PL_Log(LOG_DEBUG, "OpenFileHandleW: invalid parameters");
         return 0;
     }
 
-    ptr handle = WINAPI.CreateFileA(path, 0x40000000L, 0, 0, 2, 0, 0);
+    ptr handle = WIN_API.CreateFileA(path, 0x40000000L, 0, 0, 2, 0, 0);
 
     if(handle == 0 || handle == ((ptr)(i64)-1))
     {
@@ -206,27 +206,27 @@ ptr PL_OpenFileHandleW(cstr path)
 void PL_CloseFile(ptr handle)
 {
     if((!handle) ||
-       (!WINAPI.CloseHandle))
+       (!WIN_API.CloseHandle))
     {
         PL_Log(LOG_DEBUG, "CloseFile: invalid parameters");
         return;
     }
 
     PL_Log(LOG_DEBUG, "CloseFile: 0x%I64x", handle);
-    WINAPI.CloseHandle(handle);
+    WIN_API.CloseHandle(handle);
 }
 
 u64 PL_GetFileSize(ptr handle)
 {
     if((!handle) ||
-       (!WINAPI.GetFileSizeEx))
+       (!WIN_API.GetFileSizeEx))
     {
         PL_Log(LOG_DEBUG, "GetFileSize: invalid parameters");
         return 0;
     }
 
     Win32_LARGE_INTEGER size;
-    b32 success = WINAPI.GetFileSizeEx(handle, &size);
+    b32 success = WIN_API.GetFileSizeEx(handle, &size);
     if(!success)
     {
         PL_Log(LOG_ERROR, "GetFileSize: failed to get file size: 0x%I64x", handle);
@@ -283,7 +283,7 @@ PL_FileData *PL_FileRead(cstr path)
     result->size = file_size;
 
     u32 bytes_read = 0;
-    b32 read_result = WINAPI.ReadFile(handle, result->buffer, (u32)file_size, &bytes_read, 0);
+    b32 read_result = WIN_API.ReadFile(handle, result->buffer, (u32)file_size, &bytes_read, 0);
 
     if(read_result == 0 || (u32)file_size != bytes_read)
     {
@@ -321,7 +321,7 @@ bool PL_FileWrite(cstr path, PL_FileData *data)
     }
 
     u32 bytes_written = 0;
-    b32 write_result = WINAPI.WriteFile(handle, data->buffer, (u32)data->size, &bytes_written, 0);
+    b32 write_result = WIN_API.WriteFile(handle, data->buffer, (u32)data->size, &bytes_written, 0);
     
     if(write_result == 0 || (u32)data->size != bytes_written)
     {

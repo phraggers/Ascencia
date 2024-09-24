@@ -18,13 +18,18 @@
 
 typedef struct
 {
-    u64 playCursor; // sound driver last reported play pos within buffer
+    bool is_init;
+    r32 volume;
+    u32 play_cursor; // sound driver last reported play pos within buffer
     u8 buffer[AUDIO_BUFFER_SIZE]; // circular play buffer
 } PL_Audio;
 
-// returns handle to audio struct
+bool PL_AudioInit(void);
 PL_Audio* PL_GetAudio(void);
-// get handle to audio buffer as void*
 ptr PL_GetAudioBuffer(void);
+void PL_AudioFrame(void);
+
+void PL_AudioTestSquare(int hz, r32 vol);
+void PL_AudioTestSine(int hz, r32 vol);
 
 #endif /* ASCENCIA_AUDIO_H */

@@ -31,70 +31,79 @@ local bool Init(void)
 
     PL_LogInit();
 
-    cstr logstr = PL_String_New();
-    PL_String_ShortFileSize(logstr, sizeof(Win32_State));
-    PL_Log(LOG_INFO, "State: %s", logstr);
-    PL_Free(logstr);
+    {
+        cstr logstr = PL_String_New();
+        PL_String_ShortFileSize(logstr, sizeof(Win32_State));
+        PL_Log(LOG_INFO, "State: %s", logstr);
+        PL_Free(logstr);
+    }
     
     if(!Win32_LoadAPI())
     {
-        PL_Log(LOG_FATAL, "Init: Failed to load Win32 API");
+        PL_Log(LOG_ERROR, "Init: Failed to load Win32 API");
         return 0;
     }
 
     Win32_SetBasePath();
 
-    cstr pref_path = PL_String_New();
-    strcpy(pref_path, Win32_GetBasePath());
-    strcat(pref_path, "pref\\");
-    Win32_SetPrefPath(pref_path);
-    PL_Free(pref_path);
-
-    cstr logfilepath = PL_String_New();
-    strcpy(logfilepath, Win32_GetBasePath());
-    strcat(logfilepath, "log\\");
-
-    if(!PL_SetLogFilePath(logfilepath))
     {
-        PL_Log(LOG_ERROR, "Init: failed to create log file");
-        memset(G_win32_state->logging.logfile_path, 0, STRING_LEN);
+        cstr pref_path = PL_String_New();
+        strcpy(pref_path, Win32_GetBasePath());
+        strcat(pref_path, "pref\\");
+        Win32_SetPrefPath(pref_path);
+        PL_Free(pref_path);
     }
+
+    {
+        cstr logfilepath = PL_String_New();
+        strcpy(logfilepath, Win32_GetBasePath());
+        strcat(logfilepath, "log\\");
+
+        if(!PL_SetLogFilePath(logfilepath))
+        {
+            PL_Log(LOG_ERROR, "Init: failed to create log file");
+            memset(G_win32_state->logging.logfile_path, 0, STRING_LEN);
+        }
     
-    PL_Free(logfilepath);
+        PL_Free(logfilepath);
+    }
 
     if(!PL_ConfigInit(Win32_GetPrefPath()))
     {
-        PL_Log(LOG_FATAL, "Init: config init failed");
+        PL_Log(LOG_ERROR, "Init: config init failed");
         return 0;
     }
 
     if(!PL_KeybindsInit(Win32_GetPrefPath()))
     {
-        PL_Log(LOG_FATAL, "Init: keybinds init failed");
+        PL_Log(LOG_ERROR, "Init: keybinds init failed");
         return 0;
     }
 
     PL_UpdateTimer();
     PL_UpdateClock();
 
+    if(!Win32_CreateWindow())
+    {
+        PL_Log(LOG_ERROR, "Init: CreateWindow failed");
+        return 0;
+    }
+
     if(!Win32_LoadXInput())
     {
         PL_Log(LOG_ERROR, "Init: failed to load XInput");
     }
 
-    if(!Win32_LoadXAudio())
+    if(!PL_AudioInit())
     {
-        PL_Log(LOG_ERROR, "Init: failed to load XAudio2");
+        PL_Log(LOG_ERROR, "Init: failed to initialize audio");
     }
 
-    if(!Win32_CreateWindow())
-    {
-        PL_Log(LOG_FATAL, "Init: CreateWindow failed");
-        return 0;
-    }
+    G_win32_state->running = 1;
+
+    //TODO: threads init
 
     PL_Log(LOG_INFO, "Startup: %.04f sec", PL_TimerElapsed(startup_timer));
-    G_win32_state->running = 1;
     return 1;
 }
 
@@ -105,11 +114,12 @@ local bool Run(void)
         Win32_MessageLoop();
         PL_UpdateClock();
         PL_UpdateTimer();
-        //Win32_AudioFrame();
+        PL_AudioFrame();
         PL_ProcessKeybinds();
         //PL_Frame();
         Win32_UpdateWindow();
         Win32_UpdateInput();
+        //PL_UpdateThreads();
     }
 
     return 1;

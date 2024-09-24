@@ -172,17 +172,17 @@ bool PL_KeybindsLoad(void)
             loaded_keybinds = (PL_Keybindings*)bp;
         }
 
-        u32 *current_version = (u32*)(&G_win32_state->config.ascencia_version);
-        u32 *read_version = (u32*)(&loaded_version);
-        if(*current_version != *read_version)
+        if((G_win32_state->config.ascencia_version.rls != loaded_version->rls) ||
+           (G_win32_state->config.ascencia_version.maj != loaded_version->maj) ||
+           (G_win32_state->config.ascencia_version.min != loaded_version->min) ||
+           (G_win32_state->config.ascencia_version.rev != loaded_version->rev))
         {
             PL_Free(loaded_keybinds_data);
-            PL_Log(LOG_ERROR, "KeybindsLoad: keybinds version mis-match");
+            PL_Log(LOG_ERROR, "KeybindsLoad: keybinds version mis-match (expected %d.%d.%d.%d, read %d.%d.%d.%d)", G_win32_state->config.ascencia_version.rls, G_win32_state->config.ascencia_version.maj, G_win32_state->config.ascencia_version.min, G_win32_state->config.ascencia_version.rev, loaded_version->rls, loaded_version->maj, loaded_version->min, loaded_version->rev);
             return 0;
         }
 
         memcpy((ptr)(&G_win32_state->keybinds), (ptr)(loaded_keybinds), sizeof(PL_Keybindings));
-        PL_Free(loaded_keybinds);
 
         cstr sizestr = PL_String_New();
         PL_String_ShortFileSize(sizestr, sizeof(PL_Keybindings));
@@ -222,10 +222,10 @@ bool PL_SetKeybindsPath(cstr path)
         memset((ptr)G_win32_state->keybinds_path, 0, STRING_LEN);
     }
 
-    if(!WINAPI.PathFileExistsA(path))
+    if(!WIN_API.PathFileExistsA(path))
     {
         PL_Log(LOG_DEBUG, "SetKeybindsPath: directory doesn't exist");
-        b32 result = WINAPI.CreateDirectoryA(path, 0);
+        b32 result = WIN_API.CreateDirectoryA(path, 0);
         if(result)
         {
             PL_Log(LOG_INFO, "SetKeybindsPath: created config directory: %s", path);
@@ -244,7 +244,7 @@ bool PL_SetKeybindsPath(cstr path)
     }
     strcat(G_win32_state->keybinds_path, KEYBINDS_FILENAME);
 
-    if(!WINAPI.PathFileExistsA(PL_GetKeybindsPath()))
+    if(!WIN_API.PathFileExistsA(PL_GetKeybindsPath()))
     {
         PL_Log(LOG_DEBUG, "SetKeybindsPath: keybinds file doesn't exist");
         
@@ -264,7 +264,7 @@ bool PL_SetKeybindsPath(cstr path)
     {
         PL_Log(LOG_WARN, "SetKeybindsPath: failed to load keybinds: %s", PL_GetKeybindsPath());
         PL_Log(LOG_DEBUG, "SetKeybindsPath: Deleting erroneous keybinds file");
-        WINAPI.DeleteFileA(PL_GetKeybindsPath());
+        WIN_API.DeleteFileA(PL_GetKeybindsPath());
 
         if(!PL_KeybindsSave())
         {

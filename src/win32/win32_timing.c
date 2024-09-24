@@ -15,7 +15,7 @@ local void InitTimer(void)
 {
     Assert(G_win32_state != 0);
     Win32_LARGE_INTEGER freqResult;
-    WINAPI.QueryPerformanceFrequency(&freqResult);
+    WIN_API.QueryPerformanceFrequency(&freqResult);
     G_win32_state->timer.freq = (u64)freqResult.QuadPart;
 }
 
@@ -28,7 +28,7 @@ void PL_UpdateClock(void)
 
     PL_Clock *clock = &G_win32_state->clock;
     Win32_SYSTEMTIME st = {0};
-    WINAPI.GetLocalTime(&st);
+    WIN_API.GetLocalTime(&st);
     clock->year = st.year;
     clock->month = (u8)st.month;
     clock->day = (u8)st.day;
@@ -79,13 +79,13 @@ PL_Timer *PL_GetTimer(void)
 
 u64 PL_TimerStart(void)
 {
-    if((!G_win32_state) || (!WINAPI.QueryPerformanceCounter))
+    if((!G_win32_state) || (!WIN_API.QueryPerformanceCounter))
     {
         return 0;
     }
 
     Win32_LARGE_INTEGER perf;
-    WINAPI.QueryPerformanceCounter(&perf);
+    WIN_API.QueryPerformanceCounter(&perf);
     return (u64)perf.QuadPart;
 }
 

@@ -10,12 +10,14 @@
 
 #include <util/types.h>
 #include <platform/config.h>
+#include <platform/timing.h>
 
 typedef struct
 {
     char title[STRING_LEN];
     b8 has_focus;
     PL_WindowConfig *config;
+    u64 perf_at_bufferswap;
 } PL_Window;
 
 // returns handle to window state struct

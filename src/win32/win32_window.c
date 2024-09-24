@@ -43,7 +43,7 @@ bool PL_SetWindowTitle(cstr title)
 
     memset(PL_GetWindowTitle(), 0, STRING_LEN);
     strcpy(PL_GetWindowTitle(), title);
-    WINAPI.SetWindowTextA(G_win32_state->window.handle, PL_GetWindowTitle());
+    WIN_API.SetWindowTextA(G_win32_state->window.handle, PL_GetWindowTitle());
     return 1;
 }
 
@@ -69,10 +69,10 @@ void PL_SetWindowPos(i32 x, i32 y, i32 w, i32 h)
     irect new_pos = {0};
 
     Win32_RECT tmprect = {0};
-    WINAPI.GetClientRect(handle, &tmprect);
+    WIN_API.GetClientRect(handle, &tmprect);
     current_pos.w= tmprect.w;
     current_pos.h = tmprect.h;
-    WINAPI.GetWindowRect(handle, &tmprect);
+    WIN_API.GetWindowRect(handle, &tmprect);
     current_pos.x = tmprect.x;
     current_pos.y = tmprect.y;
 
@@ -87,7 +87,7 @@ void PL_SetWindowPos(i32 x, i32 y, i32 w, i32 h)
     if(h == -1) new_pos.h = current_pos.h;
     else new_pos.h = h;
 
-    WINAPI.MoveWindow(handle, new_pos.x, new_pos.y, new_pos.w, new_pos.h, 0);
+    WIN_API.MoveWindow(handle, new_pos.x, new_pos.y, new_pos.w, new_pos.h, 0);
 
     dim->x = new_pos.x;
     dim->y = new_pos.y;
@@ -211,7 +211,7 @@ i64 Win32_WndProc(ptr handle, u32 msg, u64 wparam, i64 lparam)
 {
     if(!G_win32_state->running)
     {
-        return WINAPI.DefWindowProcA(handle, msg, wparam, lparam);
+        return WIN_API.DefWindowProcA(handle, msg, wparam, lparam);
     }
 
     Win32_Window *win32_window = &G_win32_state->window;
@@ -289,8 +289,8 @@ i64 Win32_WndProc(ptr handle, u32 msg, u64 wparam, i64 lparam)
         case 0x200: //WM_MOUSEMOVE
         {
             Win32_POINT cursor = {0};
-            WINAPI.GetCursorPos(&cursor);
-            WINAPI.ScreenToClient(win32_window->handle, &cursor);
+            WIN_API.GetCursorPos(&cursor);
+            WIN_API.ScreenToClient(win32_window->handle, &cursor);
             PL_GetMouse()->px = cursor.x;
             PL_GetMouse()->py = cursor.y;
             PL_GetMouse()->rx = (norm32((r32)cursor.x, 0.0f, (r32)pl_window->config->dim.w) * 2.0f) - 1.0f;
@@ -369,7 +369,7 @@ i64 Win32_WndProc(ptr handle, u32 msg, u64 wparam, i64 lparam)
 
         default:
         {
-            return WINAPI.DefWindowProcA(handle, msg, wparam, lparam);
+            return WIN_API.DefWindowProcA(handle, msg, wparam, lparam);
         } break;
     }
 
@@ -383,24 +383,24 @@ local void FullscreenToggle(void)
     Win32_WNDPL *wndpl = &G_win32_state->window.wndpl;
     bool *fullscreen = &G_win32_state->window.pl_window.config->fullscreen;
 
-    u32 style = WINAPI.GetWindowLongA(handle, (-16));
+    u32 style = WIN_API.GetWindowLongA(handle, (-16));
     if(style & Win32_WS_OVERLAPPED_WINDOW)
     {
         Win32_MONITORINFO mi = {sizeof(mi)};
 
-        if(WINAPI.GetWindowPlacement(handle, wndpl) &&
-           WINAPI.GetMonitorInfoA(WINAPI.MonitorFromWindow(handle, 0x00000001), &mi))
+        if(WIN_API.GetWindowPlacement(handle, wndpl) &&
+           WIN_API.GetMonitorInfoA(WIN_API.MonitorFromWindow(handle, 0x00000001), &mi))
         {
-            WINAPI.SetWindowLongA(handle, (-16), style & ~Win32_WS_OVERLAPPED_WINDOW);
-            WINAPI.SetWindowPos(handle, ((ptr)0), mi.monitor.x, mi.monitor.y, mi.monitor.w - mi.monitor.x, mi.monitor.h - mi.monitor.y, 0x0200 | 0x0020);
+            WIN_API.SetWindowLongA(handle, (-16), style & ~Win32_WS_OVERLAPPED_WINDOW);
+            WIN_API.SetWindowPos(handle, ((ptr)0), mi.monitor.x, mi.monitor.y, mi.monitor.w - mi.monitor.x, mi.monitor.h - mi.monitor.y, 0x0200 | 0x0020);
             *fullscreen = 1;
         }
     }
     else
     {
-        WINAPI.SetWindowLongA(handle, (-16), style | Win32_WS_OVERLAPPED_WINDOW);
-        WINAPI.SetWindowPlacement(handle, wndpl);
-        WINAPI.SetWindowPos(handle, 0, 0, 0, 0, 0, 0x0002 | 0x0001 | 0x0004 | 0x0200 | 0x0020);
+        WIN_API.SetWindowLongA(handle, (-16), style | Win32_WS_OVERLAPPED_WINDOW);
+        WIN_API.SetWindowPlacement(handle, wndpl);
+        WIN_API.SetWindowPos(handle, 0, 0, 0, 0, 0, 0x0002 | 0x0001 | 0x0004 | 0x0200 | 0x0020);
         *fullscreen = 0;
     }
 }
@@ -408,17 +408,29 @@ local void FullscreenToggle(void)
 void Win32_UpdateWindow(void)
 {
     Win32_RECT dim = {0};
-    WINAPI.GetWindowRect(G_win32_state->window.handle, &dim);
+    WIN_API.GetWindowRect(G_win32_state->window.handle, &dim);
     PL_GetWindow()->config->dim.x = dim.x;
     PL_GetWindow()->config->dim.y = dim.y;
-    WINAPI.GetClientRect(G_win32_state->window.handle, &dim);
+    WIN_API.GetClientRect(G_win32_state->window.handle, &dim);
     PL_GetWindow()->config->dim.w = dim.w;
     PL_GetWindow()->config->dim.h = dim.h;
 
-    if(G_win32_state->window.glrc && glViewport && WINAPI.SwapBuffers)
+    if(G_win32_state->window.glrc && glViewport && WIN_API.SwapBuffers)
     {
+        r64 elapsed_sec = PL_TimerElapsed(PL_GetWindow()->perf_at_bufferswap);
+        r64 target_sec = (1.0 / (r64)PL_GetWindow()->config->refresh_hz);
+
+        if(!PL_GetWindow()->config->vsync)
+        {
+            while(elapsed_sec <= target_sec)
+            {
+                elapsed_sec = PL_TimerElapsed(PL_GetWindow()->perf_at_bufferswap);
+            }
+        }
+
         glViewport(0, 0, PL_GetWindow()->config->dim.w, PL_GetWindow()->config->dim.h);
-        WINAPI.SwapBuffers(G_win32_state->window.hdc);
+        WIN_API.SwapBuffers(G_win32_state->window.hdc);
+        PL_GetWindow()->perf_at_bufferswap = PL_TimerStart();
         glClearColor(0,0,0,0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
@@ -427,10 +439,10 @@ void Win32_UpdateWindow(void)
 void Win32_MessageLoop(void)
 {
     Win32_MSG msg;
-    while(WINAPI.PeekMessageA(&msg, G_win32_state->window.handle, 0, 0, 1))
+    while(WIN_API.PeekMessageA(&msg, G_win32_state->window.handle, 0, 0, 1))
     {
-        WINAPI.TranslateMessage(&msg);
-        WINAPI.DispatchMessageA(&msg);
+        WIN_API.TranslateMessage(&msg);
+        WIN_API.DispatchMessageA(&msg);
     }
     
     r64 dt = PL_TimerElapsed(PL_GetTimer()->last_perf);
@@ -445,25 +457,25 @@ bool Win32_CreateWindow(void)
     
     wndclass->style = 0x0002 | 0x0001 | 0x0020;
     wndclass->wndproc = Win32_WndProc;
-    wndclass->instance = WINAPI.GetModuleHandleA(0);
+    wndclass->instance = WIN_API.GetModuleHandleA(0);
     wndclass->class_name = "PLWINDOWCLASS";
     
-    if(!WINAPI.RegisterClassA(wndclass))
+    if(!WIN_API.RegisterClassA(wndclass))
     {
-        PL_Log(LOG_ERROR, "CreateWindow: Error registering WNDCLASS. Win32 ErrorCode(%u)", WINAPI.GetLastError());
+        PL_Log(LOG_ERROR, "CreateWindow: Error registering WNDCLASS. Win32 ErrorCode(%u)", WIN_API.GetLastError());
         return 0;
     }
     
     // temp window to get OpenGL context settings
-    ptr tmp_window = WINAPI.CreateWindowExA(0L, wndclass->class_name, "tmp_window", Win32_WS_OVERLAPPED_WINDOW, 0, 0, 1, 1, 0, 0, wndclass->instance, 0);
+    ptr tmp_window = WIN_API.CreateWindowExA(0L, wndclass->class_name, "tmp_window", Win32_WS_OVERLAPPED_WINDOW, 0, 0, 1, 1, 0, 0, wndclass->instance, 0);
     
     if(!tmp_window)
     {
-        PL_Log(LOG_ERROR, "CreateWindow: Failed to create Window. Win32 ErrorCode(%u)", WINAPI.GetLastError());
+        PL_Log(LOG_ERROR, "CreateWindow: Failed to create Window. Win32 ErrorCode(%u)", WIN_API.GetLastError());
         return 0;
     }
     
-    ptr tmp_dc = WINAPI.GetDC(tmp_window);
+    ptr tmp_dc = WIN_API.GetDC(tmp_window);
     ptr tmp_glrc = 0;
     int tmp_pixel_format = 0;
     
@@ -476,48 +488,48 @@ bool Win32_CreateWindow(void)
         pfd.color_bits = 32;
         pfd.alpha_bits = 8;
         pfd.depth_bits = 24;
-        tmp_pixel_format = WINAPI.ChoosePixelFormat(tmp_dc, &pfd);
+        tmp_pixel_format = WIN_API.ChoosePixelFormat(tmp_dc, &pfd);
         
         if(tmp_pixel_format)
         {
-            if(WINAPI.SetPixelFormat(tmp_dc, tmp_pixel_format, &pfd))
+            if(WIN_API.SetPixelFormat(tmp_dc, tmp_pixel_format, &pfd))
             {
-                tmp_glrc = WINAPI.wglCreateContext(tmp_dc);
+                tmp_glrc = WIN_API.wglCreateContext(tmp_dc);
             }
         }
         
         else
         {
-            PL_Log(LOG_ERROR, "CreateWindow: Failed to get pixel format. Win32 ErrorCode(%u)", WINAPI.GetLastError());
+            PL_Log(LOG_ERROR, "CreateWindow: Failed to get pixel format. Win32 ErrorCode(%u)", WIN_API.GetLastError());
             return 0;
         }
         
         if(!tmp_glrc)
         {
-            PL_Log(LOG_ERROR, "CreateWindow: Failed to get WGL RenderContext. Win32 ErrorCode(%u)", WINAPI.GetLastError());
+            PL_Log(LOG_ERROR, "CreateWindow: Failed to get WGL RenderContext. Win32 ErrorCode(%u)", WIN_API.GetLastError());
             return 0;
         }
     }
     
     window->style = 0x10000000L | Win32_WS_OVERLAPPED_WINDOW;
-    window->handle = WINAPI.CreateWindowExA(0, wndclass->class_name, "Window", window->style,
+    window->handle = WIN_API.CreateWindowExA(0, wndclass->class_name, "Window", window->style,
                                            ((int)0x80000000), ((int)0x80000000),
                                            PL_GetWindow()->config->dim.w, PL_GetWindow()->config->dim.h, 0, 0,
                                            wndclass->instance, 0);
     
     if(!window->handle)
     {
-        PL_Log(LOG_ERROR, "CreateWindow: Failed to create Window. Win32 ErrorCode(%u)", WINAPI.GetLastError());
+        PL_Log(LOG_ERROR, "CreateWindow: Failed to create Window. Win32 ErrorCode(%u)", WIN_API.GetLastError());
         return 0;
     }
     
     window->wndpl.length = sizeof(Win32_WNDPL);
-    WINAPI.GetWindowPlacement(window->handle, &window->wndpl);
-    window->hdc = WINAPI.GetDC(window->handle);
+    WIN_API.GetWindowPlacement(window->handle, &window->wndpl);
+    window->hdc = WIN_API.GetDC(window->handle);
     
-    if(!WINAPI.wglMakeCurrent(tmp_dc, tmp_glrc))
+    if(!WIN_API.wglMakeCurrent(tmp_dc, tmp_glrc))
     {
-        PL_Log(LOG_ERROR, "CreateWindow: Failed to set OpenGL RenderContext. Win32 ErrorCode(%u)", WINAPI.GetLastError());
+        PL_Log(LOG_ERROR, "CreateWindow: Failed to set OpenGL RenderContext. Win32 ErrorCode(%u)", WIN_API.GetLastError());
         return 0;
     }
     
@@ -563,8 +575,8 @@ bool Win32_CreateWindow(void)
     }
     
     Win32_PFD pfd = {0};
-    WINAPI.DescribePixelFormat(window->hdc, pixel_format, sizeof(Win32_PFD), &pfd);
-    if(!WINAPI.SetPixelFormat(window->hdc, pixel_format, &pfd))
+    WIN_API.DescribePixelFormat(window->hdc, pixel_format, sizeof(Win32_PFD), &pfd);
+    if(!WIN_API.SetPixelFormat(window->hdc, pixel_format, &pfd))
     {
         PL_Log(LOG_ERROR, "CreateWindow: Failed to set Windows OpenGL PixelFormat");
         return 0;
@@ -573,19 +585,19 @@ bool Win32_CreateWindow(void)
     window->glrc = WGLAPI.wglCreateContextAttribsARB(window->hdc, 0, context_attribs);
     if(!window->glrc)
     {
-        PL_Log(LOG_ERROR, "CreateWindow: Failed to create Windows OpenGL RenderContext. Win32 ErrorCode(%u)", WINAPI.GetLastError());
+        PL_Log(LOG_ERROR, "CreateWindow: Failed to create Windows OpenGL RenderContext. Win32 ErrorCode(%u)", WIN_API.GetLastError());
         return 0;
     }
     
     // unset and clear up tmp
-    WINAPI.wglMakeCurrent(tmp_dc, 0);
-    WINAPI.wglDeleteContext(tmp_glrc);
-    WINAPI.ReleaseDC(tmp_window, tmp_dc);
-    WINAPI.DestroyWindow(tmp_window);
+    WIN_API.wglMakeCurrent(tmp_dc, 0);
+    WIN_API.wglDeleteContext(tmp_glrc);
+    WIN_API.ReleaseDC(tmp_window, tmp_dc);
+    WIN_API.DestroyWindow(tmp_window);
     
-    if(!WINAPI.wglMakeCurrent(window->hdc, window->glrc))
+    if(!WIN_API.wglMakeCurrent(window->hdc, window->glrc))
     {
-        PL_Log(LOG_ERROR, "CreateWindow: Failed to set Windows OpenGL RenderContext. Win32 ErrorCode(%u)", WINAPI.GetLastError());
+        PL_Log(LOG_ERROR, "CreateWindow: Failed to set Windows OpenGL RenderContext. Win32 ErrorCode(%u)", WIN_API.GetLastError());
         return 0;
     }
     
@@ -628,14 +640,14 @@ bool Win32_CreateWindow(void)
     PL_SetWindowTitle(window_title);
     PL_Free(window_title);
 
-    ptr icon256 = WINAPI.LoadImageA(WINAPI.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON256)))), 1, 0, 0, 0);
-    ptr icon64 = WINAPI.LoadImageA(WINAPI.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON64)))), 1, 0, 0, 0);
-    ptr icon48 = WINAPI.LoadImageA(WINAPI.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON48)))), 1, 0, 0, 0);
-    ptr icon40 = WINAPI.LoadImageA(WINAPI.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON40)))), 1, 0, 0, 0);
-    ptr icon32 = WINAPI.LoadImageA(WINAPI.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON32)))), 1, 0, 0, 0);
-    ptr icon24 = WINAPI.LoadImageA(WINAPI.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON24)))), 1, 0, 0, 0);
-    ptr icon20 = WINAPI.LoadImageA(WINAPI.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON20)))), 1, 0, 0, 0);
-    ptr icon16 = WINAPI.LoadImageA(WINAPI.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON16)))), 1, 0, 0, 0);
+    ptr icon256 = WIN_API.LoadImageA(WIN_API.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON256)))), 1, 0, 0, 0);
+    ptr icon64 = WIN_API.LoadImageA(WIN_API.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON64)))), 1, 0, 0, 0);
+    ptr icon48 = WIN_API.LoadImageA(WIN_API.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON48)))), 1, 0, 0, 0);
+    ptr icon40 = WIN_API.LoadImageA(WIN_API.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON40)))), 1, 0, 0, 0);
+    ptr icon32 = WIN_API.LoadImageA(WIN_API.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON32)))), 1, 0, 0, 0);
+    ptr icon24 = WIN_API.LoadImageA(WIN_API.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON24)))), 1, 0, 0, 0);
+    ptr icon20 = WIN_API.LoadImageA(WIN_API.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON20)))), 1, 0, 0, 0);
+    ptr icon16 = WIN_API.LoadImageA(WIN_API.GetModuleHandleA(0), ((cstr)((u64)((u16)(IDI_ICON16)))), 1, 0, 0, 0);
 
     return 1;
 }

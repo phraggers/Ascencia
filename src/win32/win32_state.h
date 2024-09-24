@@ -15,6 +15,8 @@
 #include <platform/input.h>
 #include <platform/timing.h>
 #include <platform/keybinds.h>
+#include <platform/threads.h>
+#include <platform/audio.h>
 #include <win32/win32_api.h>
 #include <win32/win32_wgl.h>
 #include <win32/win32_window.h>
@@ -26,12 +28,13 @@ typedef struct
     PL_Clock clock;
     PL_Timer timer;
     PL_Keybindings keybinds;
+    PL_Threads threads;
+    PL_Audio audio;
 
     Win32_API api;
     Win32_WGL wgl;
     Win32_Window window;
     Win32_XInput xinput;
-    Win32_XAudio xaudio;
 
     bool running;
     char base_path[STRING_LEN];

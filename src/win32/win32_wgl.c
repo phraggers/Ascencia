@@ -11,7 +11,7 @@
 
 #define LOAD_WGL_FN(name) \
 {\
-    WGLAPI.name = (pfn_##name)WINAPI.wglGetProcAddress( #name );\
+    WGLAPI.name = (pfn_##name)WIN_API.wglGetProcAddress( #name );\
     if(!WGLAPI.name)\
     {\
         PL_Log(LOG_ERROR, "LoadWGL: failed to load function: %s", #name );\
@@ -22,10 +22,10 @@
 
 #define LOAD_GL_FN(name)\
 {\
-    name = (pfn_##name)WINAPI.wglGetProcAddress( #name );\
+    name = (pfn_##name)WIN_API.wglGetProcAddress( #name );\
     if(!name)\
     {\
-        name = (pfn_##name)WINAPI.GetProcAddress(opengl32_dll, #name );\
+        name = (pfn_##name)WIN_API.GetProcAddress(opengl32_dll, #name );\
         if(!name)\
         {\
             PL_Log(LOG_ERROR, "LoadGL: failed to load function: %s", #name );\
@@ -60,7 +60,7 @@ bool Win32_LoadGL(void)
     }
 
     r32 glversion = G_win32_state->config.opengl_version;
-    ptr opengl32_dll = WINAPI.LoadLibraryA("opengl32.dll");
+    ptr opengl32_dll = WIN_API.LoadLibraryA("opengl32.dll");
     if(!opengl32_dll)
     {
         PL_Log(LOG_ERROR, "LoadGL: failed to load lib opengl32.dll");

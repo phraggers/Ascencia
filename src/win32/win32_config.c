@@ -203,10 +203,10 @@ bool PL_SetConfigPath(cstr path)
         memset((ptr)G_win32_state->config_path, 0, STRING_LEN);
     }
 
-    if(!WINAPI.PathFileExistsA(path))
+    if(!WIN_API.PathFileExistsA(path))
     {
         PL_Log(LOG_DEBUG, "SetConfigPath: directory doesn't exist");
-        b32 result = WINAPI.CreateDirectoryA(path, 0);
+        b32 result = WIN_API.CreateDirectoryA(path, 0);
         if(result)
         {
             PL_Log(LOG_INFO, "SetConfigPath: created config directory: %s", path);
@@ -225,7 +225,7 @@ bool PL_SetConfigPath(cstr path)
     }
     strcat(G_win32_state->config_path, CONFIG_FILENAME);
 
-    if(!WINAPI.PathFileExistsA(PL_GetConfigPath()))
+    if(!WIN_API.PathFileExistsA(PL_GetConfigPath()))
     {
         PL_Log(LOG_DEBUG, "SetConfigPath: config file doesn't exist");
         
@@ -245,7 +245,7 @@ bool PL_SetConfigPath(cstr path)
     {
         PL_Log(LOG_WARN, "SetConfigPath: failed to load config: %s", PL_GetConfigPath());
         PL_Log(LOG_DEBUG, "SetConfigPath: Deleting erroneous config");
-        WINAPI.DeleteFileA(PL_GetConfigPath());
+        WIN_API.DeleteFileA(PL_GetConfigPath());
 
         if(!PL_ConfigSave())
         {

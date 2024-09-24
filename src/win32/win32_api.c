@@ -35,9 +35,10 @@ extern b32 RemoveDirectoryA(cstr path);
 extern b32 QueryPerformanceFrequency(Win32_LARGE_INTEGER *frequency);
 extern b32 QueryPerformanceCounter(Win32_LARGE_INTEGER *frequency);
 extern void GetLocalTime(Win32_SYSTEMTIME *st);
+extern ptr CreateThread(ptr sec, u64 stack_size, WIN32_THREAD_START_ROUTINE start_address, ptr param, u32 flags, u32 *thread_id);
 
 #define LOAD_KERNEL_FN(name) {api->##name = &##name; numfn++;}
-#define LOAD_WIN_FN(lib, name) {api->##name = (pfn_##name)WINAPI.GetProcAddress(lib, #name); if(!api->##name) {PL_Log(LOG_FATAL, "failed to load DLL FN: %s", #name); return 0;} else numfn++;}
+#define LOAD_WIN_FN(lib, name) {api->##name = (pfn_##name)WIN_API.GetProcAddress(lib, #name); if(!api->##name) {PL_Log(LOG_FATAL, "failed to load DLL FN: %s", #name); return 0;} else numfn++;}
 
 ptr PL_Alloc(u64 size)
 {
@@ -108,7 +109,7 @@ b32 PL_Free(ptr mem)
 bool Win32_LoadAPI(void)
 {
     Assert(G_win32_state);
-    Win32_API *api = &WINAPI;
+    Win32_API *api = &WIN_API;
 
     int numfn = 0;
 
@@ -130,6 +131,7 @@ bool Win32_LoadAPI(void)
     LOAD_KERNEL_FN(QueryPerformanceCounter);
     LOAD_KERNEL_FN(QueryPerformanceFrequency);
     LOAD_KERNEL_FN(GetLocalTime);
+    LOAD_KERNEL_FN(CreateThread);
 
 
     ptr lib_shlwapi = api->LoadLibraryA("shlwapi.dll");
@@ -232,7 +234,7 @@ bool Win32_LoadXInput(void)
         return 0;
     }
     
-    ptr xinput_dll = WINAPI.LoadLibraryA("xinput1_4.dll");
+    ptr xinput_dll = WIN_API.LoadLibraryA("xinput1_4.dll");
 
     if(xinput_dll)
     {
@@ -241,7 +243,7 @@ bool Win32_LoadXInput(void)
 
     else
     {
-        xinput_dll = WINAPI.LoadLibraryA("xinput9_1_0.dll");
+        xinput_dll = WIN_API.LoadLibraryA("xinput9_1_0.dll");
 
         if(xinput_dll)
         {
@@ -250,7 +252,7 @@ bool Win32_LoadXInput(void)
 
         else
         {
-            xinput_dll = WINAPI.LoadLibraryA("xinput1_3.dll");
+            xinput_dll = WIN_API.LoadLibraryA("xinput1_3.dll");
 
             if(xinput_dll)
             {
@@ -267,8 +269,8 @@ bool Win32_LoadXInput(void)
         }
     }
 
-    api->XInputGetState = (pfn_XInputGetState)WINAPI.GetProcAddress(xinput_dll, "XInputGetState");
-    api->XInputSetState = (pfn_XInputSetState)WINAPI.GetProcAddress(xinput_dll, "XInputSetState");
+    api->XInputGetState = (pfn_XInputGetState)WIN_API.GetProcAddress(xinput_dll, "XInputGetState");
+    api->XInputSetState = (pfn_XInputSetState)WIN_API.GetProcAddress(xinput_dll, "XInputSetState");
 
     bool result = 1;
 
@@ -299,142 +301,6 @@ bool Win32_LoadXInput(void)
         break;
         case XINPUT_1_3:
         PL_Log(LOG_INFO, "LoadXInput: XINPUT 1.3: Loaded %d functions", numfn);
-        break;
-    }
-
-    return result;
-}
-
-int NotLoaded_XAudio2Create(IXAudio2 **ppXAudio2, u32 Flags, u32 XAudio2Processor)
-{
-    return ((int)0x88960003); //XAUDIO2_E_XAPO_CREATION_FAILED
-}
-
-int NotLoaded_XAudio2CreateWithVersionInfo(IXAudio2** ppXAudio2, u32 Flags, u32 XAudio2Processor, u32 ntddiVersion)
-{
-    return ((int)0x88960003); //XAUDIO2_E_XAPO_CREATION_FAILED
-}
-
-int Intercept_XAudio2Create(IXAudio2 **ppXAudio2, u32 Flags, u32 XAudio2Processor)
-{
-    const u32 ntddi[] =
-    {
-        0x06010000, 0x06020000, 0x06030000,
-        0x0A000000, 0x0A000000, 0x0A000001,
-        0x0A000002, 0x0A000003, 0x0A000004,
-        0x0A000005, 0x0A000006, 0x0A000007,
-        0x0A000008, 0x0A000009, 0x0A00000A,
-        0x0A00000B, 0x0A00000C
-    };
-    
-    for(int i=ArrayCount(ntddi)-1; i>=0; i--)
-    {
-        if(XAUDIO_API.XAudio2CreateWithVersionInfo(ppXAudio2, Flags, XAudio2Processor, ntddi[i]) == 0)
-        {
-            return 0;
-        }
-    }
-
-    return XAUDIO_API.XAudio2CreateInternal(ppXAudio2, Flags, XAudio2Processor);
-}
-
-bool Win32_LoadXAudio(void)
-{
-    Assert(G_win32_state);
-    Win32_XAudio *api = &XAUDIO_API;
-    int numfn = 0;
-
-    if(XAUDIO_API.version != XAUDIO_NOT_LOADED)
-    {
-        PL_Log(LOG_ERROR, "LoadXAudio: already loaded");
-        return 0;
-    }
-    api->version = XAUDIO_NOT_LOADED;
-    ptr xaudio_dll = WINAPI.LoadLibraryA("xaudio2_9.dll");
-    
-    if(xaudio_dll)
-    {
-        api->version = XAUDIO_2_9;
-    }
-    
-    else
-    {
-        xaudio_dll = LoadLibraryA("xaudio2_9d.dll");
-        
-        if(xaudio_dll)
-        {
-            api->version = XAUDIO_2_9D;
-        }
-        
-        else
-        {
-            xaudio_dll = LoadLibraryA("xaudio2_8.dll");
-            
-            if(xaudio_dll)
-            {
-                api->version = XAUDIO_2_8;
-            }
-            
-            else
-            {
-                xaudio_dll = LoadLibraryA("xaudio2_7.dll");
-                
-                if(xaudio_dll)
-                {
-                    api->version = XAUDIO_2_7;
-                }
-                
-                else
-                {
-                    //NOTE: if xaudio doesnt load, audio just wont play
-                    api->version = XAUDIO_NOT_LOADED;
-                    PL_Log(LOG_ERROR, "LoadXAudio: failed to load xaudio");
-                    XAUDIO_API.XAudio2Create = &NotLoaded_XAudio2Create;
-                    XAUDIO_API.XAudio2CreateInternal = &NotLoaded_XAudio2Create;
-                    XAUDIO_API.XAudio2CreateWithVersionInfo = &NotLoaded_XAudio2CreateWithVersionInfo;
-                    return 0;
-                }
-            }
-        }
-    }
-
-    XAUDIO_API.XAudio2Create = &Intercept_XAudio2Create;
-    XAUDIO_API.XAudio2CreateInternal = (pfn_XAudio2Create)WINAPI.GetProcAddress(xaudio_dll, "XAudio2Create");
-    XAUDIO_API.XAudio2CreateWithVersionInfo = (pfn_XAudio2CreateWithVersionInfo)WINAPI.GetProcAddress(xaudio_dll, "XAudio2CreateWithVersionInfo");
-
-    bool result = 1;
-
-    if(!XAUDIO_API.XAudio2CreateInternal)
-    {
-        PL_Log(LOG_ERROR, "LoadXAudio: failed to load function XAudio2Create");
-        XAUDIO_API.XAudio2Create = &NotLoaded_XAudio2Create;
-        XAUDIO_API.XAudio2CreateInternal = &NotLoaded_XAudio2Create;
-        result = 0;
-    }
-    else numfn++;
-
-    if(!XAUDIO_API.XAudio2CreateWithVersionInfo)
-    {
-        PL_Log(LOG_ERROR, "LoadXAudio: failed to load function XAudio2CreateWithVersionInfo");
-        XAUDIO_API.XAudio2CreateWithVersionInfo = &NotLoaded_XAudio2CreateWithVersionInfo;
-        result = 0;
-    }
-    else numfn++;
-
-    switch(api->version)
-    {
-        case XAUDIO_NOT_LOADED: return 0;
-        case XAUDIO_2_9:
-        PL_Log(LOG_INFO, "LoadXAudio: XAUDIO 2.9: Loaded %d functions", numfn);
-        break;
-        case XAUDIO_2_9D:
-        PL_Log(LOG_INFO, "LoadXAudio: XAUDIO 2.9d: Loaded %d functions", numfn);
-        break;
-        case XAUDIO_2_8:
-        PL_Log(LOG_INFO, "LoadXAudio: XAUDIO 2.8: Loaded %d functions", numfn);
-        break;
-        case XAUDIO_2_7:
-        PL_Log(LOG_INFO, "LoadXAudio: XAUDIO 2.7: Loaded %d functions", numfn);
         break;
     }
 

@@ -209,10 +209,10 @@ bool PL_SetLogFilePath(cstr path)
         return 0;
     }
 
-    if(!WINAPI.PathFileExistsA(path))
+    if(!WIN_API.PathFileExistsA(path))
     {
         PL_Log(LOG_DEBUG, "SetLogFilePath: directory doesn't exist");
-        b32 result = WINAPI.CreateDirectoryA(path, 0);
+        b32 result = WIN_API.CreateDirectoryA(path, 0);
         if(result)
         {
             PL_Log(LOG_INFO, "SetLogFilePath: created log directory: %s", path);
@@ -280,7 +280,7 @@ void PL_LogCleanup(void)
         return;
     }
 
-    WINAPI.DeleteFileA(PL_GetLogFilePath());
+    WIN_API.DeleteFileA(PL_GetLogFilePath());
 }
 
 void PL_MsgBox(const cstr title, cstr format, ...)
@@ -295,5 +295,5 @@ void PL_MsgBox(const cstr title, cstr format, ...)
     memset(G_msgboxstring, 0, STRING_LEN);
     vsnprintf(G_msgboxstring, STRING_LEN, format, args);
     va_end(args);
-    WINAPI.MessageBoxA(0, G_msgboxstring, title, 0x00000010L);
+    WIN_API.MessageBoxA(0, G_msgboxstring, title, 0x00000010L);
 }
