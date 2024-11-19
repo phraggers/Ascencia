@@ -33,7 +33,7 @@ if not exist %~dp0build\release\Ascencia.exe exit /b 1
 
 robocopy %~dp0data %~dp0build\debug /S /J /NDL /NJH /NJS /nc /ns /np
 robocopy %~dp0data %~dp0build\release /S /J /NDL /NJH /NJS /nc /ns /np
-%~dp0rh\rh.exe -open %~dp0build\debug\Ascencia-d.exe -resource %~dp0rh\Ascencia.ico -mask ICONGROUP,MAINICON, -action addskip -save %~dp0build\debug\Ascencia-d.exe
-%~dp0rh\rh.exe -open %~dp0build\release\Ascencia.exe -resource %~dp0rh\Ascencia.ico -mask ICONGROUP,MAINICON, -action addskip -save %~dp0build\release\Ascencia.exe
+if exist %~dp0rh\rh.exe %~dp0rh\rh.exe -open %~dp0build\debug\Ascencia-d.exe -resource %~dp0rh\Ascencia.ico -mask ICONGROUP,MAINICON, -action addskip -save %~dp0build\debug\Ascencia-d.exe
+if exist %~dp0rh\rh.exe %~dp0rh\rh.exe -open %~dp0build\release\Ascencia.exe -resource %~dp0rh\Ascencia.ico -mask ICONGROUP,MAINICON, -action addskip -save %~dp0build\release\Ascencia.exe
 
 popd
