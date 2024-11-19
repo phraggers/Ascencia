@@ -979,7 +979,7 @@ b32 PL_CreateWindow(const char *title, int w, int h)
 
     int pixel_format = 0;
     u32 pixel_format_count = 0;
-    static const int pixel_attribs[] =
+    persist const int pixel_attribs[] =
     {
         WGL_SUPPORT_OPENGL_ARB,	GL_TRUE,
 		WGL_ACCELERATION_ARB,	WGL_FULL_ACCELERATION_ARB,
@@ -1083,32 +1083,27 @@ void PL_ClearSoundBuffer(void)
 {
     if(!g_state->audio.is_init) return;
 
-    VOID *region1;
-    VOID *region2;
-    DWORD region1_size;
-    DWORD region2_size;
+    VOID *region[2];
+    DWORD region_size[2];
 
     HRESULT result = IDirectSoundBuffer_Lock(g_state->audio.dsbuffer, 0, g_state->audio.dsbuffer_size,
-                                             &region1, &region1_size, &region2, &region2_size, 0);
+                                             &region[0], &region_size[0], &region[1], &region_size[1], 0);
     if(!SUCCEEDED(result)) return;
 
-    u8 *sample = (u8*)region1;
-    for(DWORD byte_index = 0;
-        byte_index < region1_size;
-        byte_index++)
+    for(int region_index = 0;
+        region_index < 2;
+        region_index++)
     {
-        *sample++ = 0;
+        u8 *sample = (u8*)region[region_index];
+        for(DWORD byte_index = 0;
+            byte_index < region_size[region_index];
+            byte_index++)
+        {
+            *sample++ = 0;
+        }
     }
 
-    sample = (u8*)region2;
-    for(DWORD byte_index = 0;
-        byte_index < region2_size;
-        byte_index++)
-    {
-        *sample++ = 0;
-    }
-
-    IDirectSoundBuffer_Unlock(g_state->audio.dsbuffer, region1, region1_size, region2, region2_size);
+    IDirectSoundBuffer_Unlock(g_state->audio.dsbuffer, region[0], region_size[0], region[1], region_size[1]);
 }
 
 void PL_FillSoundBuffer(DWORD byte_to_lock, DWORD bytes_to_write,

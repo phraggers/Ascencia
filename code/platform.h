@@ -26,7 +26,8 @@ typedef int32_t i32;
 typedef uint32_t u32;
 typedef int64_t i64;
 typedef uint64_t u64;
-typedef _Bool b32;
+typedef _Bool b8;
+typedef i32 b32;
 typedef float r32;
 typedef double r64;
 
