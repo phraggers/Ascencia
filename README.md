@@ -1,4 +1,4 @@
-![AscenciaLogo](https://raw.githubusercontent.com/phraggers/Ascencia/master/assets/title325.png)
+![AscenciaLogo](https://raw.githubusercontent.com/phraggers/Ascencia/master/title325.png)
 - Work-in-progress RPG
 - made in C99
 - easy to build, easy to run
