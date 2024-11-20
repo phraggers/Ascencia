@@ -6,34 +6,13 @@
    Date:    17-11-2024
    ============================================================== */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <float.h>
+#include <util/types.h>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <mmsystem.h>
 #include <dsound.h>
 #include <xinput.h>
-
-typedef int8_t i8;
-typedef uint8_t u8;
-typedef int16_t i16;
-typedef uint16_t u16;
-typedef int32_t i32;
-typedef uint32_t u32;
-typedef int64_t i64;
-typedef uint64_t u64;
-typedef _Bool b8;
-typedef i32 b32;
-typedef float r32;
-typedef double r64;
-
-#define local static
-#define global static
-#define persist static
 
 #define PL_OPENGL_MAJ 4
 #define PL_OPENGL_MIN 5
@@ -104,7 +83,12 @@ typedef struct
     sThread logic_thread;
 
 } sState;
-global sState *g_state;
+
+#ifdef ASC_INSTANCE
+sState *g_state;
+#else
+extern sState *g_state;
+#endif
 
 void *PL_Alloc(u64 size);
 void *PL_Alloc0(u64 size);
@@ -132,8 +116,9 @@ b32 PL_QuitAudioThread(void);
 b32 PL_StartLogicThread(void);
 b32 PL_QuitLogicThread(void);
 
-#include "gl/gl.h"
-#include "gl/wgl.h"
+#include <pl/gl/gl.h>
+#include <pl/gl/wgl.h>
+#include <util/lz77.h>
 
 #define PLATFORM_H
 #endif

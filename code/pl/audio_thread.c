@@ -5,7 +5,7 @@
    Date:    18-11-2024
    ============================================================== */
 
-#include "platform.h"
+#include <pl/platform.h>
 
 DWORD WINAPI AudioThread(LPVOID param)
 {

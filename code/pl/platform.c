@@ -5,7 +5,7 @@
    Date:    17-11-2024
    ============================================================== */
 
-#include "platform.h"
+#include <pl/platform.h>
 
 local LRESULT WndProc(HWND handle, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -1027,9 +1027,9 @@ b32 PL_CreateWindow(const char *title, int w, int h)
 }
 
 typedef HRESULT WINAPI tfn_DirectSoundCreate(LPCGUID pcGuidDevice, LPDIRECTSOUND *ppDS, LPUNKNOWN pUnkOuter);
-global tfn_DirectSoundCreate *pfn_DirectSoundCreate;
 b32 PL_InitDSound(void)
 {
+    tfn_DirectSoundCreate *pfn_DirectSoundCreate;
     g_state->audio.sample_rate = PL_AUDIO_SAMPLERATE;
     g_state->audio.bytes_per_sample = ((PL_AUDIO_BITSPERSAMPLE/8)*PL_AUDIO_CHANNELS);
     g_state->audio.dsbuffer_size = g_state->audio.bytes_per_sample * g_state->audio.sample_rate;

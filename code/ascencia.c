@@ -5,11 +5,15 @@
    Date:    17-11-2024
    ============================================================== */
 
-#include "platform.c"
-#include "event_handler.c"
-#include "render_thread.c"
-#include "audio_thread.c"
-#include "logic_thread.c"
+#define ASC_INSTANCE
+#include <pl/platform.h>
+
+#include <util/lz77.c>
+#include <pl/platform.c>
+#include <pl/event_handler.c>
+#include <pl/render_thread.c>
+#include <pl/audio_thread.c>
+#include <pl/logic_thread.c>
 
 local b32 ASC_Entry(void);
 local b32 ASC_Init(void);

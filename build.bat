@@ -21,12 +21,12 @@ mkdir build\debug
 mkdir build\release
 
 pushd build\debug
-cl -Fe"Ascencia-d.exe" %DOPTS% %DDEFS% %INPUT% -link -subsystem:windows %DLINK%
+cl -Fe"Ascencia-d.exe" -I"%~dp0code" %DOPTS% %DDEFS% %INPUT% -link -subsystem:windows %DLINK%
 popd
 if not exist %~dp0build\debug\Ascencia-d.exe exit /b 1
 
 pushd build\release
-cl -Fe"Ascencia.exe" %ROPTS% %RDEFS% %INPUT% -link -subsystem:windows %RLINK%
+cl -Fe"Ascencia.exe" -I"%~dp0code" %ROPTS% %RDEFS% %INPUT% -link -subsystem:windows %RLINK%
 del /q *.obj
 popd
 if not exist %~dp0build\release\Ascencia.exe exit /b 1

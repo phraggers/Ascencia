@@ -5,7 +5,7 @@
    Date:    18-11-2024
    ============================================================== */
 
-#include "platform.h"
+#include <pl/platform.h>
 
 local inline void GLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
                                   GLsizei length, const GLchar *message, const void *user)
@@ -151,8 +151,35 @@ DWORD WINAPI RenderThread(LPVOID param)
 
         //TODO: handle game logic
 
-        //epilepsy simulator
-        //glClearColor(((r32)rand()/RAND_MAX), ((r32)rand()/RAND_MAX), ((r32)rand()/RAND_MAX), 0.0f);
+#if 1 //TEST: epilepsy simulator
+        persist r32 target[3] = {0.0f, 0.0f, 0.0f};
+        persist r32 current[3] = {0.0f, 0.0f, 0.0f};
+        persist r32 speed = 0.001f;
+
+        for(int i=0;i<3;i++)
+        {
+            if(current[i] > target[i])
+            {
+                current[i] -= speed;
+                if(current[i] < target[i]) current[i] = target[i];
+            }
+            else if(current[i] < target[i])
+            {
+                current[i] += speed;
+                if(current[i] > target[i]) current[i] = target[i];
+            }
+        }
+
+        if(current[0]==target[0] && current[1]==target[1] && current[2]==target[2])
+        {
+            target[0] = (r32)rand()/(r32)RAND_MAX;
+            target[1] = (r32)rand()/(r32)RAND_MAX;
+            target[2] = (r32)rand()/(r32)RAND_MAX;
+        }
+
+        glClearColor(current[0], current[1], current[2], 0.0f);
+#endif
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         //TODO: rendering
