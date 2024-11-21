@@ -12,7 +12,7 @@ LZ77_result LZ77_Compress(void *input, u32 input_size)
     u16 ptr_pos, out_ptr;
     u32 out_size, out_la_ref, lb, la;
     u8 *in_bp = (u8*)input;
-    u8 *out_bp = (u8*)malloc(input_size);
+    u8 *out_bp = (u8*)malloc(input_size*2);
 
     *((u32*)out_bp) = input_size;
     u32 compressed_ptr = out_size = 4;
@@ -45,6 +45,7 @@ LZ77_result LZ77_Compress(void *input, u32 input_size)
                 if(ptr_len == 0x0f) break;
             }
         }
+
 
         byte_index += ptr_len;
 

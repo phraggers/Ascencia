@@ -26,6 +26,7 @@ typedef double r64;
 
 #define local static
 #define persist static
+#define global static
 
 #define TYPES_H
 #endif

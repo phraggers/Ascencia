@@ -5,7 +5,7 @@
    Date:    18-11-2024
    ============================================================== */
 
-#include <pl/platform.h>
+#include <win32/platform.h>
 
 DWORD WINAPI LogicThread(LPVOID param)
 {
@@ -13,7 +13,7 @@ DWORD WINAPI LogicThread(LPVOID param)
     WaitForSingleObject(g_state->logic_thread.mutex, INFINITE);
     ReleaseMutex(g_state->logic_thread.mutex);
 
-#if 1 //TEST: lz77 test
+#if 0 //TEST: lz77 test
 
     char *base_path = PL_Alloc0(MAX_PATH);
     char *test_path = PL_Alloc0(MAX_PATH);

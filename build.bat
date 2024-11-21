@@ -4,7 +4,7 @@ pushd %~dp0
 call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x64
 if not exist build mkdir build
 
-set INPUT=%~dp0code\ascencia.c
+set INPUT=%~dp0code\win32_ascencia.c
 set LINKS=shell32.lib user32.lib gdi32.lib opengl32.lib winmm.lib
 
 set DOPTS=-nologo -MT -Gm- -GR- -EHa -Oi -Od -FC -Z7
@@ -16,7 +16,8 @@ set RDEFS=-D_CRT_SECURE_NO_WARNINGS -DRELEASE
 set RLINK=%LINKS%
 
 set ACOPTS=-nologo -MT -Gm- -GR- -EHa -O2 -FC
-set ACINPUT=%~dp0code\util\asset_compiler.c
+set ACDEFS=-D_CRT_SECURE_NO_WARNINGS
+set ACINPUT=%~dp0code\asset_compiler\asset_compiler.c
 set ACLINK=shell32.lib user32.lib
 
 if exist build rmdir /s /q build
@@ -37,7 +38,7 @@ popd
 if not exist %~dp0build\release\Ascencia.exe exit /b 1
 
 pushd build\asset_compiler
-cl -Fe"AssetCompiler.exe" -I"%~dp0code" %ACOPTS% %ACINPUT% -link -subsystem:console %ACLINK%
+cl -Fe"AssetCompiler.exe" -I"%~dp0code" %ACOPTS% %ACDEFS% %ACINPUT% -link -subsystem:console %ACLINK%
 popd
 if not exist %~dp0build\asset_compiler\AssetCompiler.exe exit /b 1
 

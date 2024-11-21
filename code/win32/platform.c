@@ -5,7 +5,7 @@
    Date:    17-11-2024
    ============================================================== */
 
-#include <pl/platform.h>
+#include <win32/platform.h>
 
 local LRESULT WndProc(HWND handle, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -811,41 +811,6 @@ local b32 LoadWGLFunctions(void)
     return 1;
 }
 
-void *PL_Alloc(u64 size)
-{
-    void *result = 0;
-    result = (void*)HeapAlloc(GetProcessHeap(), 0, size);
-    return result;
-}
-
-void *PL_Alloc0(u64 size)
-{
-    void *result = 0;
-    result = (void*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, size);
-    return result;
-}
-
-void *PL_ReAlloc(void *old, u64 size)
-{
-    void *result = 0;
-    result = (void*)HeapReAlloc(GetProcessHeap(), 0, old, size);
-    return result;
-}
-
-void *PL_ReAlloc0(void *old, u64 size)
-{
-    void *result = 0;
-    result = (void*)HeapReAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, old, size);
-    return result;
-}
-
-b32 PL_Free(void *mem)
-{
-    BOOL win32_result = HeapFree(GetProcessHeap(), 0, mem);
-    b32 result = (b32)((win32_result) ? 1 : 0);
-    return result;
-}
-
 b32 PL_TimerInit(void)
 {
     LARGE_INTEGER freq = {0};
@@ -871,50 +836,6 @@ inline r32 PL_TimeElapsed(u64 start, u64 end)
 {
     r32 result = ((r32)(end-start) / (r32)g_state->timer.perf_freq);
     return result;
-}
-
-b32 PL_RenderFrameTimerStart(void)
-{
-    if(timeBeginPeriod(g_state->timer.min_ms_wait) == TIMERR_NOCANDO)
-    {
-        g_state->running = 0;
-        return 0;
-    }
-
-    g_state->timer.frames++;
-    g_state->timer.frame_timer = PL_QueryTimer();
-
-    if(timeEndPeriod(g_state->timer.min_ms_wait) == TIMERR_NOCANDO)
-    {
-        g_state->running = 0;
-        return 0;
-    }
-
-    return 1;
-}
-
-void PL_RenderFrameTimerEnd(void)
-{
-    if(timeBeginPeriod(g_state->timer.min_ms_wait) == TIMERR_NOCANDO)
-    {
-        g_state->running = 0;
-        return;
-    }
-
-    g_state->timer.elapsed_ms = (PL_TimeElapsed(g_state->timer.frame_timer, PL_QueryTimer()) * 1000.0f);
-    if(!g_state->window.vsync)
-    {
-        if((u32)g_state->timer.elapsed_ms < g_state->timer.target_ms)
-        {
-            Sleep((u32)(g_state->timer.target_ms - g_state->timer.elapsed_ms));
-        }
-    }
-
-    if(timeEndPeriod(g_state->timer.min_ms_wait) == TIMERR_NOCANDO)
-    {
-        g_state->running = 0;
-        return;
-    }
 }
 
 b32 PL_CreateWindow(const char *title, int w, int h)

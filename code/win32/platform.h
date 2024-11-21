@@ -14,6 +14,12 @@
 #include <dsound.h>
 #include <xinput.h>
 
+#include <win32/win32_alloc.h>
+#include <win32/win32_dir.h>
+
+#include <win32/gl/gl.h>
+#include <win32/gl/wgl.h>
+
 #define PL_OPENGL_MAJ 4
 #define PL_OPENGL_MIN 5
 
@@ -90,18 +96,12 @@ sState *g_state;
 extern sState *g_state;
 #endif
 
-void *PL_Alloc(u64 size);
-void *PL_Alloc0(u64 size);
-void *PL_ReAlloc(void *old, u64 size);
-void *PL_ReAlloc0(void *old, u64 size);
-b32 PL_Free(void *mem);
-
 b32 PL_TimerInit(void);
 inline u64 PL_QueryTimer(void);
 inline r32 PL_TimeElapsed(u64 start, u64 end);
-b32 PL_RenderFrameTimerStart(void);
-void PL_RenderFrameTimerEnd(void);
+
 b32 PL_CreateWindow(const char *title, int w, int h);
+
 b32 PL_InitDSound(void);
 void PL_ClearSoundBuffer(void);
 void PL_FillSoundBuffer(DWORD byte_to_lock, DWORD bytes_to_write,
@@ -115,10 +115,6 @@ b32 PL_StartAudioThread(void);
 b32 PL_QuitAudioThread(void);
 b32 PL_StartLogicThread(void);
 b32 PL_QuitLogicThread(void);
-
-#include <pl/gl/gl.h>
-#include <pl/gl/wgl.h>
-#include <util/lz77.h>
 
 #define PLATFORM_H
 #endif

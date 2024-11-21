@@ -5,7 +5,51 @@
    Date:    18-11-2024
    ============================================================== */
 
-#include <pl/platform.h>
+#include <win32/platform.h>
+
+local b32 RenderFrameTimerStart(void)
+{
+    if(timeBeginPeriod(g_state->timer.min_ms_wait) == TIMERR_NOCANDO)
+    {
+        g_state->running = 0;
+        return 0;
+    }
+
+    g_state->timer.frames++;
+    g_state->timer.frame_timer = PL_QueryTimer();
+
+    if(timeEndPeriod(g_state->timer.min_ms_wait) == TIMERR_NOCANDO)
+    {
+        g_state->running = 0;
+        return 0;
+    }
+
+    return 1;
+}
+
+local void RenderFrameTimerEnd(void)
+{
+    if(timeBeginPeriod(g_state->timer.min_ms_wait) == TIMERR_NOCANDO)
+    {
+        g_state->running = 0;
+        return;
+    }
+
+    g_state->timer.elapsed_ms = (PL_TimeElapsed(g_state->timer.frame_timer, PL_QueryTimer()) * 1000.0f);
+    if(!g_state->window.vsync)
+    {
+        if((u32)g_state->timer.elapsed_ms < g_state->timer.target_ms)
+        {
+            Sleep((u32)(g_state->timer.target_ms - g_state->timer.elapsed_ms));
+        }
+    }
+
+    if(timeEndPeriod(g_state->timer.min_ms_wait) == TIMERR_NOCANDO)
+    {
+        g_state->running = 0;
+        return;
+    }
+}
 
 local inline void GLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
                                   GLsizei length, const GLchar *message, const void *user)
@@ -145,13 +189,13 @@ DWORD WINAPI RenderThread(LPVOID param)
 
     while(g_state->running)
     {
-        if(!PL_RenderFrameTimerStart()) return -1;
+        if(!RenderFrameTimerStart()) return -1;
 
         //TODO: handle user input
 
         //TODO: handle game logic
 
-#if 1 //TEST: epilepsy simulator
+#if 1 //TEST: screensaver simulator
         persist r32 target[3] = {0.0f, 0.0f, 0.0f};
         persist r32 current[3] = {0.0f, 0.0f, 0.0f};
         persist r32 speed = 0.001f;
@@ -190,7 +234,7 @@ DWORD WINAPI RenderThread(LPVOID param)
             return -1;
         }
 
-        PL_RenderFrameTimerEnd();
+        RenderFrameTimerEnd();
     }
 
     return 0;

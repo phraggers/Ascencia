@@ -1,19 +1,20 @@
 /* ==============================================================
    Project: Ascencia
-   File:    ascencia.c
+   File:    win32_ascencia.c
    Author:  Phraggers
    Date:    17-11-2024
    ============================================================== */
 
 #define ASC_INSTANCE
-#include <pl/platform.h>
+#include <win32/platform.h>
 
-#include <util/lz77.c>
-#include <pl/platform.c>
-#include <pl/event_handler.c>
-#include <pl/render_thread.c>
-#include <pl/audio_thread.c>
-#include <pl/logic_thread.c>
+#include <win32/win32_alloc.c>
+#include <win32/win32_dir.c>
+#include <win32/platform.c>
+#include <win32/event_handler.c>
+#include <win32/render_thread.c>
+#include <win32/audio_thread.c>
+#include <win32/logic_thread.c>
 
 local b32 ASC_Entry(void);
 local b32 ASC_Init(void);
