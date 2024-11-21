@@ -109,7 +109,10 @@ void PL_DeleteDirList(sDirEntry *list)
 {
     if(list)
     {
-        PL_Free(list);
+        while(list->next)
+        {
+            PL_PopDirEntry(list);
+        }
     }
 }
 
@@ -153,7 +156,8 @@ void PL_PopDirEntry(sDirEntry *list)
             pentry = pentry->next;
         }
 
-        PL_RemoveDirEntry(pentry);
+        //NOTE: we don't want to remove the first list entry
+        if(pentry->prev) PL_RemoveDirEntry(pentry);
     }
 }
 
@@ -167,7 +171,10 @@ void PL_DeleteFileList(sFileEntry *list)
 {
     if(list)
     {
-        PL_Free(list);
+        while(list->next)
+        {
+            PL_PopFileEntry(list);
+        }
     }
 }
 
@@ -213,6 +220,7 @@ void PL_PopFileEntry(sFileEntry *list)
             pentry = pentry->next;
         }
 
-        PL_RemoveFileEntry(pentry);
+        //NOTE: we don't want to remove the first list entry
+        if(pentry->prev) PL_RemoveFileEntry(pentry);
     }
 }
