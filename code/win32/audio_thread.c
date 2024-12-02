@@ -7,6 +7,30 @@
 
 #include <win32/platform.h>
 
+local void TestSquare(i16 *samples)
+{
+    i16 *tgt_sample = samples;
+    u32 sample_index = 0;
+    u32 vol = 500;
+    u32 freq = 440;
+    for(u32 i=0; i<g_state->audio.dsbuffer_size; i+=sizeof(i16)*2)
+    {
+        i16 sample1 = ((sample_index++ / ((48000/freq)/2)) %2) ? vol:-vol;
+        *tgt_sample++ = sample1;
+        *tgt_sample++ = sample1;
+
+        if(i%128==0)vol--;
+        if(vol==0)
+        {
+            vol = 500;
+            r32 rnd = (1.0f + ((r32)rand()/(r32)RAND_MAX)) * 32.0f;
+            r32 rnd2 = (((r32)rand()/(r32)RAND_MAX)>0.5f) ? rnd:-rnd;
+            freq += (u32)rnd2;
+            if(freq <= 64) freq = 256;
+        }
+    }
+}
+
 DWORD WINAPI AudioThread(LPVOID param)
 {
     g_state->audio_thread.mutex = CreateMutexA(0, 0, 0);
@@ -22,29 +46,7 @@ DWORD WINAPI AudioThread(LPVOID param)
     DWORD latency_bytes = 0;
     r32 latency_sec = 0;
 
-    //TEST: square tune
-    #if 0
-    {
-        i16 *tgt_sample = samples;
-        u32 sample_index = 0;
-        u32 vol = 500;
-        u32 freq = 256;
-        for(u32 i=0; i<g_state->audio.dsbuffer_size; i+=sizeof(i16)*2)
-        {
-            i16 sample1 = ((sample_index++ / ((48000/freq)/2)) %2) ? vol:-vol;
-            *tgt_sample++ = sample1;
-            *tgt_sample++ = sample1;
-
-            if(i%128==0)vol--;
-            if(vol==0)
-            {
-                vol = 500;
-                freq -= 32;
-                if(freq <= 64) freq = 256;
-            }
-        }
-    }
-    #endif
+    srand(time(0));
 
     r32 target_ms = 1000.0f / (r32)PL_AUDIO_THREAD_HZ;
     u64 timer = PL_QueryTimer();
@@ -103,6 +105,7 @@ DWORD WINAPI AudioThread(LPVOID param)
             bytes_to_write = sample_count * g_state->audio.bytes_per_sample;
 
             //TODO: get samples
+            //TestSquare(samples);
 
             PL_FillSoundBuffer(byte_to_lock, bytes_to_write, sample_count, samples);
         }

@@ -13,6 +13,46 @@ DWORD WINAPI LogicThread(LPVOID param)
     WaitForSingleObject(g_state->logic_thread.mutex, INFINITE);
     ReleaseMutex(g_state->logic_thread.mutex);
 
+#if 0 //TEST: zip test
+    struct zip_t *zip = zip_open("test.zip", 0, 'r');
+    if(zip)
+    {
+        for(int entry_index = 0;
+            entry_index < zip_entries_total(zip);
+            entry_index++)
+        {
+            zip_entry_openbyindex(zip, entry_index);
+
+            const char *entryname = zip_entry_name(zip);
+            int isdir = zip_entry_isdir(zip);
+            u64 size = zip_entry_size(zip); //i think this is unzipped size
+            u32 crc32 = zip_entry_crc32(zip);
+
+            printf("Zip Entry: name[%s]  isdir[%d] size[%llu] crc32[%u]",
+                    entryname, isdir, size, crc32);
+
+            void *unzipped_data;
+            u64 unzipped_size;
+            i64 bytes_read = zip_entry_read(zip, &unzipped_data, &unzipped_size);
+
+            printf("Read %lld bytes, data[%x], size[%llu]",
+                    bytes_read, unzipped_data, unzipped_size);
+            }
+
+            zip_entry_close(zip);
+
+            free(unzipped_data);
+        }
+
+        zip_close(zip);
+    }
+    else
+    {
+        printf("failed to open file: %s", data_path);
+        return 0;
+    }
+#endif
+
 #if 0 //TEST: lz77 test
 
     char *base_path = PL_Alloc0(MAX_PATH);

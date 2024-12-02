@@ -187,6 +187,8 @@ DWORD WINAPI RenderThread(LPVOID param)
     g_state->timer.frame_timer = PL_QueryTimer();
     g_state->timer.elapsed_ms = 0.0f;
 
+    srand(time(0));
+
     while(g_state->running)
     {
         if(!RenderFrameTimerStart()) return -1;

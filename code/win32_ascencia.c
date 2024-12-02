@@ -5,6 +5,8 @@
    Date:    17-11-2024
    ============================================================== */
 
+#include <zip/zip.c>
+
 #define ASC_INSTANCE
 #include <win32/platform.h>
 
