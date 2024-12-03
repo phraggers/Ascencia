@@ -6,6 +6,10 @@
    Date:    17-11-2024
    ============================================================== */
 
+// https://github.com/kuba--/zip
+#include <zip/zip.h>
+#include <zip/miniz.h>
+
 #include <util/types.h>
 
 #define WIN32_LEAN_AND_MEAN
@@ -15,9 +19,6 @@
 #include <xinput.h>
 
 #include <direct.h>
-// https://github.com/kuba--/zip
-#include <zip/zip.h>
-#include <zip/miniz.h>
 
 #include <win32/win32_alloc.h>
 #include <win32/win32_dir.h>

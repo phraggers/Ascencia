@@ -5,9 +5,87 @@
    Date:    20-11-2024
    ============================================================== */
 
+#include <zip/zip.c>
+#include <zip/zip.h>
+#include <zip/miniz.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+
+#include <win32/win32_alloc.c>
+#include <win32/win32_dir.c>
 #include <util/types.h>
+
+
+/*
+ Assets:
+
+ - PROJECT/assets : main directory where asset dirs go, any loose files in root dir are ignored
+ - dirs become zipped asset files, eg PROJECT/assets/main/... becomes PROJECT/build/data/main.dat
+ - filepaths in dat are ./path from root, eg: "PROJECT/assets/test/dir1/file.txt" becomes "./dir1/file.txt"
+
+ */
+
+local void AC_TimerInit(u64 *perf_freq)
+{
+    LARGE_INTEGER freq = {0};
+    QueryPerformanceFrequency(&freq);
+    *perf_freq = (u64)freq.QuadPart;
+}
+
+local u64 AC_TimerGet(void)
+{
+    LARGE_INTEGER counter;
+    QueryPerformanceCounter(&counter);
+    u64 result = counter.QuadPart;
+    return result;
+}
+
+local r32 AC_TimerElapsed(u64 start, u64 freq)
+{
+    r32 result = ((r32)(AC_TimerGet()-start) / (r32)freq);
+    return result;
+}
+
+int main(int argc, char **argv)
+{
+    printf("\nASSET_COMPILER: %s\n", argv[0]);
+
+    if(argc < 3 || argc > 3)
+    {
+        printf("ERROR: arg count\n");
+        return -1;
+    }
+
+    u64 perf;
+    AC_TimerInit(&perf);
+
+    char *input_dir = (char*)PL_Alloc0(MAX_PATH);
+    char *output_dir = (char*)PL_Alloc0(MAX_PATH);
+    strcpy(input_dir, argv[1]);
+    strcpy(output_dir, argv[2]);
+
+    sDirList *dir_list = PL_GetDirList(input_dir);
+    PL_DeleteDirList(dir_list);
+
+    PL_Free(input_dir);
+    PL_Free(output_dir);
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #if 0
 local b32 AC_GetDirList(char *input_dir)
@@ -133,12 +211,11 @@ local b32 AC_CreateDat(char *output_dir)
 
     return 1;
 }
-#endif
 
 int main(int argc, char **argv)
 {
     printf("\nASSET_COMPILER: %s\n", argv[0]);
-#if 0
+
     if(argc < 3 || argc > 3)
     {
         printf("ERROR: Invalid arg count: %d\n", argc);
@@ -161,6 +238,8 @@ int main(int argc, char **argv)
 
     free(input_dir);
     free(output_dir);
-#endif
+
     return 0;
 }
+
+#endif
