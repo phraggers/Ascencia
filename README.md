@@ -1,7 +1,6 @@
 ![AscenciaLogo](https://raw.githubusercontent.com/phraggers/Ascencia/master/title325.png)
 - Work-in-progress RPG
-- made in C99
-- easy to build, easy to run
+
 <hr/>
 
 ### Contents:
@@ -22,18 +21,13 @@ Sample Music Playlist:
 
 __Windows:__
 
-Just download this repository and run build.bat.
-Find the build in build/release folder.
-
-Requirements:
-- Windows x64
-- Visual Studio Community (https://visualstudio.microsoft.com/) installed on C:\ drive
+Todo!
 
 <hr/>
 
 ### Version History:
 
-- dev:
-    - v0.1.0:
-	    - initial win32 platform layer
+- pre-alpha:
+    - v0.1:
+	    - initial 2025 commit
 <hr/>
