@@ -82,25 +82,6 @@ else()
     )
 endif()
 
-# GLM
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/deps/GLM")
-    message(STATUS "Getting dependency GLM...")
-    execute_process(
-        COMMAND git clone https://github.com/g-truc/glm deps/GLM
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        RESULT_VARIABLE DepsGLMResult
-    )
-    if(NOT DepsGLMResult EQUAL 0)
-        message(FATAL_ERROR "Failed to get dependency GLM")
-    endif()
-else()
-    message(STATUS "Updating GLM...")
-    execute_process(
-        COMMAND git pull
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/deps/GLM
-    )
-endif()
-
 # PhysFS
 if(NOT EXISTS "${CMAKE_SOURCE_DIR}/deps/PhysFS")
     message(STATUS "Getting dependency PhysFS...")
@@ -120,12 +101,33 @@ else()
     )
 endif()
 
+# GLM
+if(NOT EXISTS "${CMAKE_SOURCE_DIR}/deps/GLM")
+    message(STATUS "Getting dependency GLM...")
+    execute_process(
+        COMMAND git clone https://github.com/g-truc/glm deps/GLM
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        RESULT_VARIABLE DepsGLMResult
+    )
+    if(NOT DepsGLMResult EQUAL 0)
+        message(FATAL_ERROR "Failed to get dependency GLM")
+    endif()
+else()
+    message(STATUS "Updating GLM...")
+    execute_process(
+        COMMAND git pull
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/deps/GLM
+    )
+endif()
+
 add_subdirectory(deps/SDL)
 add_subdirectory(deps/SDL_image)
 add_subdirectory(deps/SDL_ttf)
 add_subdirectory(deps/SDL_net)
-add_subdirectory(deps/GLM)
 add_subdirectory(deps/PhysFS)
+set(-DGLM_BUILD_TESTS=OFF)
+set(-DBUILD_SHARED_LIBS=OFF)
+add_subdirectory(deps/GLM)
 
 # === ASCENCIA ===
 
@@ -170,8 +172,8 @@ target_link_libraries(Ascencia PRIVATE
     SDL3_image::SDL3_image 
     SDL3_ttf::SDL3_ttf 
     SDL3_net::SDL3_net 
-    glm 
     physfs-static
+	glm::glm-header-only
 )
 
 # === POST BUILD ===
