@@ -185,7 +185,7 @@ if(WIN32)
         COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3_image::SDL3_image-shared> $<TARGET_FILE_DIR:Ascencia>
         COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3_ttf::SDL3_ttf-shared> $<TARGET_FILE_DIR:Ascencia>
         COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3_net::SDL3_net-shared> $<TARGET_FILE_DIR:Ascencia>
-        COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/scripts/rh.bat" "$<TARGET_FILE:${PROJECT_NAME}>"
+        COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/util/rh/rh.exe" -open "$<TARGET_FILE:${PROJECT_NAME}>" -resource "${CMAKE_CURRENT_SOURCE_DIR}/util/rh/Ascencia.ico" -mask ICONGROUP,MAINICON, -action addskip -save "$<TARGET_FILE:${PROJECT_NAME}>"
         COMMAND "${CMAKE_COMMAND}" -E echo "Post-build steps completed."
         VERBATIM
         )
@@ -196,7 +196,7 @@ if(WIN32)
         COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3_image::SDL3_image-shared> $<TARGET_FILE_DIR:Ascencia>
         COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3_ttf::SDL3_ttf-shared> $<TARGET_FILE_DIR:Ascencia>
         COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3_net::SDL3_net-shared> $<TARGET_FILE_DIR:Ascencia>
-        COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/scripts/rh.bat" "$<TARGET_FILE:${PROJECT_NAME}>"
+        COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/util/rh/rh.exe" -open "$<TARGET_FILE:${PROJECT_NAME}>" -resource "${CMAKE_CURRENT_SOURCE_DIR}/util/rh/Ascencia.ico" -mask ICONGROUP,MAINICON, -action addskip -save "$<TARGET_FILE:${PROJECT_NAME}>"
         COMMAND "${CMAKE_COMMAND}" -E echo "Post-build steps completed."
         VERBATIM
         )
@@ -208,7 +208,7 @@ if(WIN32)
         COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3_ttf::SDL3_ttf-shared> $<TARGET_FILE_DIR:Ascencia>
         COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3_net::SDL3_net-shared> $<TARGET_FILE_DIR:Ascencia>
         COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/data" $<TARGET_FILE_DIR:Ascencia/data>
-        COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/scripts/rh.bat" "$<TARGET_FILE:${PROJECT_NAME}>"
+        COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/util/rh/rh.exe" -open "$<TARGET_FILE:${PROJECT_NAME}>" -resource "${CMAKE_CURRENT_SOURCE_DIR}/util/rh/Ascencia.ico" -mask ICONGROUP,MAINICON, -action addskip -save "$<TARGET_FILE:${PROJECT_NAME}>"
         COMMAND "${CMAKE_COMMAND}" -E echo "Post-build steps completed."
         VERBATIM
         )
