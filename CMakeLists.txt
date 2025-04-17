@@ -124,9 +124,8 @@ add_subdirectory(deps/SDL)
 add_subdirectory(deps/SDL_image)
 add_subdirectory(deps/SDL_ttf)
 add_subdirectory(deps/SDL_net)
-add_subdirectory(deps/glad)
-add_subdirectory(deps/glm)
-add_subdirectory(deps/physfs)
+add_subdirectory(deps/GLM)
+add_subdirectory(deps/PhysFS)
 
 # === ASCENCIA ===
 
@@ -163,6 +162,7 @@ endif()
 
 target_include_directories(Ascencia PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/"
 )
 
 target_link_libraries(Ascencia PRIVATE 
@@ -170,14 +170,11 @@ target_link_libraries(Ascencia PRIVATE
     SDL3_image::SDL3_image 
     SDL3_ttf::SDL3_ttf 
     SDL3_net::SDL3_net 
-    glad 
     glm 
     physfs-static
 )
 
 # === POST BUILD ===
-
-# COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/scripts/do_something.bat"
 
 if(WIN32)
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")

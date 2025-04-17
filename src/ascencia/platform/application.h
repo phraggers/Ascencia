@@ -5,6 +5,9 @@
 #include <shared/types.h>
 #include <shared/stdlibs.h>
 
+#ifdef ASC_IMPLEMENTATION
+#include <glad/glad.c>
+#endif
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
