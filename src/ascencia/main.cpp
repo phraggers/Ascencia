@@ -5,8 +5,6 @@
 
 Tohdoh List
 
-SDL_ttf
-SDL_net
 libcurl
 SDL_mixer OR OpenAL OR SDL_sound, 
 framerate timer for non-vsync

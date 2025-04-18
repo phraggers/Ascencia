@@ -22,7 +22,11 @@ bool sApplication::Init(int argc, char** argv)
 	}
 	else
 	{
-		std::cout << "SDL " << SDL_MAJOR_VERSION << "." << SDL_MINOR_VERSION << "." << SDL_MICRO_VERSION << " Loaded" << std::endl;
+		std::cout << "SDL "
+			<< SDL_VERSIONNUM_MAJOR(SDL_VERSION) << "."
+			<< SDL_VERSIONNUM_MINOR(SDL_VERSION) << "."
+			<< SDL_VERSIONNUM_MICRO(SDL_VERSION) << " Loaded"
+			<< std::endl;
 	}
 
 	if (!Timer.Init())
@@ -35,6 +39,20 @@ bool sApplication::Init(int argc, char** argv)
 		return 0;
 	}
 
+	if (!SDLNet_Init())
+	{
+		std::cerr << "SDLNet init failed : " << SDL_GetError() << std::endl;
+		return 0;
+	}
+	else
+	{
+		std::cout << "SDLNet "
+			<< SDL_VERSIONNUM_MAJOR(SDL_NET_VERSION) << "."
+			<< SDL_VERSIONNUM_MINOR(SDL_NET_VERSION) << "."
+			<< SDL_VERSIONNUM_MICRO(SDL_NET_VERSION) << " Loaded"
+			<< std::endl;
+	}
+
 	if (!PHYSFS_init(argv[0]))
 	{
 		std::cerr << "PHYSFS failed to initialize : " << PHYSFS_getLastError() << std::endl;
@@ -43,6 +61,20 @@ bool sApplication::Init(int argc, char** argv)
 	else
 	{
 		std::cout << "PHYSFS " << PHYSFS_VER_MAJOR << "." << PHYSFS_VER_MINOR << "." << PHYSFS_VER_PATCH << " loaded" << std::endl;
+	}
+
+	if (!TTF_Init())
+	{
+		std::cerr << "SDL_ttf init failed : " << SDL_GetError() << std::endl;
+		return 0;
+	}
+	else
+	{
+		std::cout << "SDL_ttf "
+			<< SDL_VERSIONNUM_MAJOR(SDL_TTF_VERSION) << "."
+			<< SDL_VERSIONNUM_MINOR(SDL_TTF_VERSION) << "."
+			<< SDL_VERSIONNUM_MICRO(SDL_TTF_VERSION) << " Loaded"
+			<< std::endl;
 	}
 
 	if (!Window.Init())
@@ -113,6 +145,8 @@ void sApplication::Quit(void)
 {
 	Config.Save();
 	SDL_DestroyWindow(Window.Handle);
+	TTF_Quit();
+	SDLNet_Quit();
 	SDL_Quit();
 	PHYSFS_deinit();
 }

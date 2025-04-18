@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.14)
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>")
@@ -6,125 +6,72 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Ship>:Release>")
 
 # === DEPS ===
 
+# zlib
 # SDL3
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/deps/SDL")
-    message(STATUS "Getting dependecy SDL...")
-    execute_process(
-        COMMAND git clone --recurse-submodules -j8 https://github.com/libsdl-org/sdl deps/SDL
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        RESULT_VARIABLE DepsSDLResult
-    )
-    if(NOT DepsSDLResult EQUAL 0)
-        message(FATAL_ERROR "Failed to get dependency SDL")
-    endif()
-else()
-    message(STATUS "Updating SDL...")
-    execute_process(
-        COMMAND git pull
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/deps/SDL
-    )
+# SDL3_image
+# SDL3_ttf
+# SDL3_net
+# PhysFS
+# GLM
+# OpenAL TODO
+# imgui TODO
+
+function(FetchDependency name url tag)
+    if(NOT EXISTS "${CMAKE_SOURCE_DIR}/deps/${name}")
+        execute_process(
+            COMMAND git clone --branch ${tag} --single-branch --recurse-submodules -j8 ${url} deps/${name}
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            RESULT_VARIABLE DepsResult_${name}
+        )
+        if(NOT DepsResult_${name} EQUAL 0)
+            message(FATAL_ERROR "Failed to get ${name}")
+        endif()
+    else()
+        execute_process(
+            COMMAND git pull
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/deps/${name}
+        )
 endif()
+endfunction()
+
+# zlib
+FetchDependency(zlib https://github.com/madler/zlib.git v1.3.1)
+set(ZLIB_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/deps/zlib CACHE PATH "zlib include dir")
+set(ZLIB_LIBRARY zlibstatic CACHE FILEPATH "zlib library")
+set(-DZLIB_LIBRARY zlibstatic)
+add_subdirectory(deps/zlib)
+
+# SDL3
+FetchDependency(SDL https://github.com/libsdl-org/sdl release-3.2.10)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries")
+set(SDL_SHARED OFF CACHE BOOL "Disable SDL shared library")
+set(SDL_STATIC ON CACHE BOOL "Enable SDL static library")
+add_subdirectory(deps/SDL)
 
 # SDL3_image
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/deps/SDL_image")
-    message(STATUS "Getting dependency SDL_image...")
-    execute_process(
-        COMMAND git clone --recurse-submodules -j8 https://github.com/libsdl-org/SDL_image deps/SDL_image
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        RESULT_VARIABLE DepsSDLimageResult
-    )
-    if(NOT DepsSDLimageResult EQUAL 0)
-        message(FATAL_ERROR "Failed to get dependency SDL_image")
-    endif()
-else()
-    message(STATUS "Updating SDL_image...")
-    execute_process(
-        COMMAND git pull
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/deps/SDL_image
-    )
-endif()
+FetchDependency(SDL_image https://github.com/libsdl-org/SDL_image release-3.2.4)
+set(SDL3IMAGE_SHARED OFF CACHE BOOL "Disable SDL3_image shared library")
+set(SDL3IMAGE_STATIC ON CACHE BOOL "Enable SDL3_image static library")
+add_subdirectory(deps/SDL_image)
 
 # SDL3_ttf
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/deps/SDL_ttf")
-    message(STATUS "Getting dependency SDL_ttf...")
-    execute_process(
-        COMMAND git clone --recurse-submodules -j8 https://github.com/libsdl-org/SDL_ttf deps/SDL_ttf
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        RESULT_VARIABLE DepsSDLttfResult
-    )
-    if(NOT DepsSDLttfResult EQUAL 0)
-        message(FATAL_ERROR "Failed to get dependency SDL_ttf")
-    endif()
-else()
-    message(STATUS "Updating SDL_ttf...")
-    execute_process(
-        COMMAND git pull
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/deps/SDL_ttf
-    )
-endif()
+FetchDependency(SDL_ttf https://github.com/libsdl-org/SDL_ttf release-3.2.2)
+set(SDL3TTF_SHARED OFF CACHE BOOL "Disable SDL3_ttf shared library")
+set(SDL3TTF_STATIC ON CACHE BOOL "Enable SDL3_ttf static library")
+add_subdirectory(deps/SDL_ttf)
 
 # SDL3_net
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/deps/SDL_net")
-    message(STATUS "Getting dependency SDL_net...")
-    execute_process(
-        COMMAND git clone --recurse-submodules -j8 https://github.com/libsdl-org/SDL_net deps/SDL_net
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        RESULT_VARIABLE DepsSDLnetResult
-    )
-    if(NOT DepsSDLnetResult EQUAL 0)
-        message(FATAL_ERROR "Failed to get dependency SDL_net")
-    endif()
-else()
-    message(STATUS "Updating SDL_net...")
-    execute_process(
-        COMMAND git pull
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/deps/SDL_net
-    )
-endif()
+FetchDependency(SDL_net https://github.com/libsdl-org/SDL_net main) # check for when tag v3+ is released
+set(SDL3NET_SHARED OFF CACHE BOOL "Disable SDL3_net shared library")
+set(SDL3NET_STATIC ON CACHE BOOL "Enable SDL3_net static library")
+add_subdirectory(deps/SDL_net)
 
 # PhysFS
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/deps/PhysFS")
-    message(STATUS "Getting dependency PhysFS...")
-    execute_process(
-        COMMAND git clone https://github.com/icculus/physfs deps/PhysFS
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        RESULT_VARIABLE DepsPhysFSResult
-    )
-    if(NOT DepsPhysFSResult EQUAL 0)
-        message(FATAL_ERROR "Failed to get dependency PhysFS")
-    endif()
-else()
-    message(STATUS "Updating PhysFS...")
-    execute_process(
-        COMMAND git pull
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/deps/PhysFS
-    )
-endif()
+FetchDependency(PhysFS https://github.com/icculus/physfs release-3.2.0)
+add_subdirectory(deps/PhysFS)
 
 # GLM
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/deps/GLM")
-    message(STATUS "Getting dependency GLM...")
-    execute_process(
-        COMMAND git clone https://github.com/g-truc/glm deps/GLM
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        RESULT_VARIABLE DepsGLMResult
-    )
-    if(NOT DepsGLMResult EQUAL 0)
-        message(FATAL_ERROR "Failed to get dependency GLM")
-    endif()
-else()
-    message(STATUS "Updating GLM...")
-    execute_process(
-        COMMAND git pull
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/deps/GLM
-    )
-endif()
-
-add_subdirectory(deps/SDL)
-add_subdirectory(deps/SDL_image)
-add_subdirectory(deps/SDL_ttf)
-add_subdirectory(deps/SDL_net)
-add_subdirectory(deps/PhysFS)
+FetchDependency(GLM https://github.com/g-truc/glm 1.0.1)
 set(-DGLM_BUILD_TESTS=OFF)
 set(-DBUILD_SHARED_LIBS=OFF)
 add_subdirectory(deps/GLM)
@@ -162,16 +109,17 @@ if(CMAKE_BUILD_TYPE STREQUAL "Ship")
     target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC DATA_PATH="./data/")
 endif()
 
-target_include_directories(Ascencia PUBLIC
+target_include_directories(${PROJECT_NAME} PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/"
 )
 
-target_link_libraries(Ascencia PRIVATE 
-    SDL3::SDL3 
-    SDL3_image::SDL3_image 
-    SDL3_ttf::SDL3_ttf 
-    SDL3_net::SDL3_net 
+target_link_libraries(${PROJECT_NAME} PRIVATE 
+    zlibstatic
+    SDL3-static
+    SDL3_image-static
+    SDL3_ttf-static 
+    SDL3_net-static 
     physfs-static
 	glm::glm-header-only
 )
@@ -181,10 +129,6 @@ target_link_libraries(Ascencia PRIVATE
 if(WIN32)
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3::SDL3-shared> $<TARGET_FILE_DIR:Ascencia>
-        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3_image::SDL3_image-shared> $<TARGET_FILE_DIR:Ascencia>
-        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3_ttf::SDL3_ttf-shared> $<TARGET_FILE_DIR:Ascencia>
-        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3_net::SDL3_net-shared> $<TARGET_FILE_DIR:Ascencia>
         COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/util/rh/rh.exe" -open "$<TARGET_FILE:${PROJECT_NAME}>" -resource "${CMAKE_CURRENT_SOURCE_DIR}/util/rh/Ascencia.ico" -mask ICONGROUP,MAINICON, -action addskip -save "$<TARGET_FILE:${PROJECT_NAME}>"
         COMMAND "${CMAKE_COMMAND}" -E echo "Post-build steps completed."
         VERBATIM
@@ -192,10 +136,6 @@ if(WIN32)
 
     elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3::SDL3-shared> $<TARGET_FILE_DIR:Ascencia>
-        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3_image::SDL3_image-shared> $<TARGET_FILE_DIR:Ascencia>
-        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3_ttf::SDL3_ttf-shared> $<TARGET_FILE_DIR:Ascencia>
-        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3_net::SDL3_net-shared> $<TARGET_FILE_DIR:Ascencia>
         COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/util/rh/rh.exe" -open "$<TARGET_FILE:${PROJECT_NAME}>" -resource "${CMAKE_CURRENT_SOURCE_DIR}/util/rh/Ascencia.ico" -mask ICONGROUP,MAINICON, -action addskip -save "$<TARGET_FILE:${PROJECT_NAME}>"
         COMMAND "${CMAKE_COMMAND}" -E echo "Post-build steps completed."
         VERBATIM
@@ -203,10 +143,6 @@ if(WIN32)
 
     elseif(CMAKE_BUILD_TYPE STREQUAL "Ship")
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3::SDL3-shared> $<TARGET_FILE_DIR:Ascencia>
-        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3_image::SDL3_image-shared> $<TARGET_FILE_DIR:Ascencia>
-        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3_ttf::SDL3_ttf-shared> $<TARGET_FILE_DIR:Ascencia>
-        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3_net::SDL3_net-shared> $<TARGET_FILE_DIR:Ascencia>
         COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/data" $<TARGET_FILE_DIR:Ascencia/data>
         COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/util/rh/rh.exe" -open "$<TARGET_FILE:${PROJECT_NAME}>" -resource "${CMAKE_CURRENT_SOURCE_DIR}/util/rh/Ascencia.ico" -mask ICONGROUP,MAINICON, -action addskip -save "$<TARGET_FILE:${PROJECT_NAME}>"
         COMMAND "${CMAKE_COMMAND}" -E echo "Post-build steps completed."

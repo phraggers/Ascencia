@@ -11,6 +11,8 @@
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#include <SDL3_net/SDL_net.h>
 #include <glm/glm.hpp>
 #include <physfs.h>
 
