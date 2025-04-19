@@ -1,7 +1,7 @@
 // Ascencia
-// ascencia/platform/window.cpp
+// platform/window.cpp
 
-#include <ascencia/platform/application.h>
+#include <ascencia/platform/core.h>
 
 static void Window_SetIcon(void)
 {
@@ -9,7 +9,9 @@ static void Window_SetIcon(void)
 	std::string MainDatPath = std::string(DATA_PATH) + "main.dat";
 	if (!PHYSFS_mount(MainDatPath.c_str(), 0, 0))
 	{
-		std::cerr << "PHYSFS: error loading " << MainDatPath << " : " << PHYSFS_getLastError() << std::endl;
+		std::stringstream ss;
+		ss << "PHYSFS: error loading " << MainDatPath << " : " << PHYSFS_getLastError();
+		LOG_ERROR("Window::SetIcon", ss.str());
 	}
 	else
 	{
@@ -20,7 +22,7 @@ static void Window_SetIcon(void)
 
 		SDL_IOStream* IconFileSDLIO = SDL_IOFromMem(file_buffer, file_size);
 		SDL_Surface* Icon = IMG_Load_IO(IconFileSDLIO, 1);
-		SDL_SetWindowIcon(App->Window.Handle, Icon);
+		SDL_SetWindowIcon(Core->Window.Handle, Icon);
 
 		delete[] file_buffer;
 		PHYSFS_close(file);
@@ -31,70 +33,38 @@ static void Window_SetIcon(void)
 static void Window_SetDefaultTitle(void)
 {
 	std::stringstream ss;
-	ss << App->State.AppName << " [" << CFG_DevStageToString(App->State.Version.DevStage)
-		<< " " << App->State.Version.Major << "." << App->State.Version.Minor << "]";
-	App->Window.Title = ss.str();
+	ss << Core->State.AppName << " [" << CFG_DevStageToString(Core->State.Version.DevStage)
+		<< " " << Core->State.Version.Major << "." << Core->State.Version.Minor << "]";
+	Core->Window.Title = ss.str();
 }
 
-sWindow::sWindow()
+cWindow::cWindow()
 {
 	memset(&State, 0, sizeof(sWindowState));
 	Handle = 0;
-	GLRC = 0;
 	memset(&Dimension, 0, sizeof(SDL_Rect));
 }
 
-bool sWindow::Init(void)
+bool cWindow::Init(void)
 {
 	Window_SetIcon();
 	Window_SetDefaultTitle();
-
-	if (!SDL_GL_LoadLibrary(0))
-	{
-		std::cerr << "SDL GL failed : " << SDL_GetError() << std::endl;
-		return 0;
-	}
-	else
-	{
-		if (!SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1)) std::cerr << "SDLGL Error : " << SDL_GetError() << std::endl;
-		if (!SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE)) std::cerr << "SDLGL Error : " << SDL_GetError() << std::endl;
-		if (!SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, CFG_WINDOW_GL_VERSION_MAJ)) std::cerr << "SDLGL Error : " << SDL_GetError() << std::endl;
-		if (!SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, CFG_WINDOW_GL_VERSION_MIN)) std::cerr << "SDLGL Error : " << SDL_GetError() << std::endl;
-		if (!SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)) std::cerr << "SDLGL Error : " << SDL_GetError() << std::endl;
-		if (!SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24)) std::cerr << "SDLGL Error : " << SDL_GetError() << std::endl;
-	}
+	Renderer.Setup();
 
 	Handle = SDL_CreateWindow(Title.c_str(), CFG_WINDOW_W, CFG_WINDOW_H, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 	if (!Handle)
 	{
-		std::cerr << "Failed to create SDL window! " << SDL_GetError() << std::endl;
-		return 0;
-	}
-	SDL_SetWindowPosition(Handle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-
-	GLRC = SDL_GL_CreateContext(Handle);
-	if (!GLRC)
-	{
-		std::cerr << "Failed to create GLContext : " << SDL_GetError() << std::endl;
+		LOG_FATAL("Window::Init", std::string("SDL CreateWindow Error: ", SDL_GetError()));
 		return 0;
 	}
 	
-	gladLoadGL(SDL_GL_GetProcAddress);
-	SDL_GL_SetSwapInterval(CFG_WINDOW_VSYNC);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-	glViewport(0, 0, CFG_WINDOW_W, CFG_WINDOW_H);
+	SDL_SetWindowPosition(Handle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+	Renderer.Start();
 
-	std::cout << "GLAD loaded GL " << CFG_WINDOW_GL_VERSION_MAJ << "." << CFG_WINDOW_GL_VERSION_MIN << std::endl;
-	std::cout << "" << "OpenGL Vendor: " << glGetString(GL_VENDOR) << std::endl;
-	std::cout << "" << "OpenGL Renderer: " << glGetString(GL_RENDERER) << std::endl;
-	std::cout << "" << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
-	std::cout << "" << "OpenGL Shading Language Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
-
-	if (App->Config.IsConfigNew)
+	if (Core->Config.IsConfigNew)
 	{
 		UpdateState();
-		App->Config.Save();
+		Core->Config.Save();
 	}
 	else
 	{
@@ -105,18 +75,23 @@ bool sWindow::Init(void)
 	return 1;
 }
 
-bool sWindow::Frame(void)
+void cWindow::Quit(void)
 {
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	Renderer.Quit();
+	SDL_DestroyWindow(Handle);
+}
 
-	SDL_GL_SwapWindow(Handle);
+bool cWindow::Frame(void)
+{
 	UpdateState();
+
+	//TODO implement proper timer
+	SDL_Delay(17);
 
 	return 1;
 }
 
-void sWindow::SetFullscreen(bool Fullscreen)
+void cWindow::SetFullscreen(bool Fullscreen)
 {
 	SDL_WindowFlags Flags = SDL_GetWindowFlags(Handle);
 	
@@ -146,7 +121,7 @@ void sWindow::SetFullscreen(bool Fullscreen)
 	}
 }
 
-void sWindow::ToggleFullscreen(void)
+void cWindow::ToggleFullscreen(void)
 {
 	if (State.IsFullscreen)
 	{
@@ -163,15 +138,15 @@ void sWindow::ToggleFullscreen(void)
 	}
 }
 
-void sWindow::ApplyState(void)
+void cWindow::ApplyState(void)
 {
 	if (State.VSync)
 	{
-		SDL_GL_SetSwapInterval(1);
+		Renderer.SetVSync(1);
 	}
 	else
 	{
-		SDL_GL_SetSwapInterval(0);
+		Renderer.SetVSync(0);
 	}
 
 	if (State.IsFullscreen)
@@ -188,7 +163,7 @@ void sWindow::ApplyState(void)
 	}
 }
 
-void sWindow::UpdateState(void)
+void cWindow::UpdateState(void)
 {
 	SDL_GetWindowPosition(Handle, &Dimension.x, &Dimension.y);
 	SDL_GetWindowSize(Handle, &Dimension.w, &Dimension.h);

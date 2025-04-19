@@ -1,15 +1,12 @@
 // Ascencia
-// ascencia/main.cpp
+// main.cpp
 
 /*
 
 Tohdoh List
 
-libcurl
-SDL_mixer OR OpenAL OR SDL_sound, 
 framerate timer for non-vsync
 threads
-Logging module
 Input (keyboard, mouse, controller)
 Asset manager
 Audio
@@ -20,19 +17,19 @@ Intro Splash & Main Menu
 */
 
 #define ASC_IMPLEMENTATION
-#include <ascencia/platform/application.h>
+#include <ascencia/platform/core.h>
 #include <SDL3/SDL_main.h>
 
 bool ASC_Init(int argc, char** argv)
 {
-	App = new sApplication;
-	if (!App)
+	Core = new cCore;
+	if (!Core)
 	{
-		std::cerr << "App: FATAL allocation error" << std::endl;
+		std::cerr << "FATAL allocation error" << std::endl;
 		return 0;
 	}
 
-	if (!App->Init(argc, argv))
+	if (!Core->Init(argc, argv))
 	{
 		return 0;
 	}
@@ -42,7 +39,7 @@ bool ASC_Init(int argc, char** argv)
 
 bool ASC_Run(void)
 {
-	if (!App->Run())
+	if (!Core->Run())
 	{
 		return 0;
 	}
@@ -52,7 +49,7 @@ bool ASC_Run(void)
 
 void ASC_Quit(void)
 {
-	App->Quit();
+	Core->Quit();
 }
 
 int main(int argc, char** argv)

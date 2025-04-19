@@ -1,19 +1,24 @@
 // Ascencia
-// ascencia/platform/config.cpp
+// platform/config.cpp
 
-#include <ascencia/platform/application.h>
+#include <ascencia/platform/core.h>
 
-bool sConfig::Init()
+cConfig::cConfig()
 {
-	const char* base_path = SDL_GetBasePath();
-	BasePath = std::string(base_path);
+	IsConfigNew = 0;
+}
 
-	SavePath = std::string(base_path);
+bool cConfig::Init()
+{
+	const char* SDLBasePath = SDL_GetBasePath();
+	BasePath = std::string(SDLBasePath);
+
+	SavePath = std::string(SDLBasePath);
 	SavePath.append("Save");
 	std::filesystem::create_directory(SavePath);
 
 	ConfigFilePath = std::string(SavePath);
-	if(base_path[strlen(base_path)] == '/')	ConfigFilePath.append("/Config.bin");
+	if(SDLBasePath[strlen(SDLBasePath)] == '/')	ConfigFilePath.append("/Config.bin");
 	else ConfigFilePath.append("\\Config.bin");
 
 	std::filesystem::path ConfigPath = std::filesystem::path(ConfigFilePath);
@@ -31,44 +36,53 @@ bool sConfig::Init()
 	return 1;
 }
 
-bool sConfig::Save()
+bool cConfig::Save()
 {
 	sUserConfig* UserConfig = new sUserConfig;
 	memset(UserConfig, 0, sizeof(sUserConfig));
-	memcpy(&UserConfig->Version, &App->State.Version, sizeof(sAppVersion));
-	memcpy(&UserConfig->WindowState, &App->Window.State, sizeof(sWindowState));
+	memcpy(&UserConfig->Version, &Core->State.Version, sizeof(sAppVersion));
+	memcpy(&UserConfig->LogState, &Core->Log.State, sizeof(sLogState));
+	memcpy(&UserConfig->WindowState, &Core->Window.State, sizeof(sWindowState));
 
 	FILE* file = 0;
 	file = fopen(ConfigFilePath.c_str(), "wb");
 	if (!file)
 	{
-		std::cerr << "Config: Failed to open " << ConfigFilePath << " for writing" << std::endl;
+		std::stringstream ss;
+		ss << "Failed to open " << ConfigFilePath << " for writing";
+		LOG_ERROR("Config::Save", ss.str());
 		delete UserConfig;
 		return 0;
 	}
 	else
 	{
-		std::cout << "Config: Writing Config to " << ConfigFilePath << " ... " << std::endl;
+		std::stringstream ss;
+		ss << "Writing Config to " << ConfigFilePath << " ... ";
+		LOG_INFO("Config::Save", ss.str());
 	}
 	size_t bytes = fwrite(UserConfig, 1, sizeof(sUserConfig), file);
 	fclose(file);
 
 	if (bytes != sizeof(sUserConfig))
 	{
-		std::cerr << "Config: Error writing Config : expected " << sizeof(sUserConfig) << " bytes, actual: "
-			<< bytes << " bytes written" << std::endl;
+		std::stringstream ss;
+		ss << "Error writing Config : expected " << sizeof(sUserConfig) << " bytes, actual: "
+			<< bytes << " bytes written";
+		LOG_ERROR("Config::Save", ss.str());
 		delete UserConfig;
 		return 0;
 	}
 	else
 	{
-		std::cout << "Config: Wrote " << bytes << " bytes" << std::endl;
+		std::stringstream ss;
+		ss << "Wrote " << bytes << " bytes";
+		LOG_INFO("Config::Save", ss.str());
 		delete UserConfig;
 		return 1;
 	}
 }
 
-bool sConfig::Load()
+bool cConfig::Load()
 {
 	sUserConfig* UserConfig = new sUserConfig;
 	memset(UserConfig, 0, sizeof(sUserConfig));
@@ -77,13 +91,17 @@ bool sConfig::Load()
 	file = fopen(ConfigFilePath.c_str(), "rb");
 	if (!file)
 	{
-		std::cerr << "Config: Failed to open " << ConfigFilePath << " for reading" << std::endl;
+		std::stringstream ss;
+		ss << "Failed to open " << ConfigFilePath << " for reading";
+		LOG_ERROR("Config::Load", ss.str());
 		delete UserConfig;
 		return 0;
 	}
 	else
 	{
-		std::cout << "Config: Reading Config from " << ConfigFilePath << " ... " << std::endl;
+		std::stringstream ss;
+		ss << "Reading Config from " << ConfigFilePath << " ... ";
+		LOG_INFO("Config::Load", ss.str());
 	}
 
 	size_t bytes = fread(UserConfig, 1, sizeof(sUserConfig), file);
@@ -91,17 +109,22 @@ bool sConfig::Load()
 
 	if (bytes != sizeof(sUserConfig))
 	{
-		std::cerr << "Config: Error reading Config : expected " << sizeof(sUserConfig) << " bytes, actual: "
-			<< bytes << " bytes read" << std::endl;
+		std::stringstream ss;
+		ss << "Error reading Config : expected " << sizeof(sUserConfig) << " bytes, actual: "
+			<< bytes << " bytes read";
+		LOG_ERROR("Config::Load", ss.str());
 		delete UserConfig;
 		return 0;
 	}
 
 	//TODO handle version mismatch
 
-	memcpy(&App->Window.State, &UserConfig->WindowState, sizeof(sWindowState));
+	memcpy(&Core->Log.State, &UserConfig->LogState, sizeof(sLogState));
+	memcpy(&Core->Window.State, &UserConfig->WindowState, sizeof(sWindowState));
 
-	std::cout << "Config: Loaded Config (" << bytes << " bytes)" << std::endl;
+	std::stringstream ss;
+	ss << "Loaded Config (" << bytes << " bytes)";
+	LOG_INFO("Config::Load", ss.str());
 	delete UserConfig;
 	return 1;
 }

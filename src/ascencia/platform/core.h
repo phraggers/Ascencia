@@ -1,5 +1,5 @@
 // Ascencia
-// ascencia/platform/application.h
+// platform/core.h
 
 #pragma once
 #include <shared/types.h>
@@ -15,13 +15,20 @@
 #include <SDL3_net/SDL_net.h>
 #include <glm/glm.hpp>
 #include <physfs.h>
+#include <AL/alc.h>
+#include <AL/al.h>
+#if(BUILD_DEBUG==1)
+#include <termcolor/termcolor.hpp>
+#endif
 
 #include <ascencia/util/helper_defs.h>
+#include <ascencia/platform/log.h>
+#include <ascencia/video/renderer.h>
 #include <ascencia/platform/window.h>
 #include <ascencia/platform/timer.h>
 #include <ascencia/platform/config.h>
 
-struct sApplicationState
+struct sCoreState
 {
 	bool Running;
 	char AppName[0xff];
@@ -29,12 +36,14 @@ struct sApplicationState
 	sAppVersion Version;
 };
 
-struct sApplication
+class cCore
 {
-	sApplicationState State;
-	sConfig Config;
-	sWindow Window;
-	sTimer Timer;
+	public:
+	sCoreState State;
+	cConfig Config;
+	cWindow Window;
+	cTimer Timer;
+	cLog Log;
 
 	bool Init(int argc, char **argv);
 	bool Run(void);
@@ -42,7 +51,7 @@ struct sApplication
 };
 
 #ifndef ASC_IMPLEMENTATION
-extern sApplication* App;
+extern cCore* Core;
 #else
-sApplication* App;
+cCore* Core;
 #endif

@@ -1,5 +1,5 @@
 // Ascencia
-// ascencia/util/helper_defs.h
+// util/helper_defs.h
 
 #pragma once
 

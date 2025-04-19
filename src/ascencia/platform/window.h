@@ -1,5 +1,5 @@
 // Ascencia
-// ascencia/platform/window.h
+// platform/window.h
 
 #pragma once
 
@@ -14,17 +14,23 @@ struct sWindowState
 	int UpdateHz; // when not VSync
 };
 
-struct sWindow
+class cWindow
 {
+	private:
+
+
+	public:
+
 	sWindowState State;
 	SDL_Window* Handle;
-	SDL_GLContext GLRC;
+	cRenderer Renderer;
 
 	std::string Title;
 	SDL_Rect Dimension; // actual xpos, ypos, width, height
 
-	sWindow();
+	cWindow();
 	bool Init(void);
+	void Quit(void);
 	bool Frame(void);
 	void SetFullscreen(bool Fullscreen);
 	void ToggleFullscreen(void);

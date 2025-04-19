@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.14)
 
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set(CMAKE_CONFIGURATION_TYPES "DebugSlow;DebugFast;Release")
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DebugSlow>:Debug>")
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DebugFast>:RelWithDebInfo>")
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>")
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Ship>:Release>")
+
 
 # === DEPS ===
 
@@ -13,7 +15,8 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Ship>:Release>")
 # SDL3_net
 # PhysFS
 # GLM
-# OpenAL TODO
+# OpenAL
+# termcolor
 # imgui TODO
 
 function(FetchDependency name url tag)
@@ -76,6 +79,25 @@ set(-DGLM_BUILD_TESTS=OFF)
 set(-DBUILD_SHARED_LIBS=OFF)
 add_subdirectory(deps/GLM)
 
+# OpenAL
+FetchDependency(OpenAL https://github.com/kcat/openal-soft openal-soft-1.21.0)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(ALSOFT_NO_CONFIG_UTIL ON CACHE BOOL "" FORCE)
+set(ALSOFT_STATIC_LIBS ON CACHE BOOL "" FORCE)
+set(AL_LIBTYPE_STATIC ON CACHE BOOL "" FORCE)
+set(LIBTYPE STATIC)
+set(ALSOFT_NO_CONFIG_UTIL ON CACHE BOOL "" FORCE)
+add_definitions(-DAL_LIBTYPE_STATIC)
+set(SDL2_FOUND FALSE CACHE BOOL "" FORCE)
+set(SDL2_INCLUDE_DIR "" CACHE PATH "" FORCE)
+set(SDL2_LIBRARY "" CACHE FILEPATH "" FORCE)
+add_subdirectory(deps/OpenAL)
+
+# termcolor
+FetchDependency(termcolor https://github.com/ikalnytskyi/termcolor/ v2.1.0)
+set(TERMCOLOR_TESTS OFF CACHE BOOL "")
+add_subdirectory(deps/termcolor)
+
 # === ASCENCIA ===
 
 project(Ascencia)
@@ -101,13 +123,25 @@ endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/")
+    add_compile_definitions(BUILD_DEBUG=1)
+    add_compile_definitions(BUILD_RELEASE=0)
+    add_compile_definitions(BUILD_SHIP=0)
 endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/")
+    add_compile_definitions(BUILD_DEBUG=0)
+    add_compile_definitions(BUILD_RELEASE=1)
+    add_compile_definitions(BUILD_SHIP=0)
 endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Ship")
     target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC DATA_PATH="./data/")
+    add_compile_definitions(BUILD_DEBUG=0)
+    add_compile_definitions(BUILD_RELEASE=0)
+    add_compile_definitions(BUILD_SHIP=1)
 endif()
+
+#target_compile_options(${PROJECT_NAME} PRIVATE -wd9025)
+target_compile_definitions(${PROJECT_NAME} PRIVATE AL_LIBTYPE_STATIC)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/"
@@ -122,6 +156,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     SDL3_net-static 
     physfs-static
 	glm::glm-header-only
+    OpenAL
+    termcolor
 )
 
 # === POST BUILD ===

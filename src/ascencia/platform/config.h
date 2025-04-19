@@ -1,5 +1,5 @@
 // Ascencia
-// ascencia/platform/config.h
+// platform/config.h
 
 #pragma once
 
@@ -11,6 +11,16 @@
 #define CFG_APP_VER_DEVSTAGE DEVSTAGE_PREALPHA
 #define CFG_APP_VER_MAJ 0
 #define CFG_APP_VER_MIN 1
+
+// Log
+#define CFG_CONSOLELOGLEVEL LOGLEVEL_DEBUG
+#if(BUILD_DEBUG==1)
+#define CFG_LOGFILELOGLEVEL LOGLEVEL_INFO
+#elif(BUILD_RELEASE==1)
+#define CFG_LOGFILELOGLEVEL LOGLEVEL_WARNING
+#elif(BUILD_SHIP==1)
+#define CFG_LOGFILELOGLEVEL LOGLEVEL_ERROR
+#endif
 
 // WindowState
 #define CFG_WINDOW_GL_VERSION_MAJ 4
@@ -45,15 +55,18 @@ struct sUserConfig
 {
 	sAppVersion Version;
 	sWindowState WindowState;
+	sLogState LogState;
 };
 
-struct sConfig
+class cConfig
 {
+	public:
 	std::string BasePath;
 	std::string SavePath;
 	std::string ConfigFilePath;
 	bool IsConfigNew;
 
+	cConfig();
 	bool Init(void);
 	bool Save(void);
 	bool Load(void);
