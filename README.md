@@ -17,13 +17,16 @@
 		- At least Windows 10 recommended
 		- llvm-mingw-ucrt package recommended
 		- add bin directory to path
-		- copy mingw-make.exe and rename to make.exe
+		- copy mingw32-make.exe and rename to make.exe
 	- Linux, MacOS:
 		- any recent OS version should be fine
 
-- cd into Ascencia/
-- run 'make'
-- find build in Ascencia/build/
+```
+git clone https://github.com/phraggers/Ascencia/
+cd Ascencia
+make
+```
+Find build in Ascencia/build/
 
 <hr/>
 
