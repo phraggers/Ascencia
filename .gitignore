@@ -4,6 +4,7 @@ deps/
 install/
 out/
 misc/
+rh/rh.ini
 .git/
 .gitignore
 dev.bat
