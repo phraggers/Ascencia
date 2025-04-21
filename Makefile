@@ -22,7 +22,7 @@ PROJECT_NAME := Ascencia
 BUILD_DEBUG := 1
 
 #compiler optimizations on/off
-BUILD_OPTIMIZED := 0
+BUILD_OPTIMIZED := 1
 
 #=============================================#
 
@@ -73,15 +73,15 @@ else
 	MKDIR_BUILD = $(BUILD_DIR)
 endif
 
-CORE_INPUT := $(PROJECT_DIR)src/core/core_entry.c
+CORE_INPUT := $(PROJECT_DIR)src/core/base/entry.c
 ifeq ($(CFG_PLATFORM),WIN32)
-	CORE_INPUT +=
+	CORE_INPUT += $(PROJECT_DIR)src/core/platform/win32/win32.c
 endif
 ifeq ($(CFG_PLATFORM),LINUX)
-	CORE_INPUT +=
+	CORE_INPUT += $(PROJECT_DIR)src/core/platform/linux/linux.c
 endif
 ifeq ($(CFG_PLATFORM),MACOS)
-	CORE_INPUT +=
+	CORE_INPUT += $(PROJECT_DIR)src/core/platform/macos/macos.c
 endif
 
 CORE_OUTPUT := $(BUILD_DIR)$(PROJECT_NAME)
@@ -112,7 +112,7 @@ else
 	COMPILER_FLAGS += -O0
 endif
 
-LINKER_FLAGS :=
+LINKER_FLAGS := -static
 ifeq ($(CFG_PLATFORM),WIN32)
 	LINKER_FLAGS += -lkernel32 -luser32
 endif

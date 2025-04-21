@@ -6,23 +6,20 @@
 
 #include <shared/types.h>
 
-bool CORE_Init(void);
-bool CORE_Run(void);
-void CORE_Quit(void);
-bool CORE_Entry(void);
+#include <core/platform/window.h>
+#define CORE_STATE_INSTANCE
+#include <core/base/state.h>
+#include <core/base/log.h>
 
-#if defined(WIN32)
-#include <core/platform/win32/win32.c>
-#elif defined(LINUX)
-#include <core/platform/linux/linux.c>
-#elif defined(MACOS)
-#include <core/platform/macos/macos.c>
-#endif
-
-int main(void) {return CORE_Entry() ? 0:-1;}
+#include <core/base/log.c>
+#include <core/base/state.c>
 
 bool CORE_Init(void)
 {
+    if(!CORE_StateInit())
+    {
+        return 0;
+    }
 
     return 1;
 }
@@ -46,3 +43,5 @@ bool CORE_Entry(void)
     CORE_Quit();
     return 1;
 }
+
+int main(void) {return CORE_Entry() ? 0:-1;}
