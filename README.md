@@ -9,19 +9,21 @@
 - [Version History](#version-history)
 <hr/>
 
-### Media:
-
-Sample Music Playlist:
-
-[![Sample Music Playlist](https://img.youtube.com/vi/VPxGp1Hez1c/0.jpg)](https://www.youtube.com/watch?v=VPxGp1Hez1c&list=PLn6lleGn2j_0ufVMa55d1kJoaGlfpMJDl&pp=gAQBiAQB)
-
-<hr/>
-
 ### How to build:
 
-__Windows:__
+- Requirements:
+	- clang, gcc
+	- Windows:
+		- At least Windows 10 recommended
+		- llvm-mingw-ucrt package recommended
+		- add bin directory to path
+		- copy mingw-make.exe and rename to make.exe
+	- Linux, MacOS:
+		- any recent OS version should be fine
 
-Todo!
+- cd into Ascencia/
+- run 'make'
+- find build in Ascencia/build/
 
 <hr/>
 
