@@ -1,12 +1,12 @@
-#ifndef LOG_H
+#ifndef BASE_H
 /* ==============================================================
-   File:    log.h
+   File:    base.h
    Author:  Phraggers
-   Date:    21-04-2025
+   Date:    22-04-2025
    ============================================================== */
 
-bool CORE_LogInit(void);
-void CORE_LogQuit(void);
+#include <core/base/state.h>
+#include <core/base/log.h>
 
-#define LOG_H
+#define BASE_H
 #endif

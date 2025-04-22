@@ -58,6 +58,11 @@ b32 PL_CloseThread(PL_sThread *thread, unsigned long *return_value)
         }
     }
 
+    if(return_value)
+    {
+        *return_value = (unsigned long)ecode;
+    }
+
     PL_Free(thread);
     return 1;
 }

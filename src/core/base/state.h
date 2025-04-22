@@ -7,6 +7,7 @@
 
 typedef struct
 {
+    bool running;
     PL_sWindow window;
 } CORE_sState;
 

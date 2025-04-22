@@ -6,12 +6,9 @@
 
 #include <shared/types.h>
 
-#include <core/platform/alloc.h>
-#include <core/platform/thread.h>
-#include <core/platform/window.h>
+#include <core/platform/platform.h>
 #define CORE_STATE_INSTANCE
-#include <core/base/state.h>
-#include <core/base/log.h>
+#include <core/base/base.h>
 
 #include <core/base/log.c>
 #include <core/base/state.c>
@@ -19,6 +16,11 @@
 bool CORE_Init(void)
 {
     if(!CORE_StateInit())
+    {
+        return 0;
+    }
+
+    if(!CORE_LogInit())
     {
         return 0;
     }
@@ -34,7 +36,7 @@ bool CORE_Run(void)
 
 void CORE_Quit(void)
 {
-
+    CORE_LogQuit();
     return;
 }
 

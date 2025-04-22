@@ -121,8 +121,20 @@ endif
 ifeq ($(CFG_PLATFORM),MACOS)
 endif
 
+PRINT_BUILD_INFO := $(PROJECT_NAME)
+ifeq ($(BUILD_DEBUG),1)
+	PRINT_BUILD_INFO += Config[DEBUG]
+else
+	PRINT_BUILD_INFO += Config[RELEASE]
+endif
+ifeq ($(BUILD_OPTIMIZED),1)
+	PRINT_BUILD_INFO += Optimizations[ON]
+else
+	PRINT_BUILD_INFO += Optimizations[OFF]
+endif
+
 all: $(CORE_OUTPUT)
-	@echo $(CORE_OUTPUT)
+	@echo $(PRINT_BUILD_INFO)
 
 $(CORE_OUTPUT): $(CORE_INPUT) | $(BUILD_DIR)
 	$(COMPILER) $^ $(COMPILER_FLAGS) $(CORE_DEFINES) $(LINKER_FLAGS) -o $@

@@ -5,7 +5,13 @@
    Date:    21-04-2025
    ============================================================== */
 
-typedef unsigned long (PL_fnThread)(void* user_data);
+#if defined(WIN32)
+#define PL_THREADFN_RETTYPE unsigned long
+#else
+#define PL_THREADFN_RETTYPE int
+#endif
+#define PL_THREADFN(name) PL_THREADFN_RETTYPE name (void* user_data)
+typedef PL_THREADFN((PL_fnThread));
 
 typedef struct
 {
@@ -19,6 +25,7 @@ typedef struct
 } PL_sThread;
 
 /* create thread calling PL_fnThread function, passes user_data.
+   (use macro PL_THREADFN to define thread function)
    this function allocates PL_sThread.
    (struct members should be treated as opaque)
    returns 0 on error. */
@@ -27,7 +34,7 @@ PL_sThread *PL_CreateThread(PL_fnThread *function, void *user_data);
 /* close thread, frees memory allocated by PL_CreateThread.
    'thread' becomes invalid pointer.
    returns success. */
-b32 PL_CloseThread(PL_sThread *thread, unsigned long *return_value);
+b32 PL_CloseThread(PL_sThread *thread, PL_THREADFN_RETTYPE *return_value);
 
 /* create mutex. */
 PL_Mutex PL_CreateMutex(void);

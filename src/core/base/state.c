@@ -12,5 +12,7 @@ bool CORE_StateInit(void)
         return 0;
     }
 
+
+
     return 1;
 }
