@@ -6,6 +6,8 @@
 
 #include <shared/types.h>
 
+#include <core/platform/alloc.h>
+#include <core/platform/thread.h>
 #include <core/platform/window.h>
 #define CORE_STATE_INSTANCE
 #include <core/base/state.h>
