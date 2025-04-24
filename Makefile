@@ -75,13 +75,13 @@ endif
 
 CORE_INPUT := $(PROJECT_DIR)src/core/base/entry.c
 ifeq ($(CFG_PLATFORM),WIN32)
-	CORE_INPUT += $(PROJECT_DIR)src/core/platform/win32/win32_platform.c
+	CORE_INPUT += $(PROJECT_DIR)src/core/platform/platform_win32.c
 endif
 ifeq ($(CFG_PLATFORM),LINUX)
-	CORE_INPUT += $(PROJECT_DIR)src/core/platform/linux/linux_platform.c
+	CORE_INPUT += $(PROJECT_DIR)src/core/platform/platform_linux.c
 endif
 ifeq ($(CFG_PLATFORM),MACOS)
-	CORE_INPUT += $(PROJECT_DIR)src/core/platform/macos/macos_platform.c
+	CORE_INPUT += $(PROJECT_DIR)src/core/platform/platform_macos.c
 endif
 
 CORE_OUTPUT := $(BUILD_DIR)$(PROJECT_NAME)
