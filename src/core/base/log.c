@@ -163,3 +163,35 @@ void CORE_LogQuit(void)
 
     remove(gLogState->log_file);
 }
+
+void CORE_LogDebug(char *string, ...)
+{
+#if defined(DEBUG)
+
+#endif
+}
+
+void CORE_LogInfo(char *string, ...)
+{
+
+}
+
+void CORE_LogWarning(char *string, ...)
+{
+
+}
+
+void CORE_LogError(char *string, ...)
+{
+
+}
+
+void CORE_LogFatal(char *string, ...)
+{
+
+}
+
+void CORE_LogPrint(char *string, ...)
+{
+
+}

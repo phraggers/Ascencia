@@ -1,8 +1,40 @@
 /* ==============================================================
-   File:    thread.c
+   File:    win32_platform.c
    Author:  Phraggers
    Date:    21-04-2025
    ============================================================== */
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <shared/types.h>
+bool CORE_Entry(void);
+int CALLBACK WinMain(HINSTANCE i, HINSTANCE p, LPSTR c, int s) {return CORE_Entry() ? 0:-1;}
+
+#include <core/platform/platform.h>
+#include <core/base/base.h>
+
+typedef struct
+{
+    HWND handle;
+} WIN32_sWindow;
+
+static char *PL_BasePathString;
+
+char* PL_GetBasePath(void)
+{
+    if(!PL_BasePathString)
+    {
+        PL_BasePathString = (char*)PL_Alloc0(0xff);
+        GetModuleFileNameA(0, (LPSTR)PL_BasePathString, 0xff);
+
+        while(PL_BasePathString[strlen(PL_BasePathString)-1] != '\\')
+        {
+            PL_BasePathString[strlen(PL_BasePathString)-1] = 0;
+        }
+    }
+
+    return PL_BasePathString;
+}
 
 PL_sThread *PL_CreateThread(PL_fnThread *function, void *user_data)
 {
@@ -111,4 +143,39 @@ b32 PL_UnlockMutex(PL_Mutex *mutex)
     }
 
     return 0;
+}
+
+void *PL_Alloc(u64 size)
+{
+    void *result = 0;
+    result = (void*)HeapAlloc(GetProcessHeap(), 0, size);
+    return result;
+}
+
+void *PL_Alloc0(u64 size)
+{
+    void *result = 0;
+    result = (void*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, size);
+    return result;
+}
+
+void *PL_ReAlloc(void *old, u64 size)
+{
+    void *result = 0;
+    result = (void*)HeapReAlloc(GetProcessHeap(), 0, old, size);
+    return result;
+}
+
+void *PL_ReAlloc0(void *old, u64 size)
+{
+    void *result = 0;
+    result = (void*)HeapReAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, old, size);
+    return result;
+}
+
+b32 PL_Free(void *mem)
+{
+    BOOL win32_result = HeapFree(GetProcessHeap(), 0, mem);
+    b32 result = (b32)((win32_result) ? 1 : 0);
+    return result;
 }

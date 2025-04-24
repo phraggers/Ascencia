@@ -1,10 +1,5 @@
 /* ==============================================================
-   File:    window.c
+   File:    macos_platform.c
    Author:  Phraggers
    Date:    21-04-2025
    ============================================================== */
-
-typedef struct
-{
-    HWND handle;
-} WIN32_sWindow;
